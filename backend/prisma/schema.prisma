@@ -1,0 +1,169 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+ 
+model User {
+  id                 Int      @id @default(autoincrement())
+  email              String   @unique
+  passwordHash       String   
+  name               String
+  clerkId            String?  @unique  
+  languagePreference String   @default("en")
+  themePreference    String   @default("light")
+  isAdmin            Boolean  @default(false)
+  isBlocked          Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt()
+  status    String   @default("ACTIVE")
+  
+  templates          Template[]
+  forms              Form[]
+  comments           Comment[]
+  likes              Like[]
+  accesses           TemplateAccess[]
+}
+
+model Topic {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  
+  templates Template[]
+}
+
+model Template {
+  id           Int      @id @default(autoincrement())
+  userId       Int
+  topicId      Int
+  title        String
+  description  String
+  imageUrl     String?
+  isPublic     Boolean
+  likesCount   Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt()
+  // searchVector String   @default("") @db.TSVector
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topic        Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  questions    Question[]
+  forms        Form[]
+  comments     Comment[]
+  likes        Like[]
+  tags         TemplateTag[]
+  accesses     TemplateAccess[]
+
+  // @@index([searchVector], type: "GIN")
+}
+
+enum QuestionType {
+  STRING
+  TEXT
+  INTEGER
+  CHECKBOX
+}
+
+model Question {
+  id           Int          @id @default(autoincrement())
+  templateId   Int
+  title        String
+  description  String
+  questionType QuestionType
+  position     Int
+  showInTable  Boolean
+  options      Json?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt()
+
+  template     Template     @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  answers      Answer[]
+}
+
+model Form {
+  id          Int      @id @default(autoincrement())
+  templateId  Int
+  userId      Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt()
+
+  template    Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  answers     Answer[]
+}
+
+model Answer {
+  id         Int      @id @default(autoincrement())
+  formId     Int
+  questionId Int
+  value      String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt()
+
+  form       Form     @relation(fields: [formId], references: [id], onDelete: Cascade)
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+}
+
+model Comment {
+  id         Int      @id @default(autoincrement())
+  templateId Int
+  userId     Int
+  content    String
+  createdAt  DateTime @default(now())
+
+  template   Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Like {
+  id         Int      @id @default(autoincrement())
+  templateId Int
+  userId     Int
+  createdAt  DateTime @default(now())
+
+  template   Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([templateId, userId])
+}
+
+model Tag {
+  id         Int      @id @default(autoincrement())
+  name       String   @unique
+  usageCount Int      @default(0)
+  createdAt  DateTime @default(now())
+  
+  templates  TemplateTag[]
+}
+
+model TemplateTag {
+  templateId Int
+  tagId      Int
+  
+  template   Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  tag        Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  
+  @@id([templateId, tagId])
+}
+
+model TemplateAccess {
+  templateId Int
+  userId     Int
+  createdAt  DateTime @default(now())
+
+  template   Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@id([templateId, userId])
+}
