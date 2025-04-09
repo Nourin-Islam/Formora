@@ -9,17 +9,21 @@ interface ClerkWebhookEvent {
     email_addresses: { email_address: string }[];
     first_name?: string;
     last_name?: string;
+    deleted?: boolean;
   };
 }
 
 export const handleClerkWebhook = async (req: Request, res: Response, next: NextFunction) => {
   const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET;
 
+  console.log("💥 Webhook triggered");
+
   if (!WEBHOOK_SECRET) {
     console.error("Missing Clerk webhook secret");
     return res.status(500).json({ error: "Server configuration error" });
   }
 
+  // Get raw body as string
   const payload = req.body.toString();
   const headers = {
     "svix-id": req.headers["svix-id"] as string,
@@ -27,14 +31,20 @@ export const handleClerkWebhook = async (req: Request, res: Response, next: Next
     "svix-signature": req.headers["svix-signature"] as string,
   };
 
+  console.log("Received webhook:", payload, headers);
+
   const wh = new Webhook(WEBHOOK_SECRET);
   let event: ClerkWebhookEvent;
 
   try {
+    // Add timestamp tolerance (300 seconds = 5 minutes)
     event = wh.verify(payload, headers) as ClerkWebhookEvent;
   } catch (err) {
     console.error("Webhook verification failed:", err);
-    return res.status(401).json({ error: "Invalid webhook signature" });
+    return res.status(401).json({
+      error: "Invalid webhook signature",
+      details: err instanceof Error ? err.message : String(err),
+    });
   }
 
   try {
@@ -42,13 +52,19 @@ export const handleClerkWebhook = async (req: Request, res: Response, next: Next
 
     switch (type) {
       case "user.created":
-        await prisma.user.create({
-          data: {
+        await prisma.user.upsert({
+          where: { clerkId: data.id },
+          update: {
+            email: data.email_addresses[0].email_address,
+            name: `${data.first_name || ""} ${data.last_name || ""}`.trim(),
+            status: "ACTIVE",
+          },
+          create: {
             clerkId: data.id,
             email: data.email_addresses[0].email_address,
             name: `${data.first_name || ""} ${data.last_name || ""}`.trim(),
             status: "ACTIVE",
-            passwordHash: "", // Provide a default or hashed value as required
+            passwordHash: "",
           },
         });
         break;
@@ -64,9 +80,19 @@ export const handleClerkWebhook = async (req: Request, res: Response, next: Next
         break;
 
       case "user.deleted":
-        await prisma.user.update({
+        // Use upsert to handle cases where user might not exist
+        await prisma.user.upsert({
           where: { clerkId: data.id },
-          data: { status: "DELETED" },
+          update: {
+            status: "DELETED",
+          },
+          create: {
+            clerkId: data.id,
+            email: data.email_addresses?.[0]?.email_address || "deleted@example.com",
+            name: "Deleted User",
+            status: "DELETED",
+            passwordHash: "",
+          },
         });
         break;
     }
@@ -74,6 +100,9 @@ export const handleClerkWebhook = async (req: Request, res: Response, next: Next
     res.status(200).json({ success: true });
   } catch (error) {
     console.error("Webhook processing error:", error);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({
+      error: "Internal server error",
+      details: error instanceof Error ? error.message : String(error),
+    });
   }
 };

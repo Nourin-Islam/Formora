@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
-import { ClerkExpressRequireAuth } from "@clerk/clerk-sdk-node";
+import { requireAuth } from "@clerk/express";
 import { prisma } from "../lib/prisma.js";
 
 declare global {
@@ -20,7 +20,7 @@ declare global {
   }
 }
 
-export const clerkAuth = ClerkExpressRequireAuth();
+export const clerkAuth = requireAuth();
 
 export const requireUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -56,9 +56,12 @@ export const requireUser = async (req: Request, res: Response, next: NextFunctio
 };
 
 export const requireAdmin = (req: Request, res: Response, next: NextFunction) => {
+  console.log("Checking admin access for user:");
   if (!req.user?.isAdmin) {
-    return res.status(403).json({ error: "Admin access required" });
+    res.status(403).json({ error: "Admin access required" });
+    return; // Explicitly return after sending response
   }
+  console.log("User has admin access!");
   next();
 };
 

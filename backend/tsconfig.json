@@ -9,7 +9,11 @@
     "allowJs": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "allowImportingTsExtensions": true,
+    "typeRoots": ["./node_modules/@types", "./types"]
   },
   "ts-node": {
     "esm": true,

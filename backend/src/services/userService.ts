@@ -1,4 +1,4 @@
-import { clerkClient } from "@clerk/clerk-sdk-node";
+import { clerkClient } from "@clerk/express";
 import { prisma } from "../lib/prisma.js";
 
 export async function syncClerkUser(clerkUserId: string) {

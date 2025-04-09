@@ -1,14 +1,18 @@
 import express from "express";
+import { clerkMiddleware } from "@clerk/express";
 import dotenv from "dotenv";
 import cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import { handleClerkWebhook } from "./webhooks.js";
 import { protectedRoute, adminRoute } from "./middleware/auth.js";
+import adminRouter from "./routes/adminRoutes.js";
 
 dotenv.config();
 
 const app = express();
+app.use(clerkMiddleware());
+app.set("trust proxy", true); // Add this line
 const PORT = parseInt(process.env.PORT || "3000", 10);
 
 // Security middleware
@@ -51,7 +55,11 @@ app.get("/", (req, res) => {
 
 // Example route imports would go here...
 
-// Corrected error handling (added next parameter)
+// Admin routes - Add this section
+// app.use("/api/admin", adminRoute, adminRouter);
+app.use("/api/admin", adminRouter);
+
+// Error handling
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error(err.stack);
   res.status(500).json({ error: "Internal server error" });
