@@ -1,103 +1,106 @@
 import express from "express";
-import { protectedRoute, adminRoute } from "../middleware/auth.ts";
-import { prisma } from "../lib/prisma.ts";
+import { prisma } from "../lib/prisma.js";
+import { authenticateUser } from "../middleware/authenticateUser.js";
 
 const router = express.Router();
+router.use(authenticateUser);
 
-// Create a new template
-router.post("/", protectedRoute, async (req, res) => {
-  try {
-    const { title, description, topicId, isPublic, tags } = req.body;
-
-    const template = await prisma.template.create({
-      data: {
-        title,
-        description,
-        topicId,
-        isPublic,
-        userId: req.user!.id,
-        tags: {
-          create: tags.map((tagName: string) => ({
-            tag: {
-              connectOrCreate: {
-                where: { name: tagName },
-                create: { name: tagName },
-              },
-            },
-          })),
-        },
-      },
-      include: {
-        tags: {
-          include: {
-            tag: true,
-          },
-        },
-      },
-    });
-
-    res.status(201).json(template);
-  } catch (error) {
-    console.error("Error creating template:", error);
-    res.status(500).json({ error: "Failed to create template" });
-  }
-});
-
-// Get all templates (public or user's)
+// Get all templates (optional: public only)
 router.get("/", async (req, res) => {
   try {
-    const where: any = { isPublic: true };
-
-    if (req.user) {
-      where.OR = [{ isPublic: true }, { userId: req.user.id }, { accesses: { some: { userId: req.user.id } } }];
-    }
-
     const templates = await prisma.template.findMany({
-      where,
+      where: {
+        isPublic: true,
+      },
       include: {
-        user: { select: { name: true } },
+        user: { select: { id: true, name: true } },
         topic: true,
-        tags: { include: { tag: true } },
       },
     });
-
     res.json(templates);
-  } catch (error) {
-    console.error("Error fetching templates:", error);
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ error: "Failed to fetch templates" });
   }
 });
 
-// Get template by ID
-router.get("/:id", async (req, res) => {
+// Create a new template
+router.post("/", async (req, res) => {
+  try {
+    const { title, description, topicId, isPublic, imageUrl } = req.body;
+
+    const newTemplate = await prisma.template.create({
+      data: {
+        userId: req.user?.id
+          ? parseInt(req.user.id, 10)
+          : (() => {
+              throw new Error("User is not authenticated");
+            })(),
+        title,
+        description,
+        topicId,
+        isPublic,
+        imageUrl,
+      },
+    });
+
+    res.status(201).json(newTemplate);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to create template" });
+  }
+});
+
+// Get a single template by ID
+router.get("/:id", async (req: express.Request, res: express.Response) => {
   try {
     const template = await prisma.template.findUnique({
       where: { id: parseInt(req.params.id) },
       include: {
-        user: { select: { name: true } },
+        user: { select: { id: true, name: true } },
         topic: true,
-        questions: { orderBy: { position: "asc" } },
-        tags: { include: { tag: true } },
-        _count: { select: { forms: true } },
       },
     });
 
     if (!template) {
-      return res.status(404).json({ error: "Template not found" });
-    }
-
-    // Check access
-    if (!template.isPublic && (!req.user || (req.user.id !== template.userId && !req.user.isAdmin && !template.accesses.some((a) => a.userId === req.user?.id)))) {
-      return res.status(403).json({ error: "Access denied" });
+      res.status(404).json({ error: "Template not found" });
+      return;
     }
 
     res.json(template);
-  } catch (error) {
-    console.error("Error fetching template:", error);
-    res.status(500).json({ error: "Failed to fetch template" });
+  } catch (err) {
+    res.status(500).json({ error: "Error fetching template" });
   }
 });
 
-// Add more routes for updating, deleting templates, etc.
+// Update a template
+router.patch("/:id", async (req, res) => {
+  try {
+    const { title, description, isPublic, imageUrl } = req.body;
+    const id = parseInt(req.params.id);
+
+    const template = await prisma.template.update({
+      where: { id },
+      data: { title, description, isPublic, imageUrl },
+    });
+
+    res.json(template);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to update template" });
+  }
+});
+
+// Delete a template
+router.delete("/:id", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+
+    await prisma.template.delete({ where: { id } });
+
+    res.json({ message: "Template deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to delete template" });
+  }
+});
 
 export default router;

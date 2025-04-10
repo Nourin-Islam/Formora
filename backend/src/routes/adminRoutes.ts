@@ -14,7 +14,7 @@ router.get("/users", requireAdmin, async (req, res) => {
     const { page = 1, limit = 10, sortBy = "name", sortOrder = "asc", email } = req.query;
 
     const where: any = {};
-    if (email) where.email = { contains: email as string };
+    if (email) where.email = { contains: email as string, mode: "insensitive" };
     // console.log("Fetching users..1.");
     const users = await prisma.user.findMany({
       where,

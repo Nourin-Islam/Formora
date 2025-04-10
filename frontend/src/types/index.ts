@@ -55,4 +55,33 @@ export interface Template {
   // Add other template fields
 }
 
-// Add other types as your application grows
+// types/tag
+export interface Tag {
+  id: number;
+  name: string;
+  usageCount: number;
+  createdAt: Date | string;
+}
+
+export interface TagCreatePayload {
+  name: string;
+}
+
+export interface TagUpdatePayload {
+  name: string;
+}
+
+// types/topic
+export interface Topic {
+  id: number;
+  name: string;
+  createdAt: Date | string;
+}
+
+export interface TopicCreatePayload {
+  name: string;
+}
+
+export interface TopicUpdatePayload {
+  name: string;
+}

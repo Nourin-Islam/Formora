@@ -1,7 +1,7 @@
 import { useSignUp, useSignIn, useClerk } from "@clerk/clerk-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Icons } from "@/components/icons";
+import { Icons } from "@/components/global/icons";
 import { Button } from "@/components/ui/button";
 
 export function VerifyEmailPage() {

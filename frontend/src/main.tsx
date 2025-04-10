@@ -13,9 +13,15 @@ import "./index.css";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/react-query";
 
-import PublicRoute from "./components/PublicRoute";
-import PrivateRoute from "./components/PrivateRoute";
-import AdminRoute from "./components/AdminRoute";
+import PublicRoute from "./components/routes/PublicRoute";
+import PrivateRoute from "./components/routes/PrivateRoute";
+import AdminRoute from "./components/routes/AdminRoute";
+
+import CreateTemplateForm from "@/pages/CreateTemplate";
+import TemplateCreationClaude from "@/pages/TemplateCreationClaude";
+import TopicsPage from "@/pages/OldTopicsPage";
+import ManageTagsPage from "@/pages/ManageTags";
+import ManageTopics from "@/pages/ManageTopics";
 
 const router = createBrowserRouter([
   {
@@ -33,11 +39,19 @@ const router = createBrowserRouter([
       },
       {
         element: <PrivateRoute />,
-        children: [{ index: true, element: <Home /> }],
+        children: [
+          { index: true, element: <Home /> },
+          { path: "create-template", element: <TemplateCreationClaude /> },
+        ],
       },
       {
         element: <AdminRoute />,
-        children: [{ path: "manage-users", element: <ManageUsers /> }],
+        children: [
+          { path: "manage-users", element: <ManageUsers /> },
+          // { path: "manage-topics", element: <TopicsPage /> },
+          { path: "manage-topics", element: <ManageTopics /> },
+          { path: "manage-tags", element: <ManageTagsPage /> },
+        ],
       },
       {
         path: "verify-email",

@@ -2,7 +2,7 @@ import { useAuth, useUser, UserButton } from "@clerk/clerk-react";
 import { useAuthStore } from "./store/authStore";
 import { useEffect } from "react";
 import { Link, Outlet } from "react-router-dom";
-import LoadingSpinner from "./components/LoadingSpinner";
+import LoadingSpinner from "./components/global/LoadingSpinner";
 import { Toaster } from "sonner";
 
 function App() {
@@ -35,11 +35,20 @@ function App() {
                       <Link to="/admin" className="text-gray-900 hover:text-blue-600">
                         Admin Dashboard
                       </Link>
+                      <Link to="/manage-tags" className="text-gray-900 hover:text-blue-600">
+                        Manage Tags
+                      </Link>
+                      <Link to="/manage-topics" className="text-gray-900 hover:text-blue-600">
+                        Manage Topics
+                      </Link>
                       <Link to="/manage-users" className="text-gray-900 hover:text-blue-600">
                         Manage Users
                       </Link>
                     </>
                   )}
+                  <Link to="/create-template" className="text-gray-900 hover:text-blue-600">
+                    Create Template
+                  </Link>
 
                   <UserButton />
                 </nav>
