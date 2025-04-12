@@ -5,9 +5,9 @@ export default function Home() {
 
   return (
     <div className="py-12  ">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="flex items-center justify-center min-h-[calc(100vh-200px)] flex-col">
         {!isSignedIn && (
-          <div className="bg-white p-8 rounded-lg shadow-md max-w-md mx-auto">
+          <>
             <h2 className="text-2xl font-bold mb-6 text-center">Welcome!</h2>
             <SignIn
               signUpUrl="/sign-up"
@@ -17,7 +17,7 @@ export default function Home() {
                 },
               }}
             />
-          </div>
+          </>
         )}
 
         {isSignedIn && (

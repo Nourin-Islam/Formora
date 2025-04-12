@@ -36,8 +36,37 @@ router.get("/", async (req, res) => {
   }
 });
 
+// Search for topics (autocomplete)
+// This endpoint is for searching topics by name. It can be used for autocomplete functionality.
+router.get("/search", async (req: express.Request, res: express.Response) => {
+  try {
+    const query = req.query.q as string;
+    const limit = parseInt(req.query.limit as string) || 10;
+
+    if (!query) {
+      res.status(400).json({ error: "Search query is required" });
+      return;
+    }
+
+    const topics = await prisma.topic.findMany({
+      where: {
+        name: {
+          contains: query,
+          mode: "insensitive",
+        },
+      },
+      take: limit,
+    });
+
+    res.json(topics);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to search topics" });
+  }
+});
+
 // GET a topic by ID
 router.get("/:id", async (req: express.Request, res: express.Response) => {
+  console.log("Came to topic route.");
   try {
     const topicId = parseInt(req.params.id);
 

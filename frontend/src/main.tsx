@@ -31,6 +31,7 @@ const router = createBrowserRouter([
       {
         element: <PublicRoute />,
         children: [
+          { index: true, element: <Home /> },
           { path: "sign-in", element: <SignInPage /> },
           { path: "sign-in/*", element: <SignInPage /> },
           { path: "sign-up", element: <SignUpPage /> },
@@ -39,10 +40,7 @@ const router = createBrowserRouter([
       },
       {
         element: <PrivateRoute />,
-        children: [
-          { index: true, element: <Home /> },
-          { path: "create-template", element: <TemplateCreationClaude /> },
-        ],
+        children: [{ path: "create-template", element: <TemplateCreationClaude /> }],
       },
       {
         element: <AdminRoute />,

@@ -13,27 +13,28 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTemplateStore } from "@/store/templateStore";
 import { TagInput } from "@/components/TagInput";
 import { UserSelector } from "@/components/UserSelector";
-import { ImageUpload } from "@/components/ImageUpload";
+import ImageUpload from "@/components/ImageUpload";
 import { TopicSelector } from "@/components/TopicSelector";
 import { z } from "zod";
-import { useAuth } from "@clerk/clerk-react";
+
+import MDEditor from "@uiw/react-md-editor";
 
 const templateFormSchema = z.object({
   title: z.string().min(1, "Title is required").max(100),
   description: z.string().min(1, "Description is required").max(500),
-  topicId: z.string().min(1, "Topic is required"),
+  // topicId: z.string().min(1, "Topic is required"),
+  topicId: z.coerce.number().min(1, "Topic is required"),
 });
 
 type TemplateFormValues = z.infer<typeof templateFormSchema>;
 
 interface User {
-  id: string;
+  id: number; // Change id type to number
   name: string;
   email: string;
 }
 
 export default function TemplateCreationForm() {
-  const { getToken } = useAuth();
   const navigate = useNavigate();
   const [isPublic, setIsPublic] = useState<boolean>(true);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -53,7 +54,7 @@ export default function TemplateCreationForm() {
     defaultValues: {
       title: "",
       description: "",
-      topicId: "",
+      topicId: 1,
     },
   });
 
@@ -62,17 +63,18 @@ export default function TemplateCreationForm() {
       const templateData = {
         title: data.title,
         description: data.description,
-        topicId: parseInt(data.topicId), // Convert to number
+        topicId: data.topicId, // Convert to number
         isPublic,
         imageUrl: imageUrl || null,
         tags: selectedTags,
         accessUsers: !isPublic ? selectedUsers.map((user) => user.id) : [],
       };
+      console.log("Template Data updated:", templateData);
 
-      await createTemplate(templateData); // This should match your backend input type
+      // await createTemplate(templateData); // This should match your backend input type
 
-      toast.success("Template created successfully");
-      navigate("/templates");
+      // toast.success("Template created successfully");
+      // navigate("/templates");
     } catch (error) {
       toast.error("Failed to create template");
       console.error("Template creation error:", error);
@@ -101,31 +103,40 @@ export default function TemplateCreationForm() {
                 {errors.title && <p className="text-sm text-red-500">{errors.title.message}</p>}
               </div>
 
-              <div className="space-y-2">
+              {/* <div className="space-y-2">
                 <Label htmlFor="description">Description *</Label>
                 <Textarea id="description" rows={5} placeholder="Supports markdown formatting" {...register("description")} />
+                {errors.description && <p className="text-sm text-red-500">{errors.description.message}</p>}
+              </div> */}
+
+              <div className="space-y-2">
+                <Label htmlFor="description">Description *</Label>
+                <Controller
+                  name="description"
+                  control={control}
+                  render={({ field }) => (
+                    <div className="rounded border" data-color-mode="light">
+                      <MDEditor value={field.value} onChange={field.onChange} preview="edit" height={300} />
+                    </div>
+                  )}
+                />
                 {errors.description && <p className="text-sm text-red-500">{errors.description.message}</p>}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="topicId">Topic *</Label>
-                <Controller name="topicId" control={control} render={({ field }) => <MemoizedTopicSelector id="topicId" value={field.value} onChange={field.onChange} error={errors.topicId?.message} getToken={getToken} />} />
+                {/* <Label htmlFor="topicId">Topic *</Label> */}
+                <Controller name="topicId" control={control} render={({ field }) => <MemoizedTopicSelector value={field.value?.toString() || null} onChange={field.onChange} />} />
                 {errors.topicId && <p className="text-sm text-red-500">{errors.topicId.message}</p>}
               </div>
 
               <div className="space-y-2">
                 <Label>Tags</Label>
-                <TagInput value={selectedTags} onChange={setSelectedTags} placeholder="Add tags..." />
+                <TagInput value={selectedTags} onChange={setSelectedTags} />
               </div>
 
               <div className="space-y-2">
                 <Label>Image (Optional)</Label>
-                <ImageUpload
-                  value={imageUrl}
-                  onChange={setImageUrl}
-                  maxSize={5} // 5MB
-                  accept="image/*"
-                />
+                <ImageUpload imageUrl={imageUrl} setImageUrl={setImageUrl} />
               </div>
             </TabsContent>
 
@@ -138,7 +149,12 @@ export default function TemplateCreationForm() {
               {!isPublic && (
                 <div className="space-y-2">
                   <Label>Select users who can access this template</Label>
-                  <UserSelector selectedUsers={selectedUsers} onChange={setSelectedUsers} placeholder="Search users..." />
+
+                  <UserSelector
+                    selectedUsers={selectedUsers}
+                    onChange={setSelectedUsers}
+                    // excludeUsers={[currentUserId]} // Optional: exclude current user
+                  />
                 </div>
               )}
             </TabsContent>
@@ -149,9 +165,7 @@ export default function TemplateCreationForm() {
           <Button variant="outline" type="button" onClick={() => navigate(-1)} disabled={isSubmitting}>
             Cancel
           </Button>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Creating..." : "Create Template"}
-          </Button>
+          <Button type="submit">{isSubmitting ? "Creating..." : "Create Template"}</Button>
         </CardFooter>
       </Card>
     </form>

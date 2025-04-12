@@ -285,28 +285,28 @@ export const useTagsStore = create<TagsState>((set, get) => ({
 
   // For autocomplete functionality
   searchTags: async (query, getToken) => {
+    console.log("Searching tags with query:", query);
     try {
       const token = await getToken();
 
-      const params = new URLSearchParams({
-        q: query,
-        limit: "10",
-      });
+      if (!query.trim()) {
+        return []; // Return early for empty queries
+      }
 
-      const response = await fetch(`http://localhost:3000/api/tags/search?${params}`, {
+      const response = await fetch(`http://localhost:3000/api/tags/search?q=${encodeURIComponent(query)}&limit=10`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
       if (!response.ok) {
-        throw new Error("Failed to search tags");
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       return await response.json();
     } catch (error) {
-      console.error("Error searching tags:", error);
-      return [];
+      console.error("Search error:", error);
+      return []; // Always return an array
     }
   },
 }));

@@ -7,9 +7,39 @@ import { clerkClient } from "@clerk/express";
 const router = express.Router();
 router.use(authenticateUser); // 🔑 attach user before all routes
 
+// Search for users (autocomplete)
+// This endpoint is for searching users by name or email. It can be used for autocomplete functionality.
+router.get("/users/search", async (req, res) => {
+  try {
+    const { q: searchTerm } = req.query;
+
+    if (!searchTerm) {
+      res.json([]);
+      return;
+    }
+
+    const users = await prisma.user.findMany({
+      where: {
+        OR: [{ name: { contains: searchTerm as string, mode: "insensitive" } }, { email: { contains: searchTerm as string, mode: "insensitive" } }],
+      },
+      take: 10,
+      select: {
+        id: true,
+        email: true,
+        name: true,
+      },
+    });
+
+    res.json(users);
+  } catch (error) {
+    console.error("Error searching users:", error);
+    res.status(500).json({ error: "Failed to search users" });
+  }
+});
+
 // Get all users
-router.get("/users", requireAdmin, async (req, res) => {
-  console.log("Came to admin route.");
+router.get("/users", async (req, res) => {
+  // console.log("Came to admin route.");
   try {
     const { page = 1, limit = 10, sortBy = "name", sortOrder = "asc", email } = req.query;
 
@@ -45,7 +75,6 @@ router.get("/users", requireAdmin, async (req, res) => {
   }
 });
 
-// Update user
 // Update user
 router.patch("/users/:id", requireAdmin, async (req, res) => {
   try {

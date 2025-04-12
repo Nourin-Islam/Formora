@@ -1,60 +1,55 @@
 import { useState, useEffect } from "react";
+import { useDebounce } from "use-debounce";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { X, Check, ChevronsUpDown } from "lucide-react";
-import axios from "axios";
-
-type User = {
-  id: string;
-  name: string;
-  email: string;
-};
+import { X, ChevronsUpDown } from "lucide-react";
+import { useUsersStore, type User } from "@/store/userStore";
+import { useAuth } from "@clerk/clerk-react";
 
 interface UserSelectorProps {
   selectedUsers: User[];
   onChange: (users: User[]) => void;
+  excludeUsers?: number[];
 }
 
-export function UserSelector({ selectedUsers = [], onChange }: UserSelectorProps) {
+export function UserSelector({ selectedUsers = [], onChange, excludeUsers = [] }: UserSelectorProps) {
+  const { getToken } = useAuth();
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [users, setUsers] = useState<User[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [sortBy, setSortBy] = useState<"name" | "email">("name");
+  const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
+
+  const { searchResults, isLoading, isError, errorMessage, searchUsers, fetchUsers } = useUsersStore();
 
   useEffect(() => {
-    const searchUsers = async () => {
-      if (!searchTerm.trim()) {
-        setUsers([]);
-        return;
-      }
-
-      setIsLoading(true);
+    const loadUsers = async () => {
       try {
-        const response = await axios.get<User[]>(`/api/users/search?q=${searchTerm}`);
-        const filteredUsers = response.data.filter((user) => !selectedUsers.some((selected) => selected.id === user.id));
-        setUsers(filteredUsers);
+        if (debouncedSearchTerm) {
+          await searchUsers(debouncedSearchTerm, getToken);
+        } else {
+          await fetchUsers(getToken);
+        }
       } catch (error) {
-        console.error("Failed to search users:", error);
-      } finally {
-        setIsLoading(false);
+        console.error("Error loading users:", error);
       }
     };
 
-    const timeoutId = setTimeout(searchUsers, 300);
-    return () => clearTimeout(timeoutId);
-  }, [searchTerm, selectedUsers]);
+    loadUsers();
+  }, [debouncedSearchTerm, getToken, searchUsers, fetchUsers]);
 
   const handleSelectUser = (user: User) => {
     onChange([...selectedUsers, user]);
     setSearchTerm("");
+    setOpen(false);
   };
 
-  const handleRemoveUser = (userId: string) => {
+  const handleRemoveUser = (userId: number) => {
     onChange(selectedUsers.filter((user) => user.id !== userId));
   };
+
+  const filteredSearchResults = searchResults.filter((user) => !selectedUsers.some((selected) => selected.id === user.id) && !excludeUsers.includes(user.id));
 
   const sortedSelectedUsers = [...selectedUsers].sort((a, b) => {
     if (sortBy === "name") {
@@ -94,33 +89,33 @@ export function UserSelector({ selectedUsers = [], onChange }: UserSelectorProps
         )}
       </div>
 
+      {isError && (
+        <div className="text-sm text-red-500">
+          Error loading users: {errorMessage}
+          <button onClick={() => fetchUsers(getToken)} className="ml-2 text-sm underline">
+            Retry
+          </button>
+        </div>
+      )}
+
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button variant="outline" role="combobox" aria-expanded={open} className="w-full justify-between">
-            {searchTerm || "Search users..."}
+          <Button variant="outline" role="combobox" aria-expanded={open} className="w-full justify-between" disabled={isLoading}>
+            {isLoading ? "Loading..." : searchTerm || "Search users..."}
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="p-0 w-full">
-          <Command>
+          <Command shouldFilter={false}>
             <CommandInput placeholder="Search by name or email..." value={searchTerm} onValueChange={setSearchTerm} />
             {isLoading ? (
               <div className="py-6 text-center text-sm">Searching users...</div>
             ) : (
               <>
-                <CommandEmpty>
-                  <p className="p-2 text-sm">No users found</p>
-                </CommandEmpty>
+                <CommandEmpty>{searchTerm ? "No users found" : "Start typing to search users"}</CommandEmpty>
                 <CommandGroup>
-                  {users.map((user) => (
-                    <CommandItem
-                      key={user.id}
-                      value={user.id}
-                      onSelect={() => {
-                        handleSelectUser(user);
-                        setOpen(false);
-                      }}
-                    >
+                  {filteredSearchResults.map((user) => (
+                    <CommandItem key={user.id} value={user.id.toString()} onSelect={() => handleSelectUser(user)}>
                       <div className="flex flex-col">
                         <span>{user.name}</span>
                         <span className="text-xs text-gray-500">{user.email}</span>

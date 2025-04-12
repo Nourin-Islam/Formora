@@ -6,10 +6,11 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import { handleClerkWebhook } from "./webhooks.js";
 import { protectedRoute, adminRoute } from "./middleware/auth.js";
-import adminRouter from "./routes/adminRoutes.ts";
+import usersRouter from "./routes/usersRoutes.ts";
 import templatesRouter from "./routes/templates.ts";
 import topicsRouter from "./routes/topics.ts";
 import tagsRouter from "./routes/tags.ts";
+import imagekitRoutes from "./routes/imagekit.ts";
 
 dotenv.config();
 
@@ -60,10 +61,11 @@ app.get("/", (req, res) => {
 
 // Admin routes - Add this section
 // app.use("/api/admin", adminRoute, adminRouter);
-app.use("/api/admin", adminRouter);
+app.use("/api/admin", usersRouter);
 app.use("/api/templates", templatesRouter);
 app.use("/api/topics", topicsRouter);
 app.use("/api/tags", tagsRouter);
+app.use("/api/imagekit", imagekitRoutes);
 
 // Error handling
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {

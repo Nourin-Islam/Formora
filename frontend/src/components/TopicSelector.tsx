@@ -9,7 +9,7 @@ import { useAuth } from "@clerk/clerk-react";
 import { useDebounce } from "use-debounce";
 
 type TopicSelectorProps = {
-  value: number | null;
+  value: string | null;
   onChange: (value: number) => void;
   className?: string;
 };
@@ -19,6 +19,7 @@ export const TopicSelector = ({ value, onChange, className }: TopicSelectorProps
   const { topics, isLoading, isError, errorMessage, fetchTopics, searchTopics } = useTopicsStore();
 
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<Topic[]>([]);
   const [debouncedSearchQuery] = useDebounce(searchQuery, 300);
 
   // Fetch topics on mount and when search query changes
@@ -30,9 +31,21 @@ export const TopicSelector = ({ value, onChange, className }: TopicSelectorProps
     }
   }, [debouncedSearchQuery, fetchTopics, searchTopics, getToken]);
 
+  useEffect(() => {
+    const search = async () => {
+      if (debouncedSearchQuery) {
+        const results = await searchTopics(debouncedSearchQuery, getToken);
+        setSearchResults(results);
+      } else {
+        setSearchResults(topics); // Show all topics when search is empty
+      }
+    };
+    search();
+  }, [debouncedSearchQuery, searchTopics, getToken, topics]);
+
   return (
     <div className={`space-y-2 ${className}`}>
-      <Label htmlFor="topic">Topic</Label>
+      <Label htmlFor="topic">Topic *</Label>
       {isLoading ? (
         <div className="flex items-center gap-2">
           <LoadingSpinner />
@@ -52,16 +65,14 @@ export const TopicSelector = ({ value, onChange, className }: TopicSelectorProps
               <SelectValue placeholder="Select a topic" />
             </SelectTrigger>
             <SelectContent>
-              {/* Search input */}
               <div className="px-2 py-1">
                 <input type="text" placeholder="Search topics..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full rounded border px-2 py-1 text-sm" />
               </div>
 
-              {/* Topics list */}
-              {topics.length === 0 ? (
-                <div className="px-2 py-1.5 text-sm text-muted-foreground">No topics found</div>
+              {searchResults.length === 0 ? (
+                <div className="px-2 py-1.5 text-sm text-muted-foreground">{debouncedSearchQuery ? "No matching topics found" : "No topics available"}</div>
               ) : (
-                topics.map((topic: Topic) => (
+                searchResults.map((topic: Topic) => (
                   <SelectItem key={topic.id} value={topic.id.toString()}>
                     {topic.name}
                   </SelectItem>

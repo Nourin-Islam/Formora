@@ -38,8 +38,13 @@ router.get("/", async (req, res) => {
 // Search tags for autocomplete
 router.get("/search", async (req, res) => {
   try {
-    const query = (req.query.q as string) || "";
+    const query = req.query.q as string;
     const limit = parseInt(req.query.limit as string) || 10;
+
+    if (!query) {
+      res.json([]); // Return empty array instead of error for empty query
+      return;
+    }
 
     const tags = await prisma.tag.findMany({
       where: {
@@ -48,16 +53,13 @@ router.get("/search", async (req, res) => {
           mode: "insensitive",
         },
       },
-      orderBy: [
-        { usageCount: "desc" }, // Show most used tags first
-        { name: "asc" }, // Then alphabetically
-      ],
       take: limit,
     });
 
-    res.json(tags);
+    res.json(tags); // Return the array directly
   } catch (err) {
-    res.status(500).json({ error: "Failed to search tags" });
+    console.error("Search error:", err);
+    res.status(500).json([]); // Return empty array on error
   }
 });
 
