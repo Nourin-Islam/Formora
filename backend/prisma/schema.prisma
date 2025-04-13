@@ -51,6 +51,7 @@ model Template {
   description  String
   imageUrl     String?
   isPublic     Boolean
+  isPublished  Boolean  @default(false) 
   likesCount   Int      @default(0)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt()
@@ -75,6 +76,7 @@ enum QuestionType {
   CHECKBOX
 }
 
+
 model Question {
   id           Int          @id @default(autoincrement())
   templateId   Int
@@ -83,7 +85,8 @@ model Question {
   questionType QuestionType
   position     Int
   showInTable  Boolean
-  options      Json?
+  options      Json?        // Store options array
+  correctAnswers Json?      // Store correct answers
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt()
 

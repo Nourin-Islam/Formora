@@ -104,7 +104,7 @@ router.post("/", authenticateUser, async (req, res) => {
     }
 
     const tag = await prisma.tag.create({
-      data: { name },
+      data: { name: name.toLowerCase() }, // Store tag name in lowercase
     });
 
     res.status(201).json(tag);
@@ -121,7 +121,7 @@ router.patch("/:id", authenticateUser, requireAdmin, async (req, res) => {
 
     const updated = await prisma.tag.update({
       where: { id: tagId },
-      data: { name },
+      data: { name: name.toLowerCase() },
     });
 
     res.json(updated);

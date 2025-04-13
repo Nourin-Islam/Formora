@@ -189,20 +189,3 @@ ALTER TABLE "TemplateAccess" ADD CONSTRAINT "TemplateAccess_templateId_fkey" FOR
 
 -- AddForeignKey
 ALTER TABLE "TemplateAccess" ADD CONSTRAINT "TemplateAccess_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- Create search vector update function
-CREATE OR REPLACE FUNCTION update_template_search_vector()
-RETURNS TRIGGER AS $$
-BEGIN
-  NEW.search_vector = 
-    setweight(to_tsvector('english', coalesce(NEW.title, '')), 'A') ||
-    setweight(to_tsvector('english', coalesce(NEW.description, '')), 'B');
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- Create trigger for search vector updates
-DROP TRIGGER IF EXISTS trigger_update_template_search_vector ON "Template";
-CREATE TRIGGER trigger_update_template_search_vector
-BEFORE INSERT OR UPDATE OF title, description ON "Template"
-FOR EACH ROW EXECUTE FUNCTION update_template_search_vector();

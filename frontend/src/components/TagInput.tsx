@@ -63,6 +63,14 @@ export function TagInput({ value = [], onChange }: TagInputProps) {
     onChange(value.filter((tag) => tag !== tagToRemove));
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && inputValue.trim() && availableTags.length === 0) {
+      e.preventDefault();
+      handleAddTag(inputValue.trim());
+      setOpen(false);
+    }
+  };
+
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap gap-2">
@@ -86,7 +94,7 @@ export function TagInput({ value = [], onChange }: TagInputProps) {
         </PopoverTrigger>
         <PopoverContent className="w-full p-0">
           <Command shouldFilter={false}>
-            <CommandInput placeholder="Search tags..." value={inputValue} onValueChange={setInputValue} ref={inputRef} />
+            <CommandInput placeholder="Search tags..." value={inputValue} onValueChange={setInputValue} ref={inputRef} onKeyDown={handleKeyDown} />
             {isLoading ? (
               <div className="flex items-center justify-center p-4">
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

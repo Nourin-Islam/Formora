@@ -7,16 +7,17 @@ import rateLimit from "express-rate-limit";
 import { handleClerkWebhook } from "./webhooks.js";
 import { protectedRoute, adminRoute } from "./middleware/auth.js";
 import usersRouter from "./routes/usersRoutes.ts";
-import templatesRouter from "./routes/templates.ts";
+import templatesRouter from "./routes/templatesRouter.ts";
 import topicsRouter from "./routes/topics.ts";
 import tagsRouter from "./routes/tags.ts";
 import imagekitRoutes from "./routes/imagekit.ts";
+import templateInteractionsRouter from "./routes/interactionsRouter.ts";
 
 dotenv.config();
 
 const app = express();
 app.use(clerkMiddleware());
-app.set("trust proxy", true); // Add this line
+// app.set("trust proxy", true); // Add this line
 const PORT = parseInt(process.env.PORT || "3000", 10);
 
 // Security middleware
@@ -63,6 +64,7 @@ app.get("/", (req, res) => {
 // app.use("/api/admin", adminRoute, adminRouter);
 app.use("/api/admin", usersRouter);
 app.use("/api/templates", templatesRouter);
+app.use("/api/interact", templateInteractionsRouter);
 app.use("/api/topics", topicsRouter);
 app.use("/api/tags", tagsRouter);
 app.use("/api/imagekit", imagekitRoutes);

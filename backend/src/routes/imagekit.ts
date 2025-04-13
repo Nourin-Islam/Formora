@@ -15,7 +15,7 @@ router.get("/auth", (req, res) => {
   // res.json(authParams);
   try {
     const authParams = imagekit.getAuthenticationParameters();
-    console.log("Auth params:", authParams); // Log the auth params for debugging
+    // console.log("Auth params:", authParams); // Log the auth params for debugging
     res.json(authParams);
   } catch (err) {
     console.error("Error generating auth params:", err);

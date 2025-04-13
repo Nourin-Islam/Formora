@@ -85,3 +85,53 @@ export interface TopicCreatePayload {
 export interface TopicUpdatePayload {
   name: string;
 }
+
+export interface QuestionOption {
+  id: string;
+  text: string;
+}
+
+export type QuestionCorrectAnswer = string | string[] | number | number[];
+
+export enum QuestionType {
+  STRING = "STRING",
+  TEXT = "TEXT",
+  INTEGER = "INTEGER",
+  CHECKBOX = "CHECKBOX",
+}
+
+export interface Question {
+  id: string;
+  title: string;
+  description: string;
+  questionType: QuestionType;
+  position: number;
+  showInTable: boolean;
+  options?: any;
+  correctAnswers?: any; // For future use with select options
+}
+
+export interface Template {
+  title: string;
+  description: string;
+  topicId: number;
+  isPublic: boolean;
+  isPublished: boolean;
+  imageUrl: string | null;
+  likesCount: number;
+  tags: string[];
+  accessUsers: number[];
+  questions?: Question[];
+  // Add any additional fields as needed
+}
+
+export interface TemplateFormData {
+  title: string;
+  description: string;
+  topicId: number;
+  isPublic: boolean;
+  imageUrl: string | null;
+  tags: string[];
+  accessUsers: number[];
+  questions: Question[];
+}

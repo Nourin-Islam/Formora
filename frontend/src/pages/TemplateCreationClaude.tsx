@@ -5,7 +5,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,21 +14,23 @@ import { TagInput } from "@/components/TagInput";
 import { UserSelector } from "@/components/UserSelector";
 import ImageUpload from "@/components/ImageUpload";
 import { TopicSelector } from "@/components/TopicSelector";
+import { QuestionManagement } from "@/components/QuestionManagement";
 import { z } from "zod";
 
 import MDEditor from "@uiw/react-md-editor";
+import { Question } from "../types";
+import { useAuth } from "@clerk/clerk-react";
 
 const templateFormSchema = z.object({
   title: z.string().min(1, "Title is required").max(100),
   description: z.string().min(1, "Description is required").max(500),
-  // topicId: z.string().min(1, "Topic is required"),
   topicId: z.coerce.number().min(1, "Topic is required"),
 });
 
 type TemplateFormValues = z.infer<typeof templateFormSchema>;
 
 interface User {
-  id: number; // Change id type to number
+  id: number;
   name: string;
   email: string;
 }
@@ -40,9 +41,12 @@ export default function TemplateCreationForm() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
   const [imageUrl, setImageUrl] = useState<string>("");
+  const [questions, setQuestions] = useState<Question[]>([]); // Properly typed now
+  const [activeTab, setActiveTab] = useState<string>("general");
   const MemoizedTopicSelector = useMemo(() => TopicSelector, []);
 
   const createTemplate = useTemplateStore((state) => state.createTemplate);
+  const { getToken } = useAuth();
 
   const {
     register,
@@ -58,31 +62,53 @@ export default function TemplateCreationForm() {
     },
   });
 
-  const onSubmit = async (data: TemplateFormValues) => {
+  const onSubmit = async (data: TemplateFormValues, publish: boolean) => {
     try {
+      if (questions.length === 0) {
+        toast.error("Please add at least one question to your template");
+        setActiveTab("questions");
+        return;
+      }
+
       const templateData = {
         title: data.title,
         description: data.description,
-        topicId: data.topicId, // Convert to number
+        topicId: data.topicId,
         isPublic,
+        isPublished: publish,
         imageUrl: imageUrl || null,
         tags: selectedTags,
         accessUsers: !isPublic ? selectedUsers.map((user) => user.id) : [],
+        questions: questions.map((q, index) => ({
+          id: q.id,
+          title: q.title,
+          description: q.description,
+          questionType: q.questionType,
+          position: index, // Ensure sequential ordering
+          showInTable: q.showInTable,
+          options: q.options || null,
+          correctAnswers: q.correctAnswers || null,
+        })),
       };
-      console.log("Template Data updated:", templateData);
 
-      // await createTemplate(templateData); // This should match your backend input type
+      console.log("Template Data:", templateData);
+      const createdTemplate = await createTemplate(templateData, getToken);
 
-      // toast.success("Template created successfully");
-      // navigate("/templates");
+      toast.success(`Template ${publish ? "published" : "saved"} successfully`);
+      navigate(`/templates/${createdTemplate.id}`);
     } catch (error) {
       toast.error("Failed to create template");
       console.error("Template creation error:", error);
     }
   };
 
+  // Function to handle tab changes
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+  };
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit((data) => onSubmit(data, true))} className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>Create New Template</CardTitle>
@@ -90,9 +116,10 @@ export default function TemplateCreationForm() {
         </CardHeader>
 
         <CardContent>
-          <Tabs defaultValue="general">
+          <Tabs defaultValue="general" value={activeTab} onValueChange={handleTabChange}>
             <TabsList className="mb-4">
               <TabsTrigger value="general">General Settings</TabsTrigger>
+              <TabsTrigger value="questions">Questions ({questions.length})</TabsTrigger>
               <TabsTrigger value="access">Access Settings</TabsTrigger>
             </TabsList>
 
@@ -102,12 +129,6 @@ export default function TemplateCreationForm() {
                 <Input id="title" placeholder="Enter template title" {...register("title")} />
                 {errors.title && <p className="text-sm text-red-500">{errors.title.message}</p>}
               </div>
-
-              {/* <div className="space-y-2">
-                <Label htmlFor="description">Description *</Label>
-                <Textarea id="description" rows={5} placeholder="Supports markdown formatting" {...register("description")} />
-                {errors.description && <p className="text-sm text-red-500">{errors.description.message}</p>}
-              </div> */}
 
               <div className="space-y-2">
                 <Label htmlFor="description">Description *</Label>
@@ -124,7 +145,6 @@ export default function TemplateCreationForm() {
               </div>
 
               <div className="space-y-2">
-                {/* <Label htmlFor="topicId">Topic *</Label> */}
                 <Controller name="topicId" control={control} render={({ field }) => <MemoizedTopicSelector value={field.value?.toString() || null} onChange={field.onChange} />} />
                 {errors.topicId && <p className="text-sm text-red-500">{errors.topicId.message}</p>}
               </div>
@@ -138,6 +158,10 @@ export default function TemplateCreationForm() {
                 <Label>Image (Optional)</Label>
                 <ImageUpload imageUrl={imageUrl} setImageUrl={setImageUrl} />
               </div>
+            </TabsContent>
+
+            <TabsContent value="questions">
+              <QuestionManagement questions={questions} onQuestionsUpdate={setQuestions} />
             </TabsContent>
 
             <TabsContent value="access" className="space-y-4">
@@ -165,7 +189,28 @@ export default function TemplateCreationForm() {
           <Button variant="outline" type="button" onClick={() => navigate(-1)} disabled={isSubmitting}>
             Cancel
           </Button>
-          <Button type="submit">{isSubmitting ? "Creating..." : "Create Template"}</Button>
+
+          <Button className="ml-auto" type="button" variant="secondary" onClick={() => handleSubmit((data) => onSubmit(data, false))()} disabled={isSubmitting}>
+            {isSubmitting ? (
+              <>
+                <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-t-transparent border-white"></span>
+                Saving...
+              </>
+            ) : (
+              "Draft Template"
+            )}
+          </Button>
+
+          <Button className="ml-3" type="button" variant="default" onClick={() => handleSubmit((data) => onSubmit(data, true))()} disabled={isSubmitting}>
+            {isSubmitting ? (
+              <>
+                <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-t-transparent border-white"></span>
+                Publishing...
+              </>
+            ) : (
+              "Publish Template"
+            )}
+          </Button>
         </CardFooter>
       </Card>
     </form>
