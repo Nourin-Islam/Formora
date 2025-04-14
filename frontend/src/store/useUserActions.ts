@@ -19,7 +19,7 @@ export function useUserActions() {
 
   const updateUser = async ({ userId, ...data }: UserUpdateVariables): Promise<User> => {
     const token = await getToken();
-    const response = await fetch(`http://localhost:3000/api/admin/users/${userId}`, {
+    const response = await fetch(`http://localhost:3000/api/users/${userId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify(data),
@@ -79,7 +79,7 @@ export function useUserActions() {
   const deleteUserMutation = useMutation({
     mutationFn: async (userId: number) => {
       const token = await getToken();
-      const response = await fetch(`http://localhost:3000/api/admin/users/${userId}`, {
+      const response = await fetch(`http://localhost:3000/api/users/${userId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });

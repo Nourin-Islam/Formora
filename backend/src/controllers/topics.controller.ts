@@ -1,13 +1,8 @@
-import express from "express";
-import { prisma } from "../lib/prisma.js";
-import { authenticateUser } from "../middleware/authenticateUser.js";
-import { requireAdmin } from "../middleware/auth.js";
+// controllers/topics.controller.ts
+import { prisma } from "../lib/prisma.ts";
+import { Request, Response } from "express";
 
-const router = express.Router();
-
-// GET all topics
-
-router.get("/", async (req, res) => {
+export const getAllTopics = async (req: Request, res: Response) => {
   try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 5;
@@ -34,11 +29,9 @@ router.get("/", async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch topics" });
   }
-});
+};
 
-// Search for topics (autocomplete)
-// This endpoint is for searching topics by name. It can be used for autocomplete functionality.
-router.get("/search", async (req: express.Request, res: express.Response) => {
+export const searchTopics = async (req: Request, res: Response) => {
   try {
     const query = req.query.q as string;
     const limit = parseInt(req.query.limit as string) || 10;
@@ -62,11 +55,9 @@ router.get("/search", async (req: express.Request, res: express.Response) => {
   } catch (err) {
     res.status(500).json({ error: "Failed to search topics" });
   }
-});
+};
 
-// GET a topic by ID
-router.get("/:id", async (req: express.Request, res: express.Response) => {
-  console.log("Came to topic route.");
+export const getTopicById = async (req: Request, res: Response) => {
   try {
     const topicId = parseInt(req.params.id);
 
@@ -83,10 +74,9 @@ router.get("/:id", async (req: express.Request, res: express.Response) => {
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch topic" });
   }
-});
+};
 
-// CREATE a new topic (admin only)
-router.post("/", authenticateUser, requireAdmin, async (req, res) => {
+export const createTopic = async (req: Request, res: Response) => {
   try {
     const { name } = req.body;
 
@@ -98,10 +88,9 @@ router.post("/", authenticateUser, requireAdmin, async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: "Failed to create topic" });
   }
-});
+};
 
-// UPDATE a topic (admin only)
-router.patch("/:id", authenticateUser, requireAdmin, async (req, res) => {
+export const updateTopic = async (req: Request, res: Response) => {
   try {
     const topicId = parseInt(req.params.id);
     const { name } = req.body;
@@ -112,17 +101,16 @@ router.patch("/:id", authenticateUser, requireAdmin, async (req, res) => {
     });
 
     res.json(updated);
-  } catch (err) {
-    if ((err as any).code === "P2025") {
+  } catch (err: any) {
+    if (err.code === "P2025") {
       res.status(404).json({ error: "Topic not found" });
       return;
     }
     res.status(500).json({ error: "Failed to update topic" });
   }
-});
+};
 
-// DELETE a topic (admin only)
-router.delete("/:id", authenticateUser, requireAdmin, async (req, res) => {
+export const deleteTopic = async (req: Request, res: Response) => {
   try {
     const topicId = parseInt(req.params.id);
 
@@ -131,13 +119,11 @@ router.delete("/:id", authenticateUser, requireAdmin, async (req, res) => {
     });
 
     res.json({ message: "Topic deleted successfully" });
-  } catch (err) {
-    if ((err as any).code === "P2025") {
+  } catch (err: any) {
+    if (err.code === "P2025") {
       res.status(404).json({ error: "Topic not found" });
       return;
     }
     res.status(500).json({ error: "Failed to delete topic" });
   }
-});
-
-export default router;
+};

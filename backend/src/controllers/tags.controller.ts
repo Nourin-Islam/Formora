@@ -1,12 +1,7 @@
-import express from "express";
-import { prisma } from "../lib/prisma.js";
-import { authenticateUser } from "../middleware/authenticateUser.js";
-import { requireAdmin } from "../middleware/auth.js";
+import { Request, Response } from "express";
+import { prisma } from "../lib/prisma.ts";
 
-const router = express.Router();
-
-// GET all tags with pagination, sorting, and filtering
-router.get("/", async (req, res) => {
+export const getAllTags = async (req: Request, res: Response) => {
   try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
@@ -33,88 +28,61 @@ router.get("/", async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch tags" });
   }
-});
+};
 
-// Search tags for autocomplete
-router.get("/search", async (req, res) => {
+export const searchTags = async (req: Request, res: Response) => {
   try {
     const query = req.query.q as string;
     const limit = parseInt(req.query.limit as string) || 10;
 
-    if (!query) {
-      res.json([]); // Return empty array instead of error for empty query
-      return;
-    }
+    if (!query) return res.json([]);
 
     const tags = await prisma.tag.findMany({
-      where: {
-        name: {
-          contains: query,
-          mode: "insensitive",
-        },
-      },
+      where: { name: { contains: query, mode: "insensitive" } },
       take: limit,
     });
 
-    res.json(tags); // Return the array directly
+    res.json(tags);
   } catch (err) {
     console.error("Search error:", err);
-    res.status(500).json([]); // Return empty array on error
+    res.status(500).json([]);
   }
-});
+};
 
-// GET a tag by ID
-router.get("/:id", async (req, res) => {
+export const getTagById = async (req: Request, res: Response) => {
   try {
     const tagId = parseInt(req.params.id);
+    const tag = await prisma.tag.findUnique({ where: { id: tagId } });
 
-    const tag = await prisma.tag.findUnique({
-      where: { id: tagId },
-    });
-
-    if (!tag) {
-      res.status(404).json({ error: "Tag not found" });
-      return;
-    }
+    if (!tag) return res.status(404).json({ error: "Tag not found" });
 
     res.json(tag);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch tag" });
   }
-});
+};
 
-// CREATE a new tag
-router.post("/", authenticateUser, async (req, res) => {
+export const createTag = async (req: Request, res: Response) => {
   try {
     const { name } = req.body;
 
-    // Check if tag already exists (case insensitive)
     const existingTag = await prisma.tag.findFirst({
-      where: {
-        name: {
-          equals: name,
-          mode: "insensitive",
-        },
-      },
+      where: { name: { equals: name, mode: "insensitive" } },
     });
 
-    if (existingTag) {
-      res.json(existingTag);
-      return; // Return existing tag instead of creating duplicate
-    }
+    if (existingTag) return res.json(existingTag);
 
     const tag = await prisma.tag.create({
-      data: { name: name.toLowerCase() }, // Store tag name in lowercase
+      data: { name: name.toLowerCase() },
     });
 
     res.status(201).json(tag);
   } catch (err) {
     res.status(500).json({ error: "Failed to create tag" });
   }
-});
+};
 
-// UPDATE a tag (admin only)
-router.patch("/:id", authenticateUser, requireAdmin, async (req, res) => {
+export const updateTag = async (req: Request, res: Response) => {
   try {
     const tagId = parseInt(req.params.id);
     const { name } = req.body;
@@ -125,32 +93,27 @@ router.patch("/:id", authenticateUser, requireAdmin, async (req, res) => {
     });
 
     res.json(updated);
-  } catch (err) {
-    if ((err as any).code === "P2025") {
+  } catch (err: any) {
+    if (err.code === "P2025") {
       res.status(404).json({ error: "Tag not found" });
-      return;
+    } else {
+      res.status(500).json({ error: "Failed to update tag" });
     }
-    res.status(500).json({ error: "Failed to update tag" });
   }
-});
+};
 
-// DELETE a tag (admin only)
-router.delete("/:id", authenticateUser, requireAdmin, async (req, res) => {
+export const deleteTag = async (req: Request, res: Response) => {
   try {
     const tagId = parseInt(req.params.id);
 
-    await prisma.tag.delete({
-      where: { id: tagId },
-    });
+    await prisma.tag.delete({ where: { id: tagId } });
 
     res.json({ message: "Tag deleted successfully" });
-  } catch (err) {
-    if ((err as any).code === "P2025") {
+  } catch (err: any) {
+    if (err.code === "P2025") {
       res.status(404).json({ error: "Tag not found" });
-      return;
+    } else {
+      res.status(500).json({ error: "Failed to delete tag" });
     }
-    res.status(500).json({ error: "Failed to delete tag" });
   }
-});
-
-export default router;
+};

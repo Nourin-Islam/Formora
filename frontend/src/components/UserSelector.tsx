@@ -1,12 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useDebounce } from "use-debounce";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { X, ChevronsUpDown } from "lucide-react";
-import { useUsersStore, type User } from "@/store/userStore";
-import { useAuth } from "@clerk/clerk-react";
+import { useUsers } from "@/hooks/useUsers";
+import { User } from "@/types";
 
 interface UserSelectorProps {
   selectedUsers: User[];
@@ -15,29 +15,24 @@ interface UserSelectorProps {
 }
 
 export function UserSelector({ selectedUsers = [], onChange, excludeUsers = [] }: UserSelectorProps) {
-  const { getToken } = useAuth();
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<"name" | "email">("name");
   const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
 
-  const { searchResults, isLoading, isError, errorMessage, searchUsers, fetchUsers } = useUsersStore();
-
-  useEffect(() => {
-    const loadUsers = async () => {
-      try {
-        if (debouncedSearchTerm) {
-          await searchUsers(debouncedSearchTerm, getToken);
-        } else {
-          await fetchUsers(getToken);
-        }
-      } catch (error) {
-        console.error("Error loading users:", error);
-      }
-    };
-
-    loadUsers();
-  }, [debouncedSearchTerm, getToken, searchUsers, fetchUsers]);
+  // Use the useUsers hook with search parameters
+  const {
+    data: searchResults,
+    isLoading,
+    isError,
+    error,
+  } = useUsers({
+    page: 1,
+    limit: 10,
+    email: debouncedSearchTerm || undefined,
+    sortBy,
+    sortOrder: "asc",
+  });
 
   const handleSelectUser = (user: User) => {
     onChange([...selectedUsers, user]);
@@ -49,7 +44,8 @@ export function UserSelector({ selectedUsers = [], onChange, excludeUsers = [] }
     onChange(selectedUsers.filter((user) => user.id !== userId));
   };
 
-  const filteredSearchResults = searchResults.filter((user) => !selectedUsers.some((selected) => selected.id === user.id) && !excludeUsers.includes(user.id));
+  // Filter out already selected and excluded users
+  const filteredSearchResults = (searchResults?.users || []).filter((user) => !selectedUsers.some((selected) => selected.id === user.id) && !excludeUsers.includes(user.id));
 
   const sortedSelectedUsers = [...selectedUsers].sort((a, b) => {
     if (sortBy === "name") {
@@ -91,8 +87,8 @@ export function UserSelector({ selectedUsers = [], onChange, excludeUsers = [] }
 
       {isError && (
         <div className="text-sm text-red-500">
-          Error loading users: {errorMessage}
-          <button onClick={() => fetchUsers(getToken)} className="ml-2 text-sm underline">
+          Error loading users: {error?.message}
+          <button onClick={() => window.location.reload()} className="ml-2 text-sm underline">
             Retry
           </button>
         </div>

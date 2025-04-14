@@ -1,4 +1,5 @@
 import React from "react";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { ClerkProvider } from "@clerk/clerk-react";
@@ -10,18 +11,28 @@ import ManageUsers from "./pages/ManageUsers";
 import { VerifyEmailPage } from "./pages/VerifyEmail";
 import { ErrorPage } from "./pages/ErrorPage";
 import "./index.css";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { queryClient } from "@/lib/react-query";
+// import { QueryClientProvider } from "@tanstack/react-query";
+// import { queryClient } from "@/lib/react-query";
 
 import PublicRoute from "./components/routes/PublicRoute";
 import PrivateRoute from "./components/routes/PrivateRoute";
 import AdminRoute from "./components/routes/AdminRoute";
 
-import CreateTemplateForm from "@/pages/CreateTemplate";
-import TemplateCreationClaude from "@/pages/TemplateCreationClaude";
-import TopicsPage from "@/pages/OldTopicsPage";
+import TemplateCreationClaude from "@/pages/TemplateCreate";
+
 import ManageTagsPage from "@/pages/ManageTags";
 import ManageTopics from "@/pages/ManageTopics";
+
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
 
 const router = createBrowserRouter([
   {
@@ -65,10 +76,11 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <ClerkProvider publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY}>
+    <ClerkProvider publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY}>
+      <QueryClientProvider client={queryClient}>
+        <ReactQueryDevtools initialIsOpen={false} />
         <RouterProvider router={router} />
-      </ClerkProvider>
-    </QueryClientProvider>
+      </QueryClientProvider>
+    </ClerkProvider>
   </React.StrictMode>
 );

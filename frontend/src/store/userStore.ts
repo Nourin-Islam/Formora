@@ -154,7 +154,7 @@ export const useUsersStore = create<UsersState>((set, get) => ({
         ...(emailFilter && { email: emailFilter }),
       });
 
-      const response = await fetch(`http://localhost:3000/api/admin/users?${params}`, {
+      const response = await fetch(`http://localhost:3000/api/users?${params}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -186,7 +186,7 @@ export const useUsersStore = create<UsersState>((set, get) => ({
 
     try {
       const token = await getToken();
-      const response = await fetch("http://localhost:3000/api/admin/users", {
+      const response = await fetch("http://localhost:3000/api/users", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -215,7 +215,7 @@ export const useUsersStore = create<UsersState>((set, get) => ({
 
     try {
       const token = await getToken();
-      const response = await fetch(`/api/admin/users/${currentUser.id}`, {
+      const response = await fetch(`/api/users/${currentUser.id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -241,7 +241,7 @@ export const useUsersStore = create<UsersState>((set, get) => ({
 
     try {
       const token = await getToken();
-      const response = await fetch(`http://localhost:3000/api/admin/users/${userId}`, {
+      const response = await fetch(`http://localhost:3000/api/users/${userId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -272,7 +272,7 @@ export const useUsersStore = create<UsersState>((set, get) => ({
       const token = await getToken();
       await Promise.all(
         userIds.map(async (userId) => {
-          const response = await fetch(`/api/admin/users/${userId}`, {
+          const response = await fetch(`/api/users/${userId}`, {
             method: "DELETE",
             headers: {
               Authorization: `Bearer ${token}`,
@@ -305,7 +305,7 @@ export const useUsersStore = create<UsersState>((set, get) => ({
     try {
       const token = await getToken();
 
-      const response = await fetch(`http://localhost:3000/api/admin/users/search?q=${encodeURIComponent(query)}`, {
+      const response = await fetch(`http://localhost:3000/api/users/search?q=${encodeURIComponent(query)}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

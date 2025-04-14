@@ -1,12 +1,17 @@
 // components/PublicRoute.tsx
-import { useUser } from "@clerk/clerk-react";
-import { Navigate, Outlet } from "react-router-dom";
+// components/routes/PublicRoute.tsx
+import { Outlet, Navigate } from "react-router-dom";
+import { useAuth } from "@clerk/clerk-react";
+import LoadingSpinner from "../global/LoadingSpinner";
 
 const PublicRoute = () => {
-  const { isSignedIn } = useUser();
+  const { isSignedIn, isLoaded } = useAuth();
 
-  // Optional: Redirect signed-in users away from public pages
-  if (isSignedIn) return <Navigate to="/" />;
+  if (!isLoaded) return <LoadingSpinner />; // or a spinner
+
+  // If signed in and you want to redirect from public pages:
+  // if (isSignedIn) return <Navigate to="/create-template" />;
+
   return <Outlet />;
 };
 

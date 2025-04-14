@@ -5,19 +5,13 @@ import cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import { handleClerkWebhook } from "./webhooks.js";
-import { protectedRoute, adminRoute } from "./middleware/auth.js";
-import usersRouter from "./routes/usersRoutes.ts";
-import templatesRouter from "./routes/templatesRouter.ts";
-import topicsRouter from "./routes/topics.ts";
-import tagsRouter from "./routes/tags.ts";
-import imagekitRoutes from "./routes/imagekit.ts";
-import templateInteractionsRouter from "./routes/interactionsRouter.ts";
+import routes from "./routes/allRoutes.ts"; // This will import from routes/index.ts
 
 dotenv.config();
 
 const app = express();
+app.set("trust proxy", 1);
 app.use(clerkMiddleware());
-// app.set("trust proxy", true); // Add this line
 const PORT = parseInt(process.env.PORT || "3000", 10);
 
 // Security middleware
@@ -41,7 +35,7 @@ app.post("/api/webhooks/clerk", express.raw({ type: "application/json" }), (req,
   handleClerkWebhook(req, res, next).catch(next);
 });
 
-// Standard middleware - MOVED BEFORE ROUTES
+// Standard middleware
 app.use(express.json());
 
 // Health check
@@ -58,16 +52,8 @@ app.get("/", (req, res) => {
   });
 });
 
-// Example route imports would go here...
-
-// Admin routes - Add this section
-// app.use("/api/admin", adminRoute, adminRouter);
-app.use("/api/admin", usersRouter);
-app.use("/api/templates", templatesRouter);
-app.use("/api/interact", templateInteractionsRouter);
-app.use("/api/topics", topicsRouter);
-app.use("/api/tags", tagsRouter);
-app.use("/api/imagekit", imagekitRoutes);
+// Use all routes
+app.use("/api", routes);
 
 // Error handling
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {

@@ -9,17 +9,15 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useTemplateStore } from "@/store/templateStore";
 import { TagInput } from "@/components/TagInput";
 import { UserSelector } from "@/components/UserSelector";
 import ImageUpload from "@/components/ImageUpload";
 import { TopicSelector } from "@/components/TopicSelector";
 import { QuestionManagement } from "@/components/QuestionManagement";
 import { z } from "zod";
-
 import MDEditor from "@uiw/react-md-editor";
-import { Question } from "../types";
-import { useAuth } from "@clerk/clerk-react";
+import { Question } from "@/types";
+import { useCreateTemplate } from "@/hooks/useTemplates";
 
 const templateFormSchema = z.object({
   title: z.string().min(1, "Title is required").max(100),
@@ -41,12 +39,11 @@ export default function TemplateCreationForm() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
   const [imageUrl, setImageUrl] = useState<string>("");
-  const [questions, setQuestions] = useState<Question[]>([]); // Properly typed now
+  const [questions, setQuestions] = useState<Question[]>([]);
   const [activeTab, setActiveTab] = useState<string>("general");
   const MemoizedTopicSelector = useMemo(() => TopicSelector, []);
 
-  const createTemplate = useTemplateStore((state) => state.createTemplate);
-  const { getToken } = useAuth();
+  const createTemplate = useCreateTemplate();
 
   const {
     register,
@@ -84,16 +81,14 @@ export default function TemplateCreationForm() {
           title: q.title,
           description: q.description,
           questionType: q.questionType,
-          position: index, // Ensure sequential ordering
+          position: index,
           showInTable: q.showInTable,
           options: q.options || null,
           correctAnswers: q.correctAnswers || null,
         })),
       };
 
-      console.log("Template Data:", templateData);
-      const createdTemplate = await createTemplate(templateData, getToken);
-
+      const createdTemplate = await createTemplate.mutateAsync(templateData);
       toast.success(`Template ${publish ? "published" : "saved"} successfully`);
       navigate(`/templates/${createdTemplate.id}`);
     } catch (error) {
@@ -102,7 +97,6 @@ export default function TemplateCreationForm() {
     }
   };
 
-  // Function to handle tab changes
   const handleTabChange = (value: string) => {
     setActiveTab(value);
   };
@@ -186,12 +180,12 @@ export default function TemplateCreationForm() {
         </CardContent>
 
         <CardFooter className="flex justify-between">
-          <Button variant="outline" type="button" onClick={() => navigate(-1)} disabled={isSubmitting}>
+          <Button variant="outline" type="button" onClick={() => navigate(-1)} disabled={createTemplate.isPending}>
             Cancel
           </Button>
 
-          <Button className="ml-auto" type="button" variant="secondary" onClick={() => handleSubmit((data) => onSubmit(data, false))()} disabled={isSubmitting}>
-            {isSubmitting ? (
+          <Button className="ml-auto" type="button" variant="secondary" onClick={() => handleSubmit((data) => onSubmit(data, false))()} disabled={createTemplate.isPending}>
+            {createTemplate.isPending ? (
               <>
                 <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-t-transparent border-white"></span>
                 Saving...
@@ -201,8 +195,8 @@ export default function TemplateCreationForm() {
             )}
           </Button>
 
-          <Button className="ml-3" type="button" variant="default" onClick={() => handleSubmit((data) => onSubmit(data, true))()} disabled={isSubmitting}>
-            {isSubmitting ? (
+          <Button className="ml-3" type="button" variant="default" onClick={() => handleSubmit((data) => onSubmit(data, true))()} disabled={createTemplate.isPending}>
+            {createTemplate.isPending ? (
               <>
                 <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-t-transparent border-white"></span>
                 Publishing...

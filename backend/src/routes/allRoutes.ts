@@ -1,28 +1,25 @@
-// File: routes/index.js
-
 import express from "express";
-import { authenticate, getTemplates, getTemplateById, createTemplate, updateTemplate, deleteTemplate } from "../api/templates";
 
-import { getQuestionsByTemplate, getQuestionById, createQuestion, updateQuestion, deleteQuestion, reorderQuestions } from "../api/questions";
+import formRoutes from "./formRoutes.ts";
+import imagekitRoutes from "./imagekitRoutes.ts";
+import interactionsRouter from "./interactionsRouter.ts";
+import questionRoutes from "./questionRoutes.ts";
+import searchRoutes from "./searchRoutes.ts";
+import tagRoutes from "./tagsRoute.ts";
+import templateRoutes from "./templatesRoute.ts";
+import topicsRoute from "./topicsRoute.ts";
+import usersRoutes from "./usersRoutes.ts";
 
 const router = express.Router();
 
-// Authentication middleware for routes that require it
-router.use(["/api/templates/create", "/api/templates/:id/update", "/api/templates/:id/delete", "/api/questions/create", "/api/questions/:id/update", "/api/questions/:id/delete", "/api/questions/reorder"], authenticate);
-
-// Template routes
-router.get("/api/templates", getTemplates);
-router.get("/api/templates/:id", getTemplateById);
-router.post("/api/templates", authenticate, createTemplate);
-router.put("/api/templates/:id", authenticate, updateTemplate);
-router.delete("/api/templates/:id", authenticate, deleteTemplate);
-
-// Question routes
-router.get("/api/questions/template/:templateId", getQuestionsByTemplate);
-router.get("/api/questions/:id", getQuestionById);
-router.post("/api/questions", authenticate, createQuestion);
-router.put("/api/questions/:id", authenticate, updateQuestion);
-router.delete("/api/questions/:id", authenticate, deleteQuestion);
-router.post("/api/questions/reorder", authenticate, reorderQuestions);
+router.use("/forms", formRoutes);
+router.use("/imagekit", imagekitRoutes);
+router.use("/interact", interactionsRouter);
+router.use("/questions", questionRoutes);
+router.use("/search", searchRoutes);
+router.use("/tags", tagRoutes);
+router.use("/templates", templateRoutes);
+router.use("/topics", topicsRoute);
+router.use("/users", usersRoutes);
 
 export default router;

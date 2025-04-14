@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDebounce } from "use-debounce";
 import { ColumnDef, flexRender, getCoreRowModel, getSortedRowModel, useReactTable, getFilteredRowModel } from "@tanstack/react-table";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -8,16 +8,17 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { Checkbox } from "@/components/ui/checkbox";
 import { Pagination, PaginationContent, PaginationItem } from "@/components/ui/pagination";
 import { Icons } from "@/components/global/icons";
-import { useAuth } from "@clerk/clerk-react";
 import LoadingSpinner from "@/components/global/LoadingSpinner";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { toast } from "sonner";
-import { Topic, topicFormSchema, useTopicsStore } from "@/store/topicStore";
+import { topicFormSchema } from "@/types";
+import { Topic } from "@/hooks/useTopics";
+import { useTopics, useCreateTopic, useUpdateTopic, useDeleteTopic, useBulkDeleteTopics } from "@/hooks/useTopics";
 
-export const columns: ColumnDef<Topic>[] = [
+export const columns: ColumnDef<Topic, any>[] = [
   {
     id: "select",
     header: ({ table }) => <Checkbox checked={table.getIsAllPageRowsSelected()} onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)} aria-label="Select all" />,
@@ -27,95 +28,46 @@ export const columns: ColumnDef<Topic>[] = [
   {
     accessorKey: "id",
     header: "ID",
+    accessorFn: (row) => row.id,
   },
   {
     accessorKey: "name",
     header: "Name",
+    accessorFn: (row) => row.name,
     cell: ({ row }) => <div className="font-medium">{row.getValue("name")}</div>,
   },
 ];
 
 export default function ManageTopics() {
-  const { getToken } = useAuth();
-  const {
-    // State
-    topics,
-    totalPages,
-    nameFilter,
-    sorting,
-    pagination,
-    rowSelection,
-    isLoading,
-    isError,
-    errorMessage,
-    isUpdating,
-    isCreateDialogOpen,
-    isEditDialogOpen,
-    isDeleteDialogOpen,
-    currentTopic,
-
-    // Actions
-    setNameFilter,
-    setSorting,
-    setPagination,
-    setRowSelection,
-    resetRowSelection,
-    openCreateDialog,
-    openEditDialog,
-    openDeleteDialog,
-    closeAllDialogs,
-    fetchTopics,
-    createTopic,
-    updateTopic,
-    deleteTopic,
-    bulkDeleteTopics,
-  } = useTopicsStore();
-
+  // State for table controls
+  const [nameFilter, setNameFilter] = useState("");
   const [debouncedNameFilter] = useDebounce(nameFilter, 700);
+  const [sorting, setSorting] = useState([{ id: "name", desc: false }]);
+  const [pagination, setPagination] = useState({
+    pageIndex: 0,
+    pageSize: 5,
+  });
+  const [rowSelection, setRowSelection] = useState({});
+  const [currentTopic, setCurrentTopic] = useState<Topic | null>(null);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
-  // Fetch topics when dependencies change
-  useEffect(() => {
-    fetchTopics(getToken);
-  }, [pagination.pageIndex, pagination.pageSize, sorting, debouncedNameFilter, fetchTopics, getToken]);
-
-  const table = useReactTable({
-    data: topics,
-    columns,
-    pageCount: totalPages,
-    state: {
-      sorting,
-      columnFilters: nameFilter ? [{ id: "name", value: nameFilter }] : [],
-      pagination,
-      rowSelection,
-    },
-    onSortingChange: (updaterOrValue) => {
-      if (Array.isArray(updaterOrValue)) {
-        setSorting(updaterOrValue);
-      } else {
-        setSorting(updaterOrValue([]));
-      }
-    },
-    onPaginationChange: (updaterOrValue) => {
-      if (typeof updaterOrValue === "function") {
-        setPagination(updaterOrValue({ pageIndex: pagination.pageIndex, pageSize: pagination.pageSize }));
-      } else {
-        setPagination(updaterOrValue);
-      }
-    },
-    onRowSelectionChange: (updaterOrValue) => {
-      if (typeof updaterOrValue === "function") {
-        setRowSelection(updaterOrValue({}));
-      } else {
-        setRowSelection(updaterOrValue);
-      }
-    },
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    manualPagination: true,
+  // Fetch topics
+  const { data, isLoading, isError, error } = useTopics({
+    page: pagination.pageIndex + 1,
+    limit: pagination.pageSize,
+    sortBy: sorting[0]?.id,
+    sortOrder: sorting[0]?.desc ? "desc" : "asc",
+    name: debouncedNameFilter || undefined,
   });
 
-  // Form for create/edit
+  // Mutations
+  const createTopic = useCreateTopic();
+  const updateTopic = useUpdateTopic();
+  const deleteTopic = useDeleteTopic();
+  const bulkDeleteTopics = useBulkDeleteTopics();
+
   const form = useForm({
     resolver: zodResolver(topicFormSchema),
     defaultValues: {
@@ -130,30 +82,45 @@ export default function ManageTopics() {
     });
   }, [currentTopic, form]);
 
-  interface CreateTopicValues {
-    name: string;
-  }
+  const table = useReactTable({
+    data: data?.topics || [],
+    columns,
+    pageCount: data?.totalPages || 1,
+    state: {
+      sorting,
+      columnFilters: nameFilter ? [{ id: "name", value: nameFilter }] : [],
+      pagination,
+      rowSelection,
+    },
+    onSortingChange: setSorting,
+    onPaginationChange: setPagination,
+    onRowSelectionChange: setRowSelection,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    manualPagination: true,
+  });
 
-  const handleCreateTopic = async (values: CreateTopicValues): Promise<void> => {
-    const success = await createTopic(values, getToken);
-    if (success) {
+  const handleCreateTopic = async (values: { name: string }) => {
+    try {
+      await createTopic.mutateAsync(values);
       toast.success("Topic created successfully");
       form.reset();
-    } else {
+      setIsCreateDialogOpen(false);
+    } catch (error) {
       toast.error("Failed to create topic");
     }
   };
 
-  interface UpdateTopicValues {
-    name: string;
-  }
+  const handleUpdateTopic = async (values: { name: string }) => {
+    if (!currentTopic) return;
 
-  const handleUpdateTopic = async (values: UpdateTopicValues): Promise<void> => {
-    const success = await updateTopic(values, getToken);
-    if (success) {
+    try {
+      await updateTopic.mutateAsync({ id: currentTopic.id, values });
       toast.success("Topic updated successfully");
       form.reset();
-    } else {
+      setIsEditDialogOpen(false);
+    } catch (error) {
       toast.error("Failed to update topic");
     }
   };
@@ -161,10 +128,11 @@ export default function ManageTopics() {
   const handleDeleteTopic = async () => {
     if (!currentTopic) return;
 
-    const success = await deleteTopic(currentTopic.id, getToken);
-    if (success) {
+    try {
+      await deleteTopic.mutateAsync(currentTopic.id);
       toast.success("Topic deleted successfully");
-    } else {
+      setIsDeleteDialogOpen(false);
+    } catch (error) {
       toast.error("Failed to delete topic");
     }
   };
@@ -172,10 +140,17 @@ export default function ManageTopics() {
   const handleBulkDelete = async () => {
     const selectedTopicIds = table.getSelectedRowModel().rows.map((row) => row.original.id);
 
-    const success = await bulkDeleteTopics(selectedTopicIds, getToken);
-    if (success) {
+    if (selectedTopicIds.length === 0) {
+      setIsDeleteDialogOpen(false);
+      return;
+    }
+
+    try {
+      await bulkDeleteTopics.mutateAsync(selectedTopicIds);
       toast.success(`${selectedTopicIds.length} topics deleted successfully`);
-    } else {
+      setIsDeleteDialogOpen(false);
+      setRowSelection({});
+    } catch (error) {
       toast.error("Failed to delete some topics");
     }
   };
@@ -185,8 +160,8 @@ export default function ManageTopics() {
   if (isError) {
     return (
       <div className="text-red-500">
-        Error loading topics: {errorMessage}
-        <Button variant="outline" onClick={() => fetchTopics(getToken)}>
+        Error loading topics: {error?.message}
+        <Button variant="outline" onClick={() => window.location.reload()}>
           Retry
         </Button>
       </div>
@@ -200,7 +175,7 @@ export default function ManageTopics() {
           {/* Create Topic Button */}
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="outline" size="sm" onClick={openCreateDialog}>
+              <Button variant="outline" size="sm" onClick={() => setIsCreateDialogOpen(true)}>
                 <Icons.plus className="h-4 w-4 mr-2" />
                 Create Topic
               </Button>
@@ -217,7 +192,8 @@ export default function ManageTopics() {
                 onClick={() => {
                   const selectedTopics = table.getSelectedRowModel().rows;
                   if (selectedTopics.length === 1) {
-                    openEditDialog(selectedTopics[0].original);
+                    setCurrentTopic(selectedTopics[0].original);
+                    setIsEditDialogOpen(true);
                   }
                 }}
                 disabled={table.getSelectedRowModel().rows.length !== 1}
@@ -237,14 +213,15 @@ export default function ManageTopics() {
                 size="sm"
                 onClick={() => {
                   if (table.getSelectedRowModel().rows.length === 1) {
-                    openDeleteDialog(table.getSelectedRowModel().rows[0].original);
+                    setCurrentTopic(table.getSelectedRowModel().rows[0].original);
                   } else {
-                    openDeleteDialog();
+                    setCurrentTopic(null);
                   }
+                  setIsDeleteDialogOpen(true);
                 }}
                 disabled={table.getSelectedRowModel().rows.length === 0}
               >
-                {isUpdating ? <Icons.spinner className="h-4 w-4 mr-2 animate-spin" /> : <Icons.trash className="h-4 w-4 mr-2" />}
+                {createTopic.isPending || updateTopic.isPending || deleteTopic.isPending || bulkDeleteTopics.isPending ? <Icons.spinner className="h-4 w-4 mr-2 animate-spin" /> : <Icons.trash className="h-4 w-4 mr-2" />}
                 Delete
               </Button>
             </TooltipTrigger>
@@ -295,7 +272,7 @@ export default function ManageTopics() {
           </PaginationItem>
           <PaginationItem>
             <span className="text-sm">
-              Page {pagination.pageIndex + 1} of {totalPages}
+              Page {pagination.pageIndex + 1} of {data?.totalPages || 1}
             </span>
           </PaginationItem>
           <PaginationItem>
@@ -307,7 +284,7 @@ export default function ManageTopics() {
       </Pagination>
 
       {/* Create Topic Dialog */}
-      <Dialog open={isCreateDialogOpen} onOpenChange={closeAllDialogs}>
+      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Create New Topic</DialogTitle>
@@ -329,11 +306,11 @@ export default function ManageTopics() {
                 )}
               />
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={closeAllDialogs}>
+                <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
                   Cancel
                 </Button>
-                <Button type="submit" disabled={isUpdating}>
-                  {isUpdating && <Icons.spinner className="h-4 w-4 mr-2 animate-spin" />}
+                <Button type="submit" disabled={createTopic.isPending}>
+                  {createTopic.isPending && <Icons.spinner className="h-4 w-4 mr-2 animate-spin" />}
                   Create Topic
                 </Button>
               </DialogFooter>
@@ -343,7 +320,7 @@ export default function ManageTopics() {
       </Dialog>
 
       {/* Edit Topic Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={closeAllDialogs}>
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Edit Topic</DialogTitle>
@@ -365,11 +342,11 @@ export default function ManageTopics() {
                 )}
               />
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={closeAllDialogs}>
+                <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)}>
                   Cancel
                 </Button>
-                <Button type="submit" disabled={isUpdating}>
-                  {isUpdating && <Icons.spinner className="h-4 w-4 mr-2 animate-spin" />}
+                <Button type="submit" disabled={updateTopic.isPending}>
+                  {updateTopic.isPending && <Icons.spinner className="h-4 w-4 mr-2 animate-spin" />}
                   Save Changes
                 </Button>
               </DialogFooter>
@@ -379,14 +356,14 @@ export default function ManageTopics() {
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <Dialog open={isDeleteDialogOpen} onOpenChange={closeAllDialogs}>
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Confirm Deletion</DialogTitle>
             <DialogDescription>{currentTopic ? `Are you sure you want to delete the topic "${currentTopic.name}"?` : `Are you sure you want to delete ${table.getSelectedRowModel().rows.length} selected topics?`}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={closeAllDialogs}>
+            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
               Cancel
             </Button>
             <Button
@@ -398,9 +375,9 @@ export default function ManageTopics() {
                   handleBulkDelete();
                 }
               }}
-              disabled={isUpdating}
+              disabled={deleteTopic.isPending || bulkDeleteTopics.isPending}
             >
-              {isUpdating && <Icons.spinner className="h-4 w-4 mr-2 animate-spin" />}
+              {(deleteTopic.isPending || bulkDeleteTopics.isPending) && <Icons.spinner className="h-4 w-4 mr-2 animate-spin" />}
               Delete
             </Button>
           </DialogFooter>

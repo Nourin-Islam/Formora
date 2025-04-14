@@ -1,32 +1,25 @@
 import { SignIn, useAuth } from "@clerk/clerk-react";
-
+import TemplatesDisplay from "../components/TemplatesDisplay";
 export default function Home() {
   const { isSignedIn } = useAuth();
 
   return (
-    <div className="py-12  ">
-      <div className="flex items-center justify-center min-h-[calc(100vh-200px)] flex-col">
-        {!isSignedIn && (
-          <>
-            <h2 className="text-2xl font-bold mb-6 text-center">Welcome!</h2>
-            <SignIn
-              signUpUrl="/sign-up"
-              appearance={{
-                elements: {
-                  formButtonPrimary: "bg-blue-600 hover:bg-blue-700 text-sm normal-case",
-                },
-              }}
-            />
-          </>
-        )}
+    <div className=" ">
+      {!isSignedIn && (
+        <>
+          <h2 className="text-2xl font-bold mb-6 text-center">Welcome!</h2>
+          <SignIn
+            signUpUrl="/sign-up"
+            appearance={{
+              elements: {
+                formButtonPrimary: "bg-blue-600 hover:bg-blue-700 text-sm normal-case",
+              },
+            }}
+          />
+        </>
+      )}
 
-        {isSignedIn && (
-          <div className="text-center">
-            <h2 className="text-2xl font-bold mb-4">You're signed in!</h2>
-            <p className="text-gray-600">Start exploring the app</p>
-          </div>
-        )}
-      </div>
+      {isSignedIn && <TemplatesDisplay />}
     </div>
   );
 }

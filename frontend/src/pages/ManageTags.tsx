@@ -1,5 +1,4 @@
-// components/ManageTagsTable.tsx
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useDebounce } from "use-debounce";
 import { ColumnDef, flexRender, getCoreRowModel, getSortedRowModel, useReactTable, getFilteredRowModel } from "@tanstack/react-table";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -9,14 +8,14 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { Checkbox } from "@/components/ui/checkbox";
 import { Pagination, PaginationContent, PaginationItem } from "@/components/ui/pagination";
 import { Icons } from "@/components/global/icons";
-import { useAuth } from "@clerk/clerk-react";
 import LoadingSpinner from "@/components/global/LoadingSpinner";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { toast } from "sonner";
-import { Tag, tagFormSchema, useTagsStore } from "@/store/tagStore";
+import { Tag, tagFormSchema } from "@/types";
+import { useTags, useCreateTag, useUpdateTag, useDeleteTag, useBulkDeleteTags } from "@/hooks/useTags";
 
 export const columns: ColumnDef<Tag>[] = [
   {
@@ -37,86 +36,72 @@ export const columns: ColumnDef<Tag>[] = [
 ];
 
 export default function ManageTagsTable() {
-  const { getToken } = useAuth();
-  const {
-    // State
-    tags,
-    totalPages,
-    nameFilter,
-    sorting,
-    pagination,
-    rowSelection,
-    isLoading,
-    isError,
-    errorMessage,
-    isUpdating,
-    isCreateDialogOpen,
-    isEditDialogOpen,
-    isDeleteDialogOpen,
-    currentTag,
-
-    // Actions
-    setNameFilter,
-    setSorting,
-    setPagination,
-    setRowSelection,
-    resetRowSelection,
-    openCreateDialog,
-    openEditDialog,
-    openDeleteDialog,
-    closeAllDialogs,
-    fetchTags,
-    createTag,
-    updateTag,
-    deleteTag,
-    bulkDeleteTags,
-  } = useTagsStore();
-
+  const [nameFilter, setNameFilter] = useState("");
   const [debouncedNameFilter] = useDebounce(nameFilter, 700);
+  const [sorting, setSorting] = useState([{ id: "name", desc: false }]);
+  const [pagination, setPagination] = useState({
+    pageIndex: 0,
+    pageSize: 5,
+  });
+  const [rowSelection, setRowSelection] = useState({});
+  const [currentTag, setCurrentTag] = useState<Tag | null>(null);
 
-  // Fetch tags when dependencies change
-  useEffect(() => {
-    fetchTags(getToken);
-  }, [pagination.pageIndex, pagination.pageSize, sorting, debouncedNameFilter, fetchTags, getToken]);
+  // Dialog states - replace Zustand actions
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
-  const table = useReactTable({
-    data: tags,
-    columns,
-    pageCount: totalPages,
-    state: {
-      sorting,
-      columnFilters: nameFilter ? [{ id: "name", value: nameFilter }] : [],
-      pagination,
-      rowSelection,
-    },
-    onSortingChange: (updaterOrValue) => {
-      if (Array.isArray(updaterOrValue)) {
-        setSorting(updaterOrValue);
-      } else {
-        setSorting(updaterOrValue([]));
-      }
-    },
-    onPaginationChange: (updaterOrValue) => {
-      if (typeof updaterOrValue === "function") {
-        setPagination(updaterOrValue({ pageIndex: pagination.pageIndex, pageSize: pagination.pageSize }));
-      } else {
-        setPagination(updaterOrValue);
-      }
-    },
-    onRowSelectionChange: (updaterOrValue) => {
-      if (typeof updaterOrValue === "function") {
-        setRowSelection(updaterOrValue({}));
-      } else {
-        setRowSelection(updaterOrValue);
-      }
-    },
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    manualPagination: true,
+  // Replace Zustand selectors with React Query
+  const { data, isLoading, isError, error } = useTags({
+    page: pagination.pageIndex + 1,
+    limit: pagination.pageSize,
+    sortBy: sorting[0]?.id,
+    sortOrder: sorting[0]?.desc ? "desc" : "asc",
+    name: debouncedNameFilter || undefined,
   });
 
-  // Form for create/edit
+  // Replace Zustand actions with React Query mutations
+  const createTag = useCreateTag();
+  const updateTag = useUpdateTag();
+  const deleteTag = useDeleteTag();
+  const bulkDeleteTags = useBulkDeleteTags();
+
+  // Replace Zustand's isUpdating with individual mutation states
+  const isUpdating = createTag.isPending || updateTag.isPending || deleteTag.isPending || bulkDeleteTags.isPending;
+
+  // Replace Zustand's totalPages with data from query
+  const totalPages = data?.totalPages || 1;
+
+  // Replace Zustand dialog actions with local state setters
+  const openCreateDialog = () => {
+    setCurrentTag(null);
+    setIsCreateDialogOpen(true);
+    setIsEditDialogOpen(false);
+    setIsDeleteDialogOpen(false);
+  };
+
+  const openEditDialog = (tag: Tag) => {
+    setCurrentTag(tag);
+    setIsCreateDialogOpen(false);
+    setIsEditDialogOpen(true);
+    setIsDeleteDialogOpen(false);
+  };
+
+  const openDeleteDialog = (tag?: Tag) => {
+    setCurrentTag(tag || null);
+    setIsCreateDialogOpen(false);
+    setIsEditDialogOpen(false);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const closeAllDialogs = () => {
+    setIsCreateDialogOpen(false);
+    setIsEditDialogOpen(false);
+    setIsDeleteDialogOpen(false);
+  };
+
+  // New ends
+
   const form = useForm({
     resolver: zodResolver(tagFormSchema),
     defaultValues: {
@@ -131,30 +116,52 @@ export default function ManageTagsTable() {
     });
   }, [currentTag, form]);
 
-  interface CreateTagValues {
-    name: string;
-  }
+  const table = useReactTable({
+    data: data?.tags || [],
+    columns,
+    pageCount: totalPages,
+    state: {
+      sorting,
+      columnFilters: nameFilter ? [{ id: "name", value: nameFilter }] : [],
+      pagination,
+      rowSelection,
+    },
+    onSortingChange: setSorting,
+    onPaginationChange: setPagination,
+    onRowSelectionChange: setRowSelection,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    manualPagination: true,
+  });
 
-  const handleCreateTag = async (values: CreateTagValues): Promise<void> => {
-    const success = await createTag(values, getToken);
-    if (success) {
+  const handleCreateTag = async (values: { name: string }) => {
+    try {
+      await createTag.mutateAsync(values);
       toast.success("Tag created successfully");
       form.reset();
-    } else {
+      setIsCreateDialogOpen(false);
+    } catch (error) {
       toast.error("Failed to create tag");
     }
   };
 
-  interface UpdateTagValues {
-    name: string;
-  }
+  const handleEditClick = () => {
+    const selectedTags = table.getSelectedRowModel().rows;
+    if (selectedTags.length === 1) {
+      openEditDialog(selectedTags[0].original);
+    }
+  };
 
-  const handleUpdateTag = async (values: UpdateTagValues): Promise<void> => {
-    const success = await updateTag(values, getToken);
-    if (success) {
+  const handleUpdateTag = async (values: { name: string }) => {
+    if (!currentTag) return;
+
+    try {
+      await updateTag.mutateAsync({ id: currentTag.id, values });
       toast.success("Tag updated successfully");
       form.reset();
-    } else {
+      setIsEditDialogOpen(false);
+    } catch (error) {
       toast.error("Failed to update tag");
     }
   };
@@ -162,21 +169,37 @@ export default function ManageTagsTable() {
   const handleDeleteTag = async () => {
     if (!currentTag) return;
 
-    const success = await deleteTag(currentTag.id, getToken);
-    if (success) {
+    try {
+      await deleteTag.mutateAsync(currentTag.id);
       toast.success("Tag deleted successfully");
-    } else {
+      setIsDeleteDialogOpen(false);
+    } catch (error) {
       toast.error("Failed to delete tag");
+    }
+  };
+
+  const handleDeleteClick = () => {
+    if (table.getSelectedRowModel().rows.length === 1) {
+      openDeleteDialog(table.getSelectedRowModel().rows[0].original);
+    } else {
+      openDeleteDialog();
     }
   };
 
   const handleBulkDelete = async () => {
     const selectedTagIds = table.getSelectedRowModel().rows.map((row) => row.original.id);
 
-    const success = await bulkDeleteTags(selectedTagIds, getToken);
-    if (success) {
+    if (selectedTagIds.length === 0) {
+      setIsDeleteDialogOpen(false);
+      return;
+    }
+
+    try {
+      await bulkDeleteTags.mutateAsync(selectedTagIds);
       toast.success(`${selectedTagIds.length} tags deleted successfully`);
-    } else {
+      setIsDeleteDialogOpen(false);
+      setRowSelection({});
+    } catch (error) {
       toast.error("Failed to delete some tags");
     }
   };
@@ -186,8 +209,8 @@ export default function ManageTagsTable() {
   if (isError) {
     return (
       <div className="text-red-500">
-        Error loading tags: {errorMessage}
-        <Button variant="outline" onClick={() => fetchTags(getToken)}>
+        Error loading tags: {error?.message}
+        <Button variant="outline" onClick={() => window.location.reload()}>
           Retry
         </Button>
       </div>
@@ -212,17 +235,7 @@ export default function ManageTagsTable() {
           {/* Edit Selected Button */}
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  const selectedTags = table.getSelectedRowModel().rows;
-                  if (selectedTags.length === 1) {
-                    openEditDialog(selectedTags[0].original);
-                  }
-                }}
-                disabled={table.getSelectedRowModel().rows.length !== 1}
-              >
+              <Button variant="outline" size="sm" onClick={handleEditClick} disabled={table.getSelectedRowModel().rows.length !== 1}>
                 <Icons.edit className="h-4 w-4 mr-2" />
                 Edit
               </Button>
@@ -233,18 +246,7 @@ export default function ManageTagsTable() {
           {/* Delete Selected Button */}
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  if (table.getSelectedRowModel().rows.length === 1) {
-                    openDeleteDialog(table.getSelectedRowModel().rows[0].original);
-                  } else {
-                    openDeleteDialog();
-                  }
-                }}
-                disabled={table.getSelectedRowModel().rows.length === 0}
-              >
+              <Button variant="outline" size="sm" onClick={handleDeleteClick} disabled={table.getSelectedRowModel().rows.length === 0}>
                 {isUpdating ? <Icons.spinner className="h-4 w-4 mr-2 animate-spin" /> : <Icons.trash className="h-4 w-4 mr-2" />}
                 Delete
               </Button>
@@ -308,7 +310,13 @@ export default function ManageTagsTable() {
       </Pagination>
 
       {/* Create Tag Dialog */}
-      <Dialog open={isCreateDialogOpen} onOpenChange={closeAllDialogs}>
+      <Dialog
+        open={isCreateDialogOpen}
+        onOpenChange={(open) => {
+          setIsCreateDialogOpen(open);
+          if (!open) form.reset();
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Create New Tag</DialogTitle>
@@ -394,7 +402,7 @@ export default function ManageTagsTable() {
               variant="destructive"
               onClick={() => {
                 if (currentTag) {
-                  handleDeleteTag();
+                  handleDeleteTag(); // Call the delete function directly
                 } else {
                   handleBulkDelete();
                 }

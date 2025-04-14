@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useDebounce } from "use-debounce";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ColumnDef, flexRender, getCoreRowModel, getSortedRowModel, SortingState, useReactTable, ColumnFiltersState, getFilteredRowModel } from "@tanstack/react-table";
+import { ColumnDef, flexRender, getCoreRowModel, getSortedRowModel, useReactTable, getFilteredRowModel, SortingState, ColumnFiltersState } from "@tanstack/react-table";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -10,11 +9,9 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Pagination, PaginationContent, PaginationItem } from "@/components/ui/pagination";
 import { Icons } from "@/components/global/icons";
-import { User } from "@/types/index";
-import { useUserActions } from "@/hooks/useUserActions";
-
-import { useAuth } from "@clerk/clerk-react";
 import LoadingSpinner from "@/components/global/LoadingSpinner";
+import { User } from "@/types";
+import { useUsers, useUpdateUserAdmin, useUpdateUserBlock, useDeleteUser } from "@/hooks/useUsers";
 
 export const columns: ColumnDef<User>[] = [
   {
@@ -44,11 +41,10 @@ export const columns: ColumnDef<User>[] = [
   },
 ];
 
-function ManageUsersTable() {
-  const { getToken } = useAuth();
+export default function ManageUsersTable() {
+  // State for table controls
   const [emailFilter, setEmailFilter] = useState("");
   const [debouncedEmailFilter] = useDebounce(emailFilter, 700);
-
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [pagination, setPagination] = useState({
@@ -56,75 +52,26 @@ function ManageUsersTable() {
     pageSize: 5,
   });
   const [rowSelection, setRowSelection] = useState({});
-  const { handleToggleAdmin, handleToggleBlock, isUpdating, handleDeleteUser } = useUserActions();
-  const queryClient = useQueryClient();
 
-  const queryKey = ["users", pagination.pageIndex, pagination.pageSize, sorting, columnFilters];
-
-  const { data, isLoading, isError } = useQuery({
-    queryKey,
-    queryFn: async () => {
-      console.log("Fetching users with params:", pagination, sorting, columnFilters);
-      const token = await getToken(); // getToken from Clerk
-      if (!token) console.log("No Token found");
-      if (token) console.log("Token:", token);
-
-      const params = new URLSearchParams({
-        page: (pagination.pageIndex + 1).toString(),
-        limit: pagination.pageSize.toString(),
-        sortBy: sorting[0]?.id || "name",
-        sortOrder: sorting[0]?.desc ? "desc" : "asc",
-        ...(columnFilters.find((f) => f.id === "email") && {
-          email: columnFilters.find((f) => f.id === "email")?.value as string,
-        }),
-      });
-
-      const response = await fetch(`http://localhost:3000/api/admin/users?${params}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      // console.log("Fetching users result:", response.json());
-      if (!response.ok) throw new Error("Failed to fetch users");
-      return response.json();
-    },
-    staleTime: 0,
-    refetchOnMount: true,
+  // Hooks for data fetching and mutations
+  const { data, isLoading, isError, error } = useUsers({
+    page: pagination.pageIndex + 1,
+    limit: pagination.pageSize,
+    sortBy: sorting[0]?.id,
+    sortOrder: sorting[0]?.desc ? "desc" : "asc",
+    email: debouncedEmailFilter || undefined,
   });
 
-  // Prefetch the next page if it exists
-  useEffect(() => {
-    if (data?.hasNextPage) {
-      const nextPage = pagination.pageIndex + 1;
-      const params = new URLSearchParams({
-        page: (nextPage + 1).toString(), // Because pageIndex is 0-based
-        limit: pagination.pageSize.toString(),
-        sortBy: sorting[0]?.id || "name",
-        sortOrder: sorting[0]?.desc ? "desc" : "asc",
-        ...(columnFilters.find((f) => f.id === "email") && {
-          email: columnFilters.find((f) => f.id === "email")?.value as string,
-        }),
-      });
+  const updateAdmin = useUpdateUserAdmin();
+  const updateBlock = useUpdateUserBlock();
+  const deleteUser = useDeleteUser();
 
-      queryClient.prefetchQuery({
-        queryKey: ["users", nextPage, pagination.pageSize, sorting, columnFilters],
-        queryFn: async () => {
-          const token = await getToken(); // getToken from Clerk
-          const res = await fetch(`http://localhost:3000/api/admin/users?${params}`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-          if (!res.ok) throw new Error("Failed to fetch users");
-          return res.json();
-        },
-      });
-    }
-  }, [data, pagination, sorting, columnFilters, queryClient]);
+  // Combined loading state
+  const isUpdating = updateAdmin.isPending || updateBlock.isPending || deleteUser.isPending;
 
   // Set column filter whenever debounced input changes
   useEffect(() => {
-    table.getColumn("email")?.setFilterValue(debouncedEmailFilter);
+    setColumnFilters([{ id: "email", value: debouncedEmailFilter }]);
   }, [debouncedEmailFilter]);
 
   const table = useReactTable({
@@ -149,25 +96,26 @@ function ManageUsersTable() {
 
   const handleBulkAdminToggle = async (makeAdmin: boolean) => {
     const selectedUserIds = table.getSelectedRowModel().rows.map((row) => row.original.id);
-    await Promise.all(selectedUserIds.map((userId) => handleToggleAdmin({ userId, isAdmin: makeAdmin })));
+    await Promise.all(selectedUserIds.map((userId) => updateAdmin.mutateAsync({ userId, isAdmin: makeAdmin })));
   };
 
   const handleBulkBlockToggle = async (block: boolean) => {
     const selectedUserIds = table.getSelectedRowModel().rows.map((row) => row.original.id);
-    await Promise.all(selectedUserIds.map((userId) => handleToggleBlock({ userId, isBlocked: block })));
+    await Promise.all(selectedUserIds.map((userId) => updateBlock.mutateAsync({ userId, isBlocked: block })));
   };
 
-  const handleBulkDeleteToggle = async () => {
+  const handleBulkDelete = async () => {
     const selectedUserIds = table.getSelectedRowModel().rows.map((row) => row.original.id);
-    await Promise.all(selectedUserIds.map((userId) => handleDeleteUser(userId)));
+    await Promise.all(selectedUserIds.map((userId) => deleteUser.mutateAsync(userId)));
   };
+
   if (isLoading) return <LoadingSpinner />;
-  if (isError) return <div>Error loading users</div>;
+  if (isError) return <div>Error loading users: {error?.message}</div>;
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-4">
-        <div className="flex gap-2 ">
+        <div className="flex gap-2">
           <Tooltip>
             <TooltipTrigger asChild>
               <Button variant="outline" size="sm" onClick={() => handleBulkAdminToggle(true)} disabled={table.getSelectedRowModel().rows.length === 0 || isUpdating}>
@@ -180,8 +128,8 @@ function ManageUsersTable() {
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="outline" size="sm" onClick={() => handleBulkAdminToggle(false)} disabled={table.getSelectedRowModel().rows.length === 0}>
-                <Icons.shieldMinus className="h-4 w-4 mr-2" />
+              <Button variant="outline" size="sm" onClick={() => handleBulkAdminToggle(false)} disabled={table.getSelectedRowModel().rows.length === 0 || isUpdating}>
+                {isUpdating ? <Icons.spinner className="h-4 w-4 mr-2 animate-spin" /> : <Icons.shieldMinus className="h-4 w-4 mr-2" />}
                 Remove Admin
               </Button>
             </TooltipTrigger>
@@ -190,8 +138,8 @@ function ManageUsersTable() {
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="outline" size="sm" onClick={() => handleBulkBlockToggle(true)} disabled={table.getSelectedRowModel().rows.length === 0}>
-                <Icons.lock className="h-4 w-4 mr-2" />
+              <Button variant="outline" size="sm" onClick={() => handleBulkBlockToggle(true)} disabled={table.getSelectedRowModel().rows.length === 0 || isUpdating}>
+                {isUpdating ? <Icons.spinner className="h-4 w-4 mr-2 animate-spin" /> : <Icons.lock className="h-4 w-4 mr-2" />}
                 Block
               </Button>
             </TooltipTrigger>
@@ -200,18 +148,18 @@ function ManageUsersTable() {
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="outline" size="sm" onClick={() => handleBulkBlockToggle(false)} disabled={table.getSelectedRowModel().rows.length === 0}>
-                <Icons.unlock className="h-4 w-4 mr-2" />
+              <Button variant="outline" size="sm" onClick={() => handleBulkBlockToggle(false)} disabled={table.getSelectedRowModel().rows.length === 0 || isUpdating}>
+                {isUpdating ? <Icons.spinner className="h-4 w-4 mr-2 animate-spin" /> : <Icons.unlock className="h-4 w-4 mr-2" />}
                 Unblock
               </Button>
             </TooltipTrigger>
             <TooltipContent>Unblock selected users</TooltipContent>
           </Tooltip>
-          {/* delete user */}
+
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="outline" size="sm" onClick={() => handleBulkDeleteToggle()} disabled={table.getSelectedRowModel().rows.length === 0}>
-                <Icons.trash className="h-4 w-4 mr-2" />
+              <Button variant="outline" size="sm" onClick={handleBulkDelete} disabled={table.getSelectedRowModel().rows.length === 0 || isUpdating}>
+                {isUpdating ? <Icons.spinner className="h-4 w-4 mr-2 animate-spin" /> : <Icons.trash className="h-4 w-4 mr-2" />}
                 Delete
               </Button>
             </TooltipTrigger>
@@ -219,7 +167,6 @@ function ManageUsersTable() {
           </Tooltip>
         </div>
 
-        {/* <Input placeholder="Filter emails..." value={(table.getColumn("email")?.getFilterValue() as string) ?? ""} onChange={(event) => table.getColumn("email")?.setFilterValue(event.target.value)} className="max-w-sm" /> */}
         <Input placeholder="Filter emails..." value={emailFilter} onChange={(e) => setEmailFilter(e.target.value)} className="max-w-sm" />
       </div>
 
@@ -276,5 +223,3 @@ function ManageUsersTable() {
     </div>
   );
 }
-
-export default ManageUsersTable;

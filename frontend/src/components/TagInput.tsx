@@ -1,17 +1,12 @@
-import { useState, useEffect, useRef } from "react";
-
-interface Tag {
-  id: string;
-  name: string;
-}
+import { useState, useRef } from "react";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { X, Check, ChevronsUpDown, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useTagsStore } from "@/store/tagStore";
-import { useAuth } from "@clerk/clerk-react";
+import { useSearchTags } from "@/hooks/useTags";
+import { useCreateTag } from "@/hooks/useTags";
 
 interface TagInputProps {
   value?: string[];
@@ -19,39 +14,19 @@ interface TagInputProps {
 }
 
 export function TagInput({ value = [], onChange }: TagInputProps) {
-  const { getToken } = useAuth();
-  const { searchTags } = useTagsStore();
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
-  const [availableTags, setAvailableTags] = useState<Tag[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    const fetchTags = async () => {
-      if (!inputValue.trim()) {
-        setAvailableTags([]);
-        return;
-      }
+  // Search tags hook
+  const { data: availableTags = [], isLoading, isError } = useSearchTags(inputValue);
 
-      setIsLoading(true);
-      try {
-        const tags = await searchTags(inputValue, getToken);
-        const filteredTags = tags.filter((tag) => !value.includes(tag.name)).map((tag) => ({ ...tag, id: String(tag.id) }));
-        setAvailableTags(filteredTags);
-      } catch (error) {
-        console.error("Failed to fetch tags:", error);
-        setAvailableTags([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  // Create tag hook
+  const { mutateAsync: createTag } = useCreateTag();
 
-    const timeoutId = setTimeout(fetchTags, 300);
-    return () => clearTimeout(timeoutId);
-  }, [inputValue, value, searchTags, getToken]);
+  const filteredTags = availableTags.filter((tag) => !value.includes(tag.name));
 
-  const handleAddTag = (tag: string) => {
+  const handleAddTag = async (tag: string) => {
     if (!value.includes(tag)) {
       onChange([...value, tag]);
       setInputValue("");
@@ -63,10 +38,16 @@ export function TagInput({ value = [], onChange }: TagInputProps) {
     onChange(value.filter((tag) => tag !== tagToRemove));
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && inputValue.trim() && availableTags.length === 0) {
+  const handleKeyDown = async (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && inputValue.trim() && filteredTags.length === 0) {
       e.preventDefault();
-      handleAddTag(inputValue.trim());
+      try {
+        // Create new tag if it doesn't exist
+        await createTag({ name: inputValue.trim() });
+        handleAddTag(inputValue.trim());
+      } catch (error) {
+        console.error("Failed to create tag:", error);
+      }
       setOpen(false);
     }
   };
@@ -100,11 +81,13 @@ export function TagInput({ value = [], onChange }: TagInputProps) {
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Searching...
               </div>
+            ) : isError ? (
+              <div className="p-2 text-sm text-red-500">Failed to load tags</div>
             ) : (
               <>
                 <CommandEmpty>{inputValue && <div className="p-2 text-sm">No tags found. Press Enter to create "{inputValue}"</div>}</CommandEmpty>
                 <CommandGroup>
-                  {availableTags.map((tag) => (
+                  {filteredTags.map((tag) => (
                     <CommandItem
                       key={tag.id}
                       value={tag.name}
