@@ -32,22 +32,20 @@ function App() {
                 <nav className="flex space-x-4 items-center">
                   {Boolean(user?.publicMetadata?.isAdmin) && (
                     <>
-                      <Link to="/admin" className="text-gray-900 hover:text-blue-600">
-                        Admin Dashboard
-                      </Link>
                       <Link to="/manage-tags" className="text-gray-900 hover:text-blue-600">
-                        Manage Tags
+                        Tags
                       </Link>
                       <Link to="/manage-topics" className="text-gray-900 hover:text-blue-600">
-                        Manage Topics
+                        Topics
                       </Link>
                       <Link to="/manage-users" className="text-gray-900 hover:text-blue-600">
-                        Manage Users
+                        Users
                       </Link>
                     </>
                   )}
-                  <Link to="/create-template" className="text-gray-900 hover:text-blue-600">
-                    Create Template
+
+                  <Link to="/templates" className="text-gray-900 hover:text-blue-600">
+                    Templates
                   </Link>
 
                   <UserButton />

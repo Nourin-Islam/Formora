@@ -47,10 +47,26 @@ function SortableQuestion({ question, onEdit, onDelete }: SortableQuestionProps)
           </div>
           <CardTitle className="text-base flex-1 truncate">{question.title || "Untitled Question"}</CardTitle>
           <span className="text-xs bg-slate-100 rounded-full px-2 py-1 dark:bg-slate-700">{questionTypeLabels[question.questionType as keyof typeof questionTypeLabels]}</span>
-          <Button variant="ghost" size="icon" onClick={() => onEdit(question.id)} className="h-8 w-8 ml-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={(e) => {
+              e.preventDefault();
+              onEdit(question.id);
+            }}
+            className="h-8 w-8 ml-1"
+          >
             <PencilLine className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="icon" onClick={() => onDelete(question.id)} className="h-8 w-8 text-destructive">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={(e) => {
+              e.preventDefault();
+              onDelete(question.id);
+            }}
+            className="h-8 w-8 text-destructive"
+          >
             <Trash2 className="h-4 w-4" />
           </Button>
         </CardHeader>
@@ -246,7 +262,13 @@ export function QuestionManagement({ templateId, questions, onQuestionsUpdate }:
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-medium">Questions</h3>
-        <Button onClick={handleAddQuestion} size="sm">
+        <Button
+          onClick={(e) => {
+            e.preventDefault();
+            handleAddQuestion(e);
+          }}
+          size="sm"
+        >
           <PlusCircle className="h-4 w-4 mr-2" />
           Add Question
         </Button>
@@ -256,7 +278,13 @@ export function QuestionManagement({ templateId, questions, onQuestionsUpdate }:
         <Card className="bg-muted/50">
           <CardContent className="flex flex-col items-center justify-center py-10">
             <p className="text-muted-foreground mb-4">No questions added yet</p>
-            <Button onClick={handleAddQuestion} variant="outline">
+            <Button
+              onClick={(e) => {
+                e.preventDefault();
+                handleAddQuestion(e);
+              }}
+              variant="outline"
+            >
               <PlusCircle className="h-4 w-4 mr-2" />
               Add Your First Question
             </Button>

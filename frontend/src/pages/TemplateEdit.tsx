@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useMemo, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -16,9 +16,10 @@ import { TopicSelector } from "@/components/TopicSelector";
 import { QuestionManagement } from "@/components/QuestionManagement";
 import { z } from "zod";
 import MDEditor from "@uiw/react-md-editor";
-import { Question } from "@/types";
-import { useCreateTemplate } from "@/hooks/useTemplates";
-import { User } from "@/types";
+import { Question, User } from "@/types";
+import { useUpdateTemplate } from "@/hooks/useTemplates";
+import { useTemplateById } from "@/hooks/useTemplates";
+import LoadingSpinner from "@/components/global/LoadingSpinner";
 
 const templateFormSchema = z.object({
   title: z.string().min(1, "Title is required").max(100),
@@ -28,8 +29,11 @@ const templateFormSchema = z.object({
 
 type TemplateFormValues = z.infer<typeof templateFormSchema>;
 
-export default function TemplateCreationForm() {
+export default function TemplateEdit() {
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+
+  // State for form fields
   const [isPublic, setIsPublic] = useState<boolean>(true);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
@@ -38,13 +42,18 @@ export default function TemplateCreationForm() {
   const [activeTab, setActiveTab] = useState<string>("general");
   const MemoizedTopicSelector = useMemo(() => TopicSelector, []);
 
-  const createTemplate = useCreateTemplate();
+  // Fetch existing template data
+  const { data: template, isLoading: isTemplateLoading, error: templateError } = useTemplateById(id!);
+
+  // Mutation hooks
+  const updateTemplate = useUpdateTemplate();
 
   const {
     register,
     handleSubmit,
     control,
-    formState: { errors },
+    reset,
+    formState: { errors, isDirty },
   } = useForm<TemplateFormValues>({
     resolver: zodResolver(templateFormSchema),
     defaultValues: {
@@ -53,6 +62,46 @@ export default function TemplateCreationForm() {
       topicId: 1,
     },
   });
+
+  // Initialize form with template data
+  useEffect(() => {
+    if (template) {
+      console.log("Template data:", template);
+      reset({
+        title: template.title,
+        description: template.description,
+        topicId: template.topicId,
+      });
+      setIsPublic(template.isPublic);
+      setSelectedTags(template.tags.map((tag) => tag.name));
+      setSelectedUsers(template.accessUsers || []);
+      setImageUrl(template.imageUrl || "");
+      setQuestions(template.questions || []);
+    }
+  }, [template, reset]);
+
+  const isFormDirty = useMemo(() => {
+    if (!template) return false;
+
+    // Check react-hook-form dirty state
+    if (isDirty) return true;
+
+    // Check questions
+    if (questions.length !== template.questions.length) return true;
+    if (JSON.stringify(questions) !== JSON.stringify(template.questions)) return true;
+
+    // Check access settings
+    if (isPublic !== template.isPublic) return true;
+    if (!isPublic && JSON.stringify(selectedUsers) !== JSON.stringify(template.accessUsers || [])) return true;
+
+    // Check tags
+    if (JSON.stringify(selectedTags) !== JSON.stringify(template.tags.map((tag) => tag.name))) return true;
+
+    // Check image
+    if (imageUrl !== (template.imageUrl || "")) return true;
+
+    return false;
+  }, [template, isDirty, questions, isPublic, selectedUsers, selectedTags, imageUrl]);
 
   const onSubmit = async (data: TemplateFormValues, publish: boolean) => {
     try {
@@ -63,6 +112,7 @@ export default function TemplateCreationForm() {
       }
 
       const templateData = {
+        id: id!,
         title: data.title,
         description: data.description,
         topicId: data.topicId,
@@ -82,12 +132,15 @@ export default function TemplateCreationForm() {
         })),
       };
 
-      await createTemplate.mutateAsync(templateData);
-      toast.success(`Template ${publish ? "published" : "saved"} successfully`);
-      navigate(`/templates`);
+      if (!id) {
+        throw new Error("Template ID is undefined");
+      }
+      await updateTemplate.mutateAsync({ id, templateData });
+      toast.success(`Template ${publish ? "published" : "updated"} successfully`);
+      navigate(`/templates/${id}`);
     } catch (error) {
-      toast.error("Failed to create template");
-      console.error("Template creation error:", error);
+      toast.error("Failed to update template");
+      console.error("Template update error:", error);
     }
   };
 
@@ -95,12 +148,24 @@ export default function TemplateCreationForm() {
     setActiveTab(value);
   };
 
+  if (isTemplateLoading) {
+    return <LoadingSpinner />;
+  }
+
+  if (templateError) {
+    return <div className="text-red-500">Error loading template: {templateError.message}</div>;
+  }
+
+  if (!template) {
+    return <div>Template not found</div>;
+  }
+
   return (
     <form onSubmit={handleSubmit((data) => onSubmit(data, true))} className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Create New Template</CardTitle>
-          <CardDescription>Design your form template with custom questions</CardDescription>
+          <CardTitle>Edit Template</CardTitle>
+          <CardDescription>Update your form template with custom questions</CardDescription>
         </CardHeader>
 
         <CardContent>
@@ -161,12 +226,7 @@ export default function TemplateCreationForm() {
               {!isPublic && (
                 <div className="space-y-2">
                   <Label>Select users who can access this template</Label>
-
-                  <UserSelector
-                    selectedUsers={selectedUsers}
-                    onChange={setSelectedUsers}
-                    // excludeUsers={[currentUserId]} // Optional: exclude current user
-                  />
+                  <UserSelector selectedUsers={selectedUsers} onChange={setSelectedUsers} />
                 </div>
               )}
             </TabsContent>
@@ -174,23 +234,23 @@ export default function TemplateCreationForm() {
         </CardContent>
 
         <CardFooter className="flex justify-between">
-          <Button variant="outline" type="button" onClick={() => navigate(-1)} disabled={createTemplate.isPending}>
+          <Button variant="outline" type="button" onClick={() => navigate(-1)} disabled={updateTemplate.isPending}>
             Cancel
           </Button>
 
-          <Button className="ml-auto" type="button" variant="secondary" onClick={() => handleSubmit((data) => onSubmit(data, false))()} disabled={createTemplate.isPending}>
-            {createTemplate.isPending ? (
+          <Button className="ml-auto" type="button" variant="secondary" onClick={() => handleSubmit((data) => onSubmit(data, false))()} disabled={updateTemplate.isPending || !isFormDirty}>
+            {updateTemplate.isPending ? (
               <>
                 <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-t-transparent border-white"></span>
                 Saving...
               </>
             ) : (
-              "Draft Template"
+              "Update Draft"
             )}
           </Button>
 
-          <Button className="ml-3" type="button" variant="default" onClick={() => handleSubmit((data) => onSubmit(data, true))()} disabled={createTemplate.isPending}>
-            {createTemplate.isPending ? (
+          <Button className="ml-3" type="button" variant="default" onClick={() => handleSubmit((data) => onSubmit(data, true))()} disabled={updateTemplate.isPending || !isFormDirty}>
+            {updateTemplate.isPending ? (
               <>
                 <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-t-transparent border-white"></span>
                 Publishing...

@@ -108,6 +108,20 @@ export const getTemplateById = async (req: Request, res: Response) => {
             },
           },
         },
+        questions: {
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            questionType: true,
+            position: true,
+            showInTable: true,
+            options: true,
+            correctAnswers: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
       },
     });
 
@@ -136,6 +150,9 @@ export const createTemplate = async (req: Request, res: Response) => {
   try {
     const { title, description, topicId, isPublic, isPublished, imageUrl, tags, accessUsers, questions } = req.body;
     const userId = req.user.id;
+    if (!userId || !req.user.isAdmin) {
+      return res.status(403).json({ error: "Not Authorized" });
+    }
 
     const createdTemplate = await prisma.$transaction(async (prisma) => {
       const template = await prisma.template.create({
@@ -226,92 +243,184 @@ export const createTemplate = async (req: Request, res: Response) => {
 };
 
 export const updateTemplate = async (req: Request, res: Response) => {
+  if (!req.user) return res.status(401).json({ message: "Unauthorized" });
+
   try {
     const templateId = parseInt(req.params.id);
-    const userId = req.user?.id;
+    const userId = req.user.id;
+    const { title, description, topicId, isPublic, isPublished, imageUrl, tags = [], accessUsers = [], questions = [] } = req.body;
 
+    // Verify template exists and user has permission
     const existingTemplate = await prisma.template.findUnique({
       where: { id: templateId },
-      include: { tags: true, accesses: true },
+      include: {
+        tags: { include: { tag: true } },
+        accesses: true,
+        questions: true,
+      },
     });
 
     if (!existingTemplate) {
       return res.status(404).json({ error: "Template not found" });
     }
 
-    if (existingTemplate.userId !== parseInt(userId as string, 10) && !req.user?.isAdmin) {
+    if (existingTemplate.userId !== parseInt(userId) && !req.user.isAdmin) {
       return res.status(403).json({ error: "Not authorized to update this template" });
     }
 
-    const { title, description, topicId, isPublic, isPublished, imageUrl, tags, accessUsers } = req.body;
-
     const updatedTemplate = await prisma.$transaction(async (prisma) => {
+      // Update template basic info
       const template = await prisma.template.update({
         where: { id: templateId },
         data: {
-          ...(title !== undefined && { title }),
-          ...(description !== undefined && { description }),
-          ...(topicId !== undefined && { topicId: parseInt(topicId) }),
-          ...(isPublic !== undefined && { isPublic }),
-          ...(isPublished !== undefined && { isPublished }),
-          ...(imageUrl !== undefined && { imageUrl }),
+          title,
+          description,
+          topicId: parseInt(topicId),
+          isPublic,
+          isPublished,
+          imageUrl: imageUrl || null,
           updatedAt: new Date(),
         },
       });
 
-      if (tags) {
-        await prisma.templateTag.deleteMany({ where: { templateId } });
+      // Handle tags update
+      const existingTagNames = existingTemplate.tags.map((t) => t.tag.name);
+      const tagsToRemove = existingTemplate.tags.filter((t) => !tags.includes(t.tag.name)).map((t) => t.tag.id);
+      const tagsToAdd = tags.filter((t: string) => !existingTagNames.includes(t));
 
-        for (const tagRel of existingTemplate.tags) {
-          await prisma.tag.update({
-            where: { id: tagRel.tagId },
-            data: { usageCount: { decrement: 1 } },
+      // Remove unused tags
+      if (tagsToRemove.length > 0) {
+        await prisma.templateTag.deleteMany({
+          where: {
+            templateId,
+            tagId: { in: tagsToRemove },
+          },
+        });
+
+        // Decrement usage count for removed tags
+        await prisma.tag.updateMany({
+          where: { id: { in: tagsToRemove } },
+          data: { usageCount: { decrement: 1 } },
+        });
+      }
+
+      // Add new tags
+      for (const tagName of tagsToAdd) {
+        const tag = await prisma.tag.upsert({
+          where: { name: tagName },
+          update: { usageCount: { increment: 1 } },
+          create: { name: tagName, usageCount: 1 },
+        });
+        await prisma.templateTag.create({
+          data: { templateId, tagId: tag.id },
+        });
+      }
+
+      // Handle access control
+      if (!isPublic) {
+        const existingAccessUserIds = existingTemplate.accesses.map((a) => a.userId);
+        const usersToRemove = existingTemplate.accesses.filter((a) => !accessUsers.includes(a.userId)).map((a) => a.userId);
+        const usersToAdd = accessUsers.filter((id: number) => !existingAccessUserIds.includes(id));
+
+        if (usersToRemove.length > 0) {
+          await prisma.templateAccess.deleteMany({
+            where: {
+              templateId,
+              userId: { in: usersToRemove },
+            },
           });
         }
 
-        await Promise.all(
-          tags.map(async (tagName: string) => {
-            const tag = await prisma.tag.upsert({
-              where: { name: tagName },
-              update: { usageCount: { increment: 1 } },
-              create: { name: tagName, usageCount: 1 },
-            });
-            return prisma.templateTag.create({ data: { templateId, tagId: tag.id } });
-          })
-        );
-      }
-
-      if (isPublic === false && accessUsers) {
-        await prisma.templateAccess.deleteMany({ where: { templateId } });
-
-        await Promise.all(accessUsers.map((uid: number) => prisma.templateAccess.create({ data: { templateId, userId: uid } })));
-      } else if (isPublic === true) {
+        if (usersToAdd.length > 0) {
+          await prisma.templateAccess.createMany({
+            data: usersToAdd.map((userId: number) => ({
+              templateId,
+              userId,
+            })),
+            skipDuplicates: true,
+          });
+        }
+      } else {
+        // If template is now public, remove all access records
         await prisma.templateAccess.deleteMany({ where: { templateId } });
       }
 
-      return prisma.template.findUnique({
-        where: { id: templateId },
-        include: {
-          user: { select: { id: true, name: true, email: true } },
-          topic: true,
-          questions: true,
-          tags: { include: { tag: true } },
-          accesses: {
-            include: {
-              user: { select: { id: true, name: true, email: true } },
-            },
+      // Handle questions update
+      const existingQuestionIds = existingTemplate.questions.map((q) => q.id);
+      const incomingQuestionIds = questions.filter((q: any) => q.id).map((q: any) => q.id);
+
+      // Questions to delete
+      const questionsToDelete = existingQuestionIds.filter((id) => !incomingQuestionIds.includes(id));
+
+      if (questionsToDelete.length > 0) {
+        await prisma.question.deleteMany({
+          where: {
+            id: { in: questionsToDelete },
           },
-        },
-      });
+        });
+      }
+
+      // Update or create questions
+      for (const question of questions) {
+        if (question.id) {
+          // Update existing question
+          await prisma.question.update({
+            where: { id: question.id },
+            data: {
+              title: question.title,
+              description: question.description || "",
+              questionType: question.questionType,
+              position: question.position,
+              showInTable: question.showInTable ?? false,
+              options: question.options || null,
+              correctAnswers: question.correctAnswers || null,
+              updatedAt: new Date(),
+            },
+          });
+        } else {
+          // Create new question
+          await prisma.question.create({
+            data: {
+              templateId,
+              title: question.title,
+              description: question.description || "",
+              questionType: question.questionType,
+              position: question.position,
+              showInTable: question.showInTable ?? false,
+              options: question.options || null,
+              correctAnswers: question.correctAnswers || null,
+            },
+          });
+        }
+      }
+
+      return template;
     });
 
-    const formattedTemplate = {
-      ...updatedTemplate,
-      tags: updatedTemplate?.tags.map((t) => t.tag),
-      accessUsers: updatedTemplate?.accesses.map((a) => a.user),
+    // Fetch the complete updated template with relations
+    const fullTemplate = await prisma.template.findUnique({
+      where: { id: templateId },
+      include: {
+        user: { select: { id: true, name: true, email: true } },
+        topic: true,
+        questions: { orderBy: { position: "asc" } },
+        tags: { include: { tag: true } },
+        accesses: {
+          include: {
+            user: { select: { id: true, name: true, email: true } },
+          },
+        },
+      },
+    });
+
+    // Format the response
+    const response = {
+      ...fullTemplate,
+      tags: fullTemplate?.tags.map((t) => t.tag),
+      accessUsers: fullTemplate?.accesses.map((a) => a.user),
     };
 
-    res.json(formattedTemplate);
+    res.json(response);
   } catch (err) {
     console.error("Error updating template:", err);
     res.status(500).json({ error: "Failed to update template" });

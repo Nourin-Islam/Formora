@@ -8,6 +8,6 @@ const router = express.Router();
 router.post("/:templateId", authenticateUser, submitForm);
 
 // Get form results
-router.get("/:templateId/results", authenticateUser, getFormResults);
+router.get("/:templateId", authenticateUser, getFormResults);
 
 export default router;

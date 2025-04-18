@@ -3,7 +3,10 @@ import { Button } from "@/components/ui/button";
 
 export function ErrorPage() {
   const error = useRouteError();
-  console.error(error);
+  if (error instanceof Error) {
+    // Handle specific error types if needed
+    console.error("Error:", error.message);
+  }
 
   return (
     <div className="container flex h-screen flex-col items-center justify-center gap-4">

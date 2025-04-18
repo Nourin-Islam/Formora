@@ -13,7 +13,7 @@ export const useTemplates = (filters?: FilterOptions) => {
       const response = await authenticatedApi.get("/templates", {
         params: filters, // Pass filters as query parameters
       });
-      console.log("Templates response:", response.data);
+      // console.log("Templates response:", response.data);
       return response.data;
     },
   });
@@ -53,7 +53,7 @@ export const useUpdateTemplate = () => {
   const { getToken } = useAuth();
 
   return useMutation({
-    mutationFn: async ({ id, templateData }: { id: string; templateData: Partial<Template> }) => {
+    mutationFn: async ({ id, templateData }: { id: string; templateData: TemplateFormData }) => {
       const { authenticatedApi } = await createAuthenticatedApi(getToken);
       const response = await authenticatedApi.put(`/templates/${id}`, templateData);
       return response.data;

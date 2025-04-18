@@ -40,6 +40,27 @@ export const tagFormSchema = z.object({
   }),
 });
 
+export interface Question {
+  id: string;
+  title: string;
+  description: string;
+  questionType: QuestionType;
+  position: number;
+  showInTable: boolean;
+  options?: any;
+  correctAnswers?: any; // For future use with select options
+}
+
+export interface QuestionToSubmit {
+  title: string;
+  description: string;
+  questionType: QuestionType;
+  position: number;
+  showInTable: boolean;
+  options?: any;
+  correctAnswers?: any; // For future use with select options
+}
+
 export interface Like {
   id: number;
   templateId: number;
@@ -63,12 +84,27 @@ export interface Template {
   likesCount: number;
   createdAt: string;
   updatedAt: string;
+  accessUsers: User[];
+  questions: Question[];
   user: User;
   topic: Topic;
   tags: Tag[];
   questionCount: number;
   commentCount: number;
   peopleLiked: string[]; // Array of clerkIds
+}
+
+export interface TemplateFormData {
+  title: string;
+  description: string;
+  topicId: number;
+  isPublic: boolean;
+
+  isPublished: boolean;
+  imageUrl: string | null;
+  tags: string[];
+  accessUsers: number[];
+  questions: QuestionToSubmit[];
 }
 
 export interface TemplatesResponse {
@@ -155,26 +191,4 @@ export enum QuestionType {
   TEXT = "TEXT",
   INTEGER = "INTEGER",
   CHECKBOX = "CHECKBOX",
-}
-
-export interface Question {
-  id: string;
-  title: string;
-  description: string;
-  questionType: QuestionType;
-  position: number;
-  showInTable: boolean;
-  options?: any;
-  correctAnswers?: any; // For future use with select options
-}
-
-export interface TemplateFormData {
-  title: string;
-  description: string;
-  topicId: number;
-  isPublic: boolean;
-  imageUrl: string | null;
-  tags: string[];
-  accessUsers: number[];
-  questions: Question[];
 }

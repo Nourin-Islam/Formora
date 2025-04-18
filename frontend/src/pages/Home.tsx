@@ -1,5 +1,5 @@
 import { SignIn, useAuth } from "@clerk/clerk-react";
-import TemplatesDisplay from "../components/TemplatesDisplay";
+
 export default function Home() {
   const { isSignedIn } = useAuth();
 
@@ -19,7 +19,7 @@ export default function Home() {
         </>
       )}
 
-      {isSignedIn && <TemplatesDisplay />}
+      {isSignedIn && <h2 className="text-9xl">Hi!</h2>}
     </div>
   );
 }

@@ -21,7 +21,7 @@ import { useTemplates, useDeleteTemplate } from "@/hooks/useTemplates";
 import { useLikeTemplate, useUnlikeTemplate } from "@/hooks/useTemplateInteractions";
 import { useDebounce } from "use-debounce";
 
-export default function TemplatesDisplay() {
+export default function TemplatesHome() {
   const { userId } = useAuth();
   const navigate = useNavigate();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -99,11 +99,11 @@ export default function TemplatesDisplay() {
   };
 
   const handleEditTemplate = (id: number) => {
-    navigate(`/templates/${id}/edit`);
+    navigate(`/edit-template/${id}`);
   };
 
   const handleViewTemplate = (id: number) => {
-    navigate(`/templates/${id}`);
+    navigate(`/fill-form/${id}`);
   };
 
   const confirmDeleteTemplate = () => {

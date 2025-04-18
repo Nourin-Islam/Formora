@@ -60,10 +60,24 @@ export function UserSelector({ selectedUsers = [], onChange, excludeUsers = [] }
         <h4 className="text-sm font-medium">Selected Users</h4>
         <div className="flex items-center space-x-2">
           <span className="text-xs text-gray-500">Sort by:</span>
-          <Button variant={sortBy === "name" ? "default" : "outline"} size="sm" onClick={() => setSortBy("name")}>
+          <Button
+            variant={sortBy === "name" ? "default" : "outline"}
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              setSortBy("name");
+            }}
+          >
             Name
           </Button>
-          <Button variant={sortBy === "email" ? "default" : "outline"} size="sm" onClick={() => setSortBy("email")}>
+          <Button
+            variant={sortBy === "email" ? "default" : "outline"}
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              setSortBy("email");
+            }}
+          >
             Email
           </Button>
         </div>

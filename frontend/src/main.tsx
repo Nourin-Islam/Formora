@@ -18,10 +18,14 @@ import PublicRoute from "./components/routes/PublicRoute";
 import PrivateRoute from "./components/routes/PrivateRoute";
 import AdminRoute from "./components/routes/AdminRoute";
 
-import TemplateCreationClaude from "@/pages/TemplateCreate";
+import TemplateCreation from "@/pages/TemplateCreate";
+import TemplateEdit from "@/pages/TemplateEdit";
+import FormFill from "@/pages/FormFill";
 
 import ManageTagsPage from "@/pages/ManageTags";
 import ManageTopics from "@/pages/ManageTopics";
+import TemplatesHome from "@/pages/TemplatesHome";
+import FormView from "@/pages/FormView";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
@@ -51,7 +55,13 @@ const router = createBrowserRouter([
       },
       {
         element: <PrivateRoute />,
-        children: [{ path: "create-template", element: <TemplateCreationClaude /> }],
+        children: [
+          { path: "templates", element: <TemplatesHome /> },
+          { path: "create-template", element: <TemplateCreation /> },
+          { path: "edit-template/:id", element: <TemplateEdit /> },
+          { path: "fill-form/:id", element: <FormFill /> },
+          { path: "forms/:id", element: <FormView /> },
+        ],
       },
       {
         element: <AdminRoute />,
