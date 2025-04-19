@@ -471,6 +471,105 @@ export const deleteTemplate = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to delete template" });
   }
 };
+
+export const searchTemplates = async (req: Request, res: Response) => {
+  const searchText = req.query.q as string;
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 10;
+  const offset = (page - 1) * limit;
+
+  if (!searchText) {
+    return res.status(400).json({ error: "Missing search text" });
+  }
+
+  try {
+    // Step 1: Get matched template IDs via full-text search
+    const matchedTemplates: { id: number }[] = await prisma.$queryRaw`
+      SELECT DISTINCT t.id
+      FROM "Template" t
+      LEFT JOIN "Question" q ON q."templateId" = t.id
+      LEFT JOIN "_TemplateToTag" tt ON tt."A" = t.id
+      LEFT JOIN "Tag" tag ON tag.id = tt."B"
+      LEFT JOIN "Comment" c ON c."templateId" = t.id
+      WHERE
+        to_tsvector('english', coalesce(t.title, '') || ' ' || coalesce(t.description, ''))
+        || to_tsvector('english', coalesce(q.description, ''))
+        || to_tsvector('english', coalesce(tag.name, ''))
+        || to_tsvector('english', coalesce(c.content, ''))
+        @@ plainto_tsquery('english', ${searchText})
+      LIMIT ${limit} OFFSET ${offset};
+    `;
+
+    const templateIds = matchedTemplates.map((t) => t.id);
+
+    if (templateIds.length === 0) {
+      return res.json({ templates: [], totalPages: 0, hasNextPage: false, totalCount: 0 });
+    }
+
+    // Step 2: Get enriched data like getAllTemplates
+    const templates = await prisma.template.findMany({
+      where: { id: { in: templateIds } },
+      include: {
+        user: { select: { id: true, clerkId: true, name: true, email: true } },
+        topic: true,
+        tags: { include: { tag: true } },
+        _count: { select: { questions: true, comments: true, likes: true } },
+        likes: {
+          include: {
+            user: {
+              select: {
+                clerkId: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    // Step 3: Format like getAllTemplates
+    const formattedTemplates = templates.map((template) => {
+      const { likes, ...templateData } = template;
+
+      return {
+        ...templateData,
+        tags: template.tags.map((t) => t.tag),
+        questionCount: template._count.questions,
+        commentCount: template._count.comments,
+        likesCount: template._count.likes,
+        peopleLiked: likes.map((like) => like.user.clerkId),
+      };
+    });
+
+    // Optional: Total count for pagination
+    const totalCountResult: { count: number }[] = await prisma.$queryRaw`
+      SELECT COUNT(DISTINCT t.id) AS count
+      FROM "Template" t
+      LEFT JOIN "Question" q ON q."templateId" = t.id
+      LEFT JOIN "_TemplateToTag" tt ON tt."A" = t.id
+      LEFT JOIN "Tag" tag ON tag.id = tt."B"
+      LEFT JOIN "Comment" c ON c."templateId" = t.id
+      WHERE
+        to_tsvector('english', coalesce(t.title, '') || ' ' || coalesce(t.description, ''))
+        || to_tsvector('english', coalesce(q.description, ''))
+        || to_tsvector('english', coalesce(tag.name, ''))
+        || to_tsvector('english', coalesce(c.content, ''))
+        @@ plainto_tsquery('english', ${searchText});
+    `;
+
+    const totalCount = totalCountResult[0]?.count || 0;
+
+    res.json({
+      templates: formattedTemplates,
+      totalPages: Math.ceil(totalCount / limit),
+      hasNextPage: page * limit < totalCount,
+      totalCount,
+    });
+  } catch (error) {
+    console.error("Search error:", error);
+    res.status(500).json({ error: "Search failed" });
+  }
+};
+
 /*
 export const getAllTemplates = async (req: Request, res: Response) => {
   try {

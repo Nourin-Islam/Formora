@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Pagination } from "@/components/ui/pagination";
-import { Input } from "@/components/ui/input";
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MoreHorizontal, Heart, MessageSquare, Search, Plus, Edit, Eye, Trash2, Check, Filter } from "lucide-react";
 import TemplatesSkeleton from "@/components/global/TemplatesSkeleton";
@@ -19,7 +19,6 @@ import { FilterOptions, Template } from "@/types/index";
 import { useTopics } from "@/hooks/useTopics";
 import { useTemplates, useDeleteTemplate } from "@/hooks/useTemplates";
 import { useLikeTemplate, useUnlikeTemplate } from "@/hooks/useTemplateInteractions";
-import { useDebounce } from "use-debounce";
 
 export default function TemplatesHome() {
   const { userId } = useAuth();
@@ -33,8 +32,8 @@ export default function TemplatesHome() {
     sortOrder: "desc",
   });
   const [showFilters, setShowFilters] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
+  // const [searchTerm, setSearchTerm] = useState("");
+  // const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
 
   // Fetch topics for filter dropdown
   const { data: topicsData } = useTopics({});
@@ -132,16 +131,16 @@ export default function TemplatesHome() {
     navigate("/create-template");
   };
 
-  useEffect(() => {
-    // Only update if the debounced value is different from current filter
-    if (debouncedSearchTerm !== filters.title) {
-      setFilters((prev) => ({
-        ...prev,
-        title: debouncedSearchTerm || "",
-        page: 1, // Reset to first page on search change
-      }));
-    }
-  }, [debouncedSearchTerm, filters.title]);
+  // useEffect(() => {
+  //   // Only update if the debounced value is different from current filter
+  //   if (debouncedSearchTerm !== filters.title) {
+  //     setFilters((prev) => ({
+  //       ...prev,
+  //       title: debouncedSearchTerm || "",
+  //       page: 1, // Reset to first page on search change
+  //     }));
+  //   }
+  // }, [debouncedSearchTerm, filters.title]);
 
   if (isLoading && templates.length === 0) {
     return <TemplatesSkeleton />;
@@ -163,22 +162,22 @@ export default function TemplatesHome() {
     <div className="container mx-auto py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Templates</h1>
-        <Button onClick={createNewTemplate}>
+        <Button onClick={createNewTemplate} className="ml-auto">
           <Plus className="mr-2 h-4 w-4" /> Create Template
+        </Button>
+        <Button variant="outline" onClick={() => setShowFilters(!showFilters)} className="ml-2">
+          <Filter className="h-4 w-4 mr-2" />
+          Filters
         </Button>
       </div>
 
       <div className="mb-6">
-        <div className="flex items-center justify-between">
-          <div className="relative w-full max-w-md">
+        {/* <div className="flex items-center justify-between"> */}
+        {/* <div className="relative w-full max-w-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             <Input placeholder="Search templates..." className="pl-10" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-          </div>
-          <Button variant="outline" onClick={() => setShowFilters(!showFilters)} className="ml-2">
-            <Filter className="h-4 w-4 mr-2" />
-            Filters
-          </Button>
-        </div>
+          </div> */}
+        {/* </div> */}
 
         {showFilters && (
           <div className="mt-4 p-4 border rounded-md grid grid-cols-1 md:grid-cols-3 gap-4">
