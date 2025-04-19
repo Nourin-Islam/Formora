@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { IKContext, IKUpload, IKImage } from "imagekitio-react";
-import Authenticator from "@/lib/Authenticator";
+import ImageKitAuthenticator from "@/lib/ImageKitAuthenticator";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Card } from "@/components/ui/card";
@@ -72,7 +72,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ imageUrl, setImageUrl }) => {
           </Button>
         </Card>
       ) : (
-        <IKContext publicKey="public_D3R2YXCqESRUwCNMgLufGCsa8GY=" urlEndpoint="https://ik.imagekit.io/odinbook" authenticator={Authenticator}>
+        <IKContext publicKey="public_D3R2YXCqESRUwCNMgLufGCsa8GY=" urlEndpoint="https://ik.imagekit.io/odinbook" authenticator={ImageKitAuthenticator}>
           <label className="cursor-pointer block">
             <div className="border-2 border-dashed border-gray-300 rounded-md p-6 w-full h-40 flex flex-col items-center justify-center hover:border-gray-400 transition-colors aspect-video">
               <Upload className="h-10 w-10 text-gray-400 mb-2" />

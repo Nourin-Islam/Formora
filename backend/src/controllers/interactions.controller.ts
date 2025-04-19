@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import { prisma } from "../lib/prisma.ts";
 
+import { broadcastCommentUpdate } from "../websocket.ts";
+
 // Interfaces
 interface UserPayload {
   id: number;
@@ -109,20 +111,25 @@ export const removeLike = async (req: Request, res: Response): Promise<void> => 
 };
 
 // Comment Controllers
+
+// Comment Controllers
 export const createComment = async (req: Request, res: Response): Promise<void> => {
   try {
     const { templateId } = req.params;
     const { content } = req.body as CommentCreateData;
+
     if (!req.user) {
       res.status(401).json({ message: "Unauthorized" });
       return;
     }
+
     const userId = req.user.id;
+    const numericTemplateId = parseInt(templateId);
 
     const comment = await prisma.comment.create({
       data: {
         content,
-        templateId: parseInt(templateId),
+        templateId: numericTemplateId,
         userId: parseInt(userId),
       },
       include: {
@@ -136,6 +143,12 @@ export const createComment = async (req: Request, res: Response): Promise<void> 
       },
     });
 
+    // Broadcast the new comment to all subscribers
+    broadcastCommentUpdate(numericTemplateId, {
+      userId: req.user.id,
+      isAdmin: req.user.isAdmin,
+    });
+
     res.status(201).json(comment);
   } catch (error) {
     console.error("Error creating comment:", error);
@@ -146,9 +159,10 @@ export const createComment = async (req: Request, res: Response): Promise<void> 
 export const getComments = async (req: Request, res: Response): Promise<void> => {
   try {
     const { templateId } = req.params;
+    const numericTemplateId = parseInt(templateId);
 
     const comments = await prisma.comment.findMany({
-      where: { templateId: parseInt(templateId) },
+      where: { templateId: numericTemplateId },
       include: {
         user: {
           select: {
@@ -161,7 +175,47 @@ export const getComments = async (req: Request, res: Response): Promise<void> =>
       orderBy: { createdAt: "asc" },
     });
 
+    console.log("Fetched comments for template:", templateId, "Comments:", comments);
     res.status(200).json(comments);
+  } catch (error) {
+    console.error("Error fetching comments:", error);
+    res.status(500).json({ message: "Failed to fetch comments" });
+  }
+};
+
+export const getCommentsForUser = async (req: Request, res: Response): Promise<void> => {
+  try {
+    if (!req.user) {
+      res.status(401).json({ message: "Unauthorized" });
+      return;
+    }
+
+    const requestingUserId = req.user.id;
+    const requestingUserIsAdmin = req.user.isAdmin;
+    const { templateId } = req.params;
+    const numericTemplateId = parseInt(templateId);
+
+    const comments = await prisma.comment.findMany({
+      where: { templateId: numericTemplateId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "asc" },
+    });
+
+    res.status(200).json({
+      comments,
+      requestingUser: {
+        userId: requestingUserId,
+        isAdmin: requestingUserIsAdmin,
+      },
+    });
   } catch (error) {
     console.error("Error fetching comments:", error);
     res.status(500).json({ message: "Failed to fetch comments" });
@@ -172,10 +226,12 @@ export const updateComment = async (req: Request, res: Response): Promise<void> 
   try {
     const { commentId } = req.params;
     const { content } = req.body as CommentUpdateData;
+
     if (!req.user) {
       res.status(401).json({ message: "Unauthorized" });
       return;
     }
+
     const userId = req.user.id;
 
     const comment = await prisma.comment.findUnique({
@@ -206,6 +262,12 @@ export const updateComment = async (req: Request, res: Response): Promise<void> 
       },
     });
 
+    // Broadcast the updated comment to all subscribers
+    broadcastCommentUpdate(comment.templateId, {
+      userId: req.user.id,
+      isAdmin: req.user.isAdmin,
+    });
+
     res.status(200).json(updatedComment);
   } catch (error) {
     console.error("Error updating comment:", error);
@@ -216,10 +278,12 @@ export const updateComment = async (req: Request, res: Response): Promise<void> 
 export const deleteComment = async (req: Request, res: Response): Promise<void> => {
   try {
     const { commentId } = req.params;
+
     if (!req.user) {
       res.status(401).json({ message: "Unauthorized" });
       return;
     }
+
     const userId = req.user.id;
 
     const comment = await prisma.comment.findUnique({
@@ -238,6 +302,12 @@ export const deleteComment = async (req: Request, res: Response): Promise<void> 
 
     await prisma.comment.delete({
       where: { id: parseInt(commentId) },
+    });
+
+    // Broadcast the comment deletion to all subscribers
+    broadcastCommentUpdate(comment.templateId, {
+      userId: req.user.id,
+      isAdmin: req.user.isAdmin,
     });
 
     res.status(200).json({ message: "Comment deleted successfully" });

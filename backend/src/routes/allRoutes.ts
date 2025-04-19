@@ -1,7 +1,6 @@
 import express from "express";
 
 import formRoutes from "./formRoutes.ts";
-import formProcessRoutes from "./formProcessRoutes.ts";
 import imagekitRoutes from "./imagekitRoutes.ts";
 import interactionsRouter from "./interactionsRouter.ts";
 import questionRoutes from "./questionRoutes.ts";
@@ -14,7 +13,6 @@ import usersRoutes from "./usersRoutes.ts";
 const router = express.Router();
 
 router.use("/forms", formRoutes);
-router.use("/form-process", formProcessRoutes);
 router.use("/imagekit", imagekitRoutes);
 router.use("/interact", interactionsRouter);
 router.use("/questions", questionRoutes);

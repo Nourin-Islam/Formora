@@ -6,13 +6,20 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import { handleClerkWebhook } from "./webhooks.js";
 import routes from "./routes/allRoutes.ts"; // This will import from routes/index.ts
+import { createServer } from "http";
+import { setupWebSocket, broadcastCommentUpdate } from "./websocket.ts";
 
 dotenv.config();
 
 const app = express();
+const server = createServer(app);
+
 app.set("trust proxy", 1);
 app.use(clerkMiddleware());
 const PORT = parseInt(process.env.PORT || "3000", 10);
+
+// Setup WebSocket server
+setupWebSocket(server);
 
 // Security middleware
 app.use(helmet());
@@ -61,7 +68,7 @@ app.use((err: Error, req: express.Request, res: express.Response, next: express.
   res.status(500).json({ error: "Internal server error" });
 });
 
-const server = app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 

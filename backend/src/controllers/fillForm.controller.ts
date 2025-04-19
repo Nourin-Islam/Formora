@@ -1,8 +1,7 @@
 import { Request, Response } from "express";
 import { prisma } from "../lib/prisma.ts";
 
-// Get template for filling
-
+// Get template for filling with user's existing form if it exists
 export const getTemplateForFilling = async (req: Request, res: Response) => {
   try {
     const templateId = parseInt(req.params.id);
@@ -52,10 +51,113 @@ export const getTemplateForFilling = async (req: Request, res: Response) => {
       }
     }
 
-    res.json(template);
+    // Check if user already has a form for this template
+    let existingForm = null;
+    if (userId) {
+      existingForm = await prisma.form.findFirst({
+        where: {
+          templateId,
+          userId: parseInt(userId),
+        },
+        include: {
+          answers: {
+            include: {
+              question: {
+                select: {
+                  id: true,
+                  questionType: true,
+                  options: true,
+                },
+              },
+            },
+          },
+        },
+      });
+    }
+
+    res.json({
+      template,
+      existingForm,
+    });
   } catch (err) {
     console.error("Error fetching template:", err);
     res.status(500).json({ error: "Failed to fetch template" });
+  }
+};
+
+// Get a filled form
+export const getFilledForm = async (req: Request, res: Response) => {
+  try {
+    const formId = parseInt(req.params.id);
+    const userId = req.user?.id;
+
+    const form = await prisma.form.findUnique({
+      where: { id: formId },
+      include: {
+        template: {
+          include: {
+            user: { select: { id: true, name: true } },
+            topic: true,
+          },
+        },
+        user: { select: { id: true, name: true, email: true } },
+        answers: {
+          include: {
+            question: {
+              select: {
+                id: true,
+                title: true,
+                description: true,
+                questionType: true,
+                position: true,
+              },
+            },
+          },
+          orderBy: { question: { position: "asc" } },
+        },
+      },
+    });
+
+    if (!form) {
+      res.status(404).json({ error: "Form not found" });
+      return;
+    }
+
+    // Check permissions
+    const isAdmin = req.user?.isAdmin;
+    const isFormOwner = form.userId === parseInt(userId as string);
+    const isTemplateOwner = form.template.userId === parseInt(userId as string);
+
+    if (!isAdmin && !isFormOwner && !isTemplateOwner) {
+      res.status(403).json({ error: "Not authorized to view this form" });
+      return;
+    }
+
+    // Format response
+    const formattedForm = {
+      id: form.id,
+      createdAt: form.createdAt,
+      updatedAt: form.updatedAt,
+      template: {
+        id: form.template.id,
+        title: form.template.title,
+        description: form.template.description,
+        user: form.template.user,
+        topic: form.template.topic,
+      },
+      user: form.user,
+      answers: form.answers.map((a) => ({
+        id: a.id,
+        question: a.question,
+        value: a.value,
+        createdAt: a.createdAt,
+      })),
+    };
+
+    res.json(formattedForm);
+  } catch (err) {
+    console.error("Error fetching form:", err);
+    res.status(500).json({ error: "Failed to fetch form" });
   }
 };
 
@@ -271,83 +373,6 @@ export const submitForm = async (req: Request, res: Response) => {
   } catch (err) {
     console.error("Error submitting form:", err);
     res.status(500).json({ error: "Failed to submit form" });
-  }
-};
-// Get a filled form
-
-// GET /forms/:id - Get a filled form
-export const getForm = async (req: Request, res: Response) => {
-  try {
-    const formId = parseInt(req.params.id);
-    const userId = req.user?.id;
-
-    const form = await prisma.form.findUnique({
-      where: { id: formId },
-      include: {
-        template: {
-          include: {
-            user: { select: { id: true, name: true } },
-            topic: true,
-          },
-        },
-        user: { select: { id: true, name: true, email: true } },
-        answers: {
-          include: {
-            question: {
-              select: {
-                id: true,
-                title: true,
-                description: true,
-                questionType: true,
-                position: true,
-              },
-            },
-          },
-          orderBy: { question: { position: "asc" } },
-        },
-      },
-    });
-
-    if (!form) {
-      res.status(404).json({ error: "Form not found" });
-      return;
-    }
-
-    // Check permissions
-    const isAdmin = req.user?.isAdmin;
-    const isFormOwner = form.userId === parseInt(userId as string);
-    const isTemplateOwner = form.template.userId === parseInt(userId as string);
-
-    if (!isAdmin && !isFormOwner && !isTemplateOwner) {
-      res.status(403).json({ error: "Not authorized to view this form" });
-      return;
-    }
-
-    // Format response
-    const formattedForm = {
-      id: form.id,
-      createdAt: form.createdAt,
-      updatedAt: form.updatedAt,
-      template: {
-        id: form.template.id,
-        title: form.template.title,
-        description: form.template.description,
-        user: form.template.user,
-        topic: form.template.topic,
-      },
-      user: form.user,
-      answers: form.answers.map((a) => ({
-        id: a.id,
-        question: a.question,
-        value: a.value,
-        createdAt: a.createdAt,
-      })),
-    };
-
-    res.json(formattedForm);
-  } catch (err) {
-    console.error("Error fetching form:", err);
-    res.status(500).json({ error: "Failed to fetch form" });
   }
 };
 

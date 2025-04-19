@@ -1,13 +1,19 @@
 import express from "express";
 import { authenticateUser } from "../middleware/authenticateUser.ts";
-import { submitForm, getFormResults } from "../controllers/form.controller.ts";
+import { getTemplateForFilling, submitForm, getFilledForm, deleteFilledForm } from "../controllers/fillForm.controller.ts";
 
 const router = express.Router();
 
-// Submit a form
-router.post("/:templateId", authenticateUser, submitForm);
+// Get template for filling
+router.get("/fill/:id", authenticateUser, getTemplateForFilling);
 
-// Get form results
-router.get("/:templateId", authenticateUser, getFormResults);
+// Submit a filled form
+router.post("/fill", authenticateUser, submitForm);
+
+// Get a filled form
+router.get("/view/:id", authenticateUser, getFilledForm);
+
+// Delete a filled form
+router.delete("/delete/:id", authenticateUser, deleteFilledForm);
 
 export default router;

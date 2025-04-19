@@ -30,15 +30,17 @@ const FormView = () => {
     queryKey: ["forms", id],
     queryFn: async () => {
       const { authenticatedApi } = await createAuthenticatedApi(getToken);
-      const response = await authenticatedApi.get(`/form-process/view/${id}`);
+      const response = await authenticatedApi.get(`/forms/view/${id}`);
       return response.data;
     },
     retry: false,
   });
 
+  console.log("Form data", form);
+
   const handleDelete = async () => {
     const { authenticatedApi } = await createAuthenticatedApi(getToken);
-    await authenticatedApi.delete(`/form-process/delete/${id}`);
+    await authenticatedApi.delete(`/forms/delete/${id}`);
     toast.success("Form deleted successfully");
     navigate("/templates");
   };
@@ -125,7 +127,17 @@ const FormView = () => {
               <h3 className="text-lg font-medium">{answer.question.title}</h3>
               {answer.question.description && <p className="text-sm text-muted-foreground">{answer.question.description}</p>}
 
-              <div className="mt-2">{answer.question.questionType === "CHECKBOX" ? <Badge variant={answer.value === "true" ? "default" : "secondary"}>{answer.value === "true" ? "Yes" : "No"}</Badge> : <p className="text-base">{answer.value}</p>}</div>
+              {answer.question.questionType === "CHECKBOX" ? (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {JSON.parse(answer.value).map((val: string, index: number) => (
+                    <Badge key={index} variant="default" className="text-sm">
+                      {val}
+                    </Badge>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-base">{answer.value}</p>
+              )}
             </div>
           ))}
         </CardContent>

@@ -10,31 +10,36 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { createAuthenticatedApi } from "@/lib/api";
 import { useAuth } from "@clerk/clerk-react";
+import SmallSkeleton from "@/components/global/SmallSkeleton";
+import { useEffect } from "react";
+import { Comments } from "@/components/Comments";
 
 const FormFill = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { getToken } = useAuth();
+  const { getToken, userId } = useAuth();
 
-  // Fetch template data
+  // Fetch template data and check if user has already submitted
   const {
-    data: template,
+    data: templateData,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["templates", id, "fill"],
+    queryKey: ["templates", id, "fill", userId],
     queryFn: async () => {
       const { authenticatedApi } = await createAuthenticatedApi(getToken);
-      const response = await authenticatedApi.get(`/form-process/fill/${id}`);
+      const response = await authenticatedApi.get(`/forms/fill/${id}`);
       return response.data;
     },
     retry: false,
   });
+
+  const template = templateData?.template;
+  const existingForm = templateData?.existingForm;
 
   // Generate dynamic schema based on template questions
   const formSchema = z.object(
@@ -67,64 +72,90 @@ const FormFill = () => {
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: template?.questions?.reduce((values: Record<string, any>, question: any) => {
-      if (question.questionType === "CHECKBOX" && question.options?.length > 0) {
-        values[`question_${question.id}`] = [];
-      } else if (question.questionType === "CHECKBOX") {
-        values[`question_${question.id}`] = false;
-      } else {
-        values[`question_${question.id}`] = "";
-      }
-      return values;
-    }, {}),
   });
 
-  // Form submission mutation
+  // Set form values when data is loaded
+  useEffect(() => {
+    if (template?.questions && existingForm?.answers) {
+      const defaultValues = template.questions.reduce((values: Record<string, any>, question: any) => {
+        const answer = existingForm?.answers.find((a: { questionId: number; value: string }) => a.questionId === question.id);
+        if (answer) {
+          if (question.questionType === "CHECKBOX" && question.options?.length > 0) {
+            try {
+              values[`question_${question.id}`] = JSON.parse(answer.value);
+            } catch {
+              values[`question_${question.id}`] = [answer.value];
+            }
+          } else if (question.questionType === "INTEGER") {
+            values[`question_${question.id}`] = parseInt(answer.value);
+          } else if (question.questionType === "CHECKBOX") {
+            values[`question_${question.id}`] = answer.value === "true";
+          } else {
+            values[`question_${question.id}`] = answer.value;
+          }
+        } else {
+          // Set default empty values for questions without answers
+          if (question.questionType === "CHECKBOX" && question.options?.length > 0) {
+            values[`question_${question.id}`] = [];
+          } else if (question.questionType === "CHECKBOX") {
+            values[`question_${question.id}`] = false;
+          } else {
+            values[`question_${question.id}`] = "";
+          }
+        }
+        return values;
+      }, {});
+
+      form.reset(defaultValues);
+    } else if (template?.questions) {
+      // Set empty defaults if no existing form
+      const defaultValues = template.questions.reduce((values: Record<string, any>, question: any) => {
+        if (question.questionType === "CHECKBOX" && question.options?.length > 0) {
+          values[`question_${question.id}`] = [];
+        } else if (question.questionType === "CHECKBOX") {
+          values[`question_${question.id}`] = false;
+        } else {
+          values[`question_${question.id}`] = "";
+        }
+        return values;
+      }, {});
+
+      form.reset(defaultValues);
+    }
+  }, [template, existingForm, form]);
+
   const submitForm = useMutation({
     mutationFn: async (values: FormValues) => {
       const { authenticatedApi } = await createAuthenticatedApi(getToken);
-
-      const answers = template.questions.map((question: any) => {
-        const value = values[`question_${question.id}`];
+      const answers = Object.entries(values).map(([key, value]) => {
+        const questionId = key.replace("question_", "");
         return {
-          questionId: question.id,
-          value: Array.isArray(value) ? value.join(",") : String(value),
+          questionId: parseInt(questionId),
+          value: Array.isArray(value) ? JSON.stringify(value) : value.toString(),
         };
       });
 
-      const response = await authenticatedApi.post("/form-process/fill", {
-        templateId: id,
+      const payload = {
+        templateId: parseInt(id!),
         answers,
-      });
+      };
+
+      const response = await authenticatedApi.post("/forms/fill", payload);
       return response.data;
+      // }
     },
     onSuccess: (data) => {
-      // console.log("Form submitted successfully:", data);
-      toast.success("Form submitted successfully");
+      toast.success(existingForm ? "Form updated successfully" : "Form submitted successfully");
+      // navigate("/forms");
       navigate(`/forms/${data.formId}`, { state: { success: true } });
     },
     onError: (error: any) => {
-      console.error("Error submitting form:", error);
-      toast.error(error || "Failed to submit form");
+      toast.error(error.response?.data?.error || "Failed to submit form");
     },
   });
 
   if (isLoading) {
-    return (
-      <div className="container max-w-4xl py-8 space-y-4">
-        <Skeleton className="h-8 w-1/2" />
-        <Skeleton className="h-4 w-3/4" />
-        {[...Array(3)].map((_, i) => (
-          <Card key={i}>
-            <CardContent className="pt-6 space-y-4">
-              <Skeleton className="h-6 w-1/3" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-10 w-full" />
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    );
+    return <SmallSkeleton />;
   }
 
   if (error) {
@@ -154,6 +185,7 @@ const FormFill = () => {
       <Card>
         <CardHeader>
           <CardTitle>{template.title}</CardTitle>
+          {existingForm && <div className="text-sm text-muted-foreground">You submitted this form on {new Date(existingForm.createdAt).toLocaleDateString()}</div>}
           {template.description && <CardDescription className="whitespace-pre-line">{template.description}</CardDescription>}
         </CardHeader>
 
@@ -174,7 +206,7 @@ const FormFill = () => {
                       case "TEXT":
                         return <Textarea id={`question_${question.id}`} {...field} />;
                       case "INTEGER":
-                        return <Input id={`question_${question.id}`} type="number" {...field} onChange={(e) => field.onChange(parseInt(e.target.value) || 0)} />;
+                        return <Input id={`question_${question.id}`} type="number" value={field.value || ""} onChange={(e) => field.onChange(parseInt(e.target.value) || 0)} />;
                       case "CHECKBOX":
                         if (question.options?.length > 0) {
                           // Multiple choice (checkbox group)
@@ -220,14 +252,17 @@ const FormFill = () => {
             {submitForm.isPending ? (
               <>
                 <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-t-transparent border-white"></span>
-                Submitting...
+                {existingForm ? "Updating..." : "Submitting..."}
               </>
+            ) : existingForm ? (
+              "Update Form"
             ) : (
               "Submit Form"
             )}
           </Button>
         </CardFooter>
       </Card>
+      {id && <Comments templateId={parseInt(id, 10)} />}
     </div>
   );
 };
