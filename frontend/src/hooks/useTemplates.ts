@@ -16,6 +16,7 @@ export const useTemplates = (filters?: FilterOptions) => {
       // console.log("Templates response:", response.data);
       return response.data;
     },
+    staleTime: 1000 * 60,
   });
 };
 

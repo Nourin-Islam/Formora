@@ -66,6 +66,13 @@ model Template {
   tags         TemplateTag[]
   accesses     TemplateAccess[]
 
+  @@index([title])
+  @@index([description])
+@@index([userId])
+@@index([topicId])
+@@index([isPublic])
+@@index([isPublished]) 
+
   // @@index([searchVector], type: "GIN")
 }
 

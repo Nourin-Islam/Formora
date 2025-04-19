@@ -64,7 +64,7 @@ export function UserSelector({ selectedUsers = [], onChange, excludeUsers = [] }
             variant={sortBy === "name" ? "default" : "outline"}
             size="sm"
             onClick={(e) => {
-              e.stopPropagation();
+              e.preventDefault();
               setSortBy("name");
             }}
           >
@@ -74,7 +74,7 @@ export function UserSelector({ selectedUsers = [], onChange, excludeUsers = [] }
             variant={sortBy === "email" ? "default" : "outline"}
             size="sm"
             onClick={(e) => {
-              e.stopPropagation();
+              e.preventDefault();
               setSortBy("email");
             }}
           >

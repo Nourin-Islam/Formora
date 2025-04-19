@@ -21,7 +21,7 @@ interface CommentUpdateData {
 // Like Controllers
 export const addLike = async (req: Request, res: Response): Promise<void> => {
   try {
-    console.log("Adding like to template:", req.params.templateId);
+    // console.log("Adding like to template:", req.params.templateId);
     const { templateId } = req.params;
 
     if (!req.user) {

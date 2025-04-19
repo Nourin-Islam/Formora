@@ -46,8 +46,8 @@ export default function TemplatesHome() {
   const totalPages = templatesData?.totalPages || 1;
 
   // Template mutations
-  const { mutate: addLike } = useLikeTemplate();
-  const { mutate: removeLike } = useUnlikeTemplate();
+  const { mutate: addLike } = useLikeTemplate(filters);
+  const { mutate: removeLike } = useUnlikeTemplate(filters);
   const { mutate: deleteTemplate, isPending: isDeleting } = useDeleteTemplate();
 
   const handlePageChange = (page: number) => {
@@ -71,7 +71,7 @@ export default function TemplatesHome() {
       onSuccess: () => {
         toast.success("Successfully added a like.");
 
-        refetch();
+        // refetch();
       },
       onError: (error) => {
         console.error("Error toggling like:", error);
@@ -89,7 +89,7 @@ export default function TemplatesHome() {
       onSuccess: () => {
         toast.success("Successfully removed a like.");
 
-        refetch();
+        // refetch();
       },
       onError: (error) => {
         console.error("Error toggling like:", error);
@@ -158,6 +158,7 @@ export default function TemplatesHome() {
     );
   }
 
+  console.log("Templates: ", templates);
   return (
     <div className="container mx-auto py-8">
       <div className="flex justify-between items-center mb-6">

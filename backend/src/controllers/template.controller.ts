@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import { prisma } from "../lib/prisma.ts";
+import { cache } from "../lib/cache.ts";
 
+// getAllTemplates with caching
 export const getAllTemplates = async (req: Request, res: Response) => {
   try {
     const page = parseInt(req.query.page as string) || 1;
@@ -31,6 +33,13 @@ export const getAllTemplates = async (req: Request, res: Response) => {
       }),
     };
 
+    const cacheKey = `templates:${page}:${limit}:${sortBy}:${sortOrder}:${JSON.stringify(where)}`;
+
+    const cached = cache.get(cacheKey);
+    if (cached) {
+      return res.json(cached);
+    }
+
     const templates = await prisma.template.findMany({
       where,
       orderBy: { [sortBy]: sortOrder },
@@ -54,7 +63,6 @@ export const getAllTemplates = async (req: Request, res: Response) => {
     });
 
     const formattedTemplates = templates.map((template) => {
-      // Destructure to remove the likes array we don't want in the response
       const { likes, ...templateData } = template;
 
       return {
@@ -69,12 +77,15 @@ export const getAllTemplates = async (req: Request, res: Response) => {
 
     const totalCount = await prisma.template.count({ where });
 
-    res.json({
+    const responseData = {
       templates: formattedTemplates,
       totalPages: Math.ceil(totalCount / limit),
       hasNextPage: page * limit < totalCount,
       totalCount,
-    });
+    };
+
+    cache.set(cacheKey, responseData); // Store in cache
+    res.json(responseData);
   } catch (err) {
     console.error("Error fetching templates:", err);
     res.status(500).json({ error: "Failed to fetch templates" });
@@ -236,6 +247,7 @@ export const createTemplate = async (req: Request, res: Response) => {
     };
 
     res.status(201).json(formattedTemplate);
+    cache.flushAll(); // Clear cache after creating a new template
   } catch (err) {
     console.error("Error creating template:", err);
     res.status(500).json({ error: "Failed to create template" });
@@ -421,6 +433,7 @@ export const updateTemplate = async (req: Request, res: Response) => {
     };
 
     res.json(response);
+    cache.flushAll(); // Clear cache after updating a template
   } catch (err) {
     console.error("Error updating template:", err);
     res.status(500).json({ error: "Failed to update template" });
@@ -452,8 +465,106 @@ export const deleteTemplate = async (req: Request, res: Response) => {
     });
 
     res.json({ message: "Template deleted successfully" });
+    cache.flushAll(); // Clear cache after deleting a template
   } catch (err) {
     console.error("Error deleting template:", err);
     res.status(500).json({ error: "Failed to delete template" });
   }
 };
+/*
+export const getAllTemplates = async (req: Request, res: Response) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const sortBy = (req.query.sortBy as string) || "createdAt";
+    const sortOrder = (req.query.sortOrder as string) || "desc";
+    const titleFilter = req.query.title as string | undefined;
+    const topicId = req.query.topicId ? parseInt(req.query.topicId as string) : undefined;
+    const isPublic = req.query.isPublic === "true" ? true : req.query.isPublic === "false" ? false : undefined;
+    const userId = req.query.userId ? parseInt(req.query.userId as string) : undefined;
+    const isPublished = req.query.isPublished === "true" ? true : req.query.isPublished === "false" ? false : undefined;
+    const tagName = req.query.tag as string | undefined;
+
+    const where = {
+      ...(titleFilter && { title: { contains: titleFilter, mode: "insensitive" as const } }),
+      ...(topicId && { topicId }),
+      ...(isPublic !== undefined && { isPublic }),
+      ...(userId && { userId }),
+      ...(isPublished !== undefined && { isPublished }),
+      ...(tagName && {
+        tags: {
+          some: {
+            tag: {
+              name: { contains: tagName, mode: "insensitive" as const },
+            },
+          },
+        },
+      }),
+    };
+
+    const templates = await prisma.template.findMany({
+      where,
+      orderBy: { [sortBy]: sortOrder },
+      skip: (page - 1) * limit,
+      take: limit,
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        imageUrl: true,
+        isPublic: true,
+        isPublished: true,
+        createdAt: true,
+        user: { select: { id: true, name: true, email: true, clerkId: true } },
+
+        topic: { select: { id: true, name: true } },
+        tags: { select: { tag: { select: { name: true } } } },
+        _count: { select: { questions: true, comments: true, likes: true } },
+        likes: { select: { user: { select: { clerkId: true } } } },
+      },
+      // include: {
+      //   user: { select: { id: true, clerkId: true, name: true, email: true } },
+      //   topic: true,
+      //   tags: { include: { tag: true } },
+      //   _count: { select: { questions: true, comments: true, likes: true } },
+      //   likes: {
+      //     include: {
+      //       user: {
+      //         select: {
+      //           clerkId: true,
+      //         },
+      //       },
+      //     },
+      //   },
+      // },
+    });
+
+    const formattedTemplates = templates.map((template) => {
+      // Destructure to remove the likes array we don't want in the response
+      const { likes, ...templateData } = template;
+
+      return {
+        ...templateData,
+        tags: template.tags.map((t) => t.tag),
+        questionCount: template._count.questions,
+        commentCount: template._count.comments,
+        likesCount: template._count.likes,
+        peopleLiked: template.likes.map((like) => like.user.clerkId),
+      };
+    });
+
+    const totalCount = await prisma.template.count({ where });
+
+    res.json({
+      templates: formattedTemplates,
+      totalPages: Math.ceil(totalCount / limit),
+      hasNextPage: page * limit < totalCount,
+      totalCount,
+    });
+  } catch (err) {
+    console.error("Error fetching templates:", err);
+    res.status(500).json({ error: "Failed to fetch templates" });
+  }
+};
+
+*/

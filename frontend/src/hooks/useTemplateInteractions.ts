@@ -1,105 +1,101 @@
-// useTemplateInteractions.ts
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createAuthenticatedApi } from "@/lib/api";
 import { useAuth } from "@clerk/clerk-react";
 import { toast } from "sonner";
 import { TemplatesResponse } from "@/types";
-// useTemplateInteractions.ts
-export const useLikeTemplate = () => {
+import { FilterOptions } from "@/types/index";
+
+export const useLikeTemplate = (filters: FilterOptions) => {
+  const queryKey = ["templates", filters];
   const queryClient = useQueryClient();
   const { getToken, userId } = useAuth();
 
   return useMutation({
     mutationFn: async (templateId: number) => {
+      if (!userId) throw new Error("User not authenticated");
+
       const { authenticatedApi } = await createAuthenticatedApi(getToken);
       await authenticatedApi.post(`/interact/templates/${templateId}/like`);
-      return templateId;
+      return { templateId, userId };
     },
     onMutate: async (templateId) => {
-      // Cancel ongoing queries to prevent overwrites
-      const queryKey = ["templates"] as const;
       await queryClient.cancelQueries({ queryKey });
-      // await queryClient.cancelQueries(["templates"]);
 
-      // Snapshot current data
-      const previousData = queryClient.getQueryData<TemplatesResponse>(["templates"]);
+      const previousData = queryClient.getQueryData<TemplatesResponse>(queryKey);
 
-      // Optimistically update
-      if (previousData) {
-        queryClient.setQueryData(["templates"], {
+      if (previousData && userId) {
+        const updatedData: TemplatesResponse = {
           ...previousData,
           templates: previousData.templates.map((t) =>
             t.id === templateId
               ? {
                   ...t,
                   likesCount: t.likesCount + 1,
-                  peopleLiked: [...t.peopleLiked, userId],
+                  peopleLiked: [...(t.peopleLiked || []), userId],
                 }
               : t
           ),
-        });
+        };
+        queryClient.setQueryData(queryKey, updatedData);
       }
 
       return { previousData };
     },
     onError: (err, templateId, context) => {
-      // Rollback on error
       if (context?.previousData) {
-        queryClient.setQueryData(["templates"], context.previousData);
+        queryClient.setQueryData(queryKey, context.previousData);
       }
       toast.error("Failed to like template");
-      console.error("Error liking template: ", templateId, err);
     },
     onSettled: () => {
-      // Silently refetch in background
-      const queryKey = ["templates"] as const;
       queryClient.invalidateQueries({ queryKey });
     },
   });
 };
 
-export const useUnlikeTemplate = () => {
+export const useUnlikeTemplate = (filters: FilterOptions) => {
+  const queryKey = ["templates", filters];
   const queryClient = useQueryClient();
   const { getToken, userId } = useAuth();
 
   return useMutation({
     mutationFn: async (templateId: number) => {
+      if (!userId) throw new Error("User not authenticated");
+
       const { authenticatedApi } = await createAuthenticatedApi(getToken);
       await authenticatedApi.delete(`/interact/templates/${templateId}/like`);
-      return templateId;
+      return { templateId, userId };
     },
     onMutate: async (templateId) => {
-      const queryKey = ["templates"] as const;
-
       await queryClient.cancelQueries({ queryKey });
-      const previousData = queryClient.getQueryData<TemplatesResponse>(["templates"]);
 
-      if (previousData) {
-        queryClient.setQueryData(["templates"], {
+      const previousData = queryClient.getQueryData<TemplatesResponse>(queryKey);
+
+      if (previousData && userId) {
+        const updatedData: TemplatesResponse = {
           ...previousData,
           templates: previousData.templates.map((t) =>
             t.id === templateId
               ? {
                   ...t,
-                  likesCount: t.likesCount - 1,
-                  peopleLiked: t.peopleLiked.filter((id) => id !== userId),
+                  likesCount: Math.max(0, t.likesCount - 1),
+                  peopleLiked: (t.peopleLiked || []).filter((id) => id !== userId),
                 }
               : t
           ),
-        });
+        };
+        queryClient.setQueryData(queryKey, updatedData);
       }
 
       return { previousData };
     },
     onError: (err, templateId, context) => {
       if (context?.previousData) {
-        queryClient.setQueryData(["templates"], context.previousData);
+        queryClient.setQueryData(queryKey, context.previousData);
       }
       toast.error("Failed to unlike template");
-      console.error("Error unliking template: ", templateId, err);
     },
     onSettled: () => {
-      const queryKey = ["templates"] as const;
       queryClient.invalidateQueries({ queryKey });
     },
   });

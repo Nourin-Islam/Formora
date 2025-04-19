@@ -137,7 +137,7 @@ export default function TemplateEdit() {
       }
       await updateTemplate.mutateAsync({ id, templateData });
       toast.success(`Template ${publish ? "published" : "updated"} successfully`);
-      navigate(`/templates/${id}`);
+      navigate(`/templates`);
     } catch (error) {
       toast.error("Failed to update template");
       console.error("Template update error:", error);
