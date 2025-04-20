@@ -63,7 +63,10 @@ export function useCommentsWebSocket(templateId: number) {
         setIsConnected(false);
         //  Add reconnect logic here
         // Try to reconnect
+        // reload window
+
         setTimeout(() => {
+          window.location.reload();
           console.log("Reconnecting WebSocket...");
           connectWebSocket(url);
         }, 100); // Reconnect after 1 mili second

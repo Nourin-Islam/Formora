@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { prisma } from "../lib/prisma.ts";
+import { refreshEvents } from "../lib/refresh.ts";
 
 // GET all questions for a template
 export const getQuestionsByTemplate = async (req: Request, res: Response): Promise<void> => {
@@ -90,6 +91,7 @@ export const createQuestion = async (req: Request, res: Response): Promise<void>
     });
 
     res.status(201).json(question);
+    refreshEvents.emit("refreshView");
   } catch (err) {
     console.error("Error creating question:", err);
     res.status(500).json({ error: "Failed to create question" });
@@ -132,6 +134,7 @@ export const updateQuestion = async (req: Request, res: Response): Promise<void>
     });
 
     res.json(updatedQuestion);
+    refreshEvents.emit("refreshView");
   } catch (err) {
     console.error("Error updating question:", err);
     res.status(500).json({ error: "Failed to update question" });
@@ -177,6 +180,7 @@ export const deleteQuestion = async (req: Request, res: Response): Promise<void>
     await Promise.all(updatePromises);
 
     res.json({ message: "Question deleted successfully" });
+    refreshEvents.emit("refreshView");
   } catch (err) {
     console.error("Error deleting question:", err);
     res.status(500).json({ error: "Failed to delete question" });
@@ -217,6 +221,7 @@ export const reorderQuestions = async (req: Request, res: Response): Promise<voi
     await Promise.all(updatePromises);
 
     res.json({ message: "Questions reordered successfully" });
+    refreshEvents.emit("refreshView");
   } catch (err) {
     console.error("Error reordering questions:", err);
     res.status(500).json({ error: "Failed to reorder questions" });

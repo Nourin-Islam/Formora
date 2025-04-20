@@ -50,8 +50,8 @@ export const verifyJwtToken = async (token: string): Promise<VerifiedUser> => {
   } catch (error) {
     // console.error("Token verification failed:", error);
     if (error instanceof Error) {
-      console.error("Error details:", error.message);
-      console.error("Error stack:", error.stack);
+      // console.error("Error details:", error.message);
+      // console.error("Error stack:", error.stack);
     }
     throw new Error("Invalid token");
   }

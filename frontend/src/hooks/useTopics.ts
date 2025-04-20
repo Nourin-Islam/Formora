@@ -31,7 +31,7 @@ export const useTopics = (params: TopicQueryParams) => {
       const response = await publicApi.get("/topics", { params });
       return response.data;
     },
-    staleTime: 30000,
+    staleTime: 300000,
   });
 };
 

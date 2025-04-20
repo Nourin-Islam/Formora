@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { prisma } from "../lib/prisma.ts";
+import { refreshEvents } from "../lib/refresh.ts";
 
 // Get template for filling with user's existing form if it exists
 export const getTemplateForFilling = async (req: Request, res: Response) => {
@@ -330,6 +331,7 @@ export const submitForm = async (req: Request, res: Response) => {
         message: "Form updated successfully",
         formId: form.id,
       });
+      refreshEvents.emit("refreshView");
     } else {
       // Create new form
       form = await prisma.$transaction(async (prisma) => {
@@ -369,6 +371,7 @@ export const submitForm = async (req: Request, res: Response) => {
         message: "Form submitted successfully",
         formId: form.id,
       });
+      refreshEvents.emit("refreshView");
     }
   } catch (err) {
     console.error("Error submitting form:", err);
@@ -413,6 +416,7 @@ export const deleteFilledForm = async (req: Request, res: Response) => {
         where: { id: formId },
       });
     });
+    refreshEvents.emit("refreshView");
 
     res.status(200).json({ message: "Form deleted successfully" });
   } catch (err) {

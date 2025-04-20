@@ -26,7 +26,7 @@ export const useTags = (params: TagQueryParams) => {
       const response = await publicApi.get("/tags", { params });
       return response.data;
     },
-    staleTime: 30000, // Adjust the stale time as needed
+    staleTime: 300000, // Adjust the stale time as needed
   });
 };
 

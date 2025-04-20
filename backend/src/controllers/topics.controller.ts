@@ -1,6 +1,7 @@
 // controllers/topics.controller.ts
 import { prisma } from "../lib/prisma.ts";
 import { Request, Response } from "express";
+import { refreshEvents } from "../lib/refresh.ts";
 
 export const getAllTopics = async (req: Request, res: Response) => {
   try {
@@ -85,6 +86,7 @@ export const createTopic = async (req: Request, res: Response) => {
     });
 
     res.status(201).json(topic);
+    refreshEvents.emit("refreshView");
   } catch (err) {
     res.status(500).json({ error: "Failed to create topic" });
   }
@@ -101,6 +103,7 @@ export const updateTopic = async (req: Request, res: Response) => {
     });
 
     res.json(updated);
+    refreshEvents.emit("refreshView");
   } catch (err: any) {
     if (err.code === "P2025") {
       res.status(404).json({ error: "Topic not found" });
@@ -119,6 +122,7 @@ export const deleteTopic = async (req: Request, res: Response) => {
     });
 
     res.json({ message: "Topic deleted successfully" });
+    refreshEvents.emit("refreshView");
   } catch (err: any) {
     if (err.code === "P2025") {
       res.status(404).json({ error: "Topic not found" });

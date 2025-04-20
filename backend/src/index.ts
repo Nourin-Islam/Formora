@@ -8,6 +8,7 @@ import { handleClerkWebhook } from "./webhooks.js";
 import routes from "./routes/allRoutes.ts"; // This will import from routes/index.ts
 import { createServer } from "http";
 import { setupWebSocket, broadcastCommentUpdate } from "./websocket.ts";
+import "./lib/refreshView.ts";
 
 dotenv.config();
 

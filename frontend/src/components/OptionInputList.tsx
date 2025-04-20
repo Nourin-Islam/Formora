@@ -1,22 +1,22 @@
-import { useState } from "react";
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useState } from "react";
 
-export default function OptionInputList({ options, onChange, selectedAnswers = [], onAnswerChange }: { options: string[]; onChange: (options: string[]) => void; selectedAnswers?: string[]; onAnswerChange?: (answers: string[]) => void }) {
+export function OptionInputList({ options, onChange, selectedAnswers = [], onAnswerChange, error }: { options: string[]; onChange: (options: string[]) => void; selectedAnswers?: string[]; onAnswerChange?: (answers: string[]) => void; error?: string }) {
   const [newOption, setNewOption] = useState("");
 
   const addOption = () => {
-    if (newOption.trim() && !options.includes(newOption.trim())) {
-      onChange([...options, newOption.trim()]);
-      setNewOption("");
-    }
+    if (!newOption.trim()) return;
+    if (options.includes(newOption.trim())) return;
+    onChange([...options, newOption.trim()]);
+    setNewOption("");
   };
 
   const removeOption = (option: string) => {
-    const filtered = options.filter((opt) => opt !== option);
-    onChange(filtered);
+    const newOptions = options.filter((opt) => opt !== option);
+    onChange(newOptions);
     if (onAnswerChange) {
       onAnswerChange(selectedAnswers.filter((ans) => ans !== option));
     }
@@ -24,35 +24,42 @@ export default function OptionInputList({ options, onChange, selectedAnswers = [
 
   const toggleAnswer = (option: string) => {
     if (!onAnswerChange) return;
-    if (selectedAnswers.includes(option)) {
-      onAnswerChange(selectedAnswers.filter((a) => a !== option));
-    } else {
-      onAnswerChange([...selectedAnswers, option]);
+    const newAnswers = selectedAnswers.includes(option) ? selectedAnswers.filter((a) => a !== option) : [...selectedAnswers, option];
+    onAnswerChange(newAnswers);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      addOption();
     }
   };
 
   return (
     <div className="space-y-2">
-      <Label>Options</Label>
+      <Label>Options *</Label>
       <div className="flex space-x-2">
-        <Input value={newOption} onChange={(e) => setNewOption(e.target.value)} placeholder="Add option" />
-        <Button onClick={addOption} type="button">
+        <Input value={newOption} onChange={(e) => setNewOption(e.target.value)} onKeyDown={handleKeyDown} placeholder="Add option" />
+        <Button type="button" onClick={addOption}>
           Add
         </Button>
       </div>
+
       <div className="space-y-1">
-        {options.map((opt) => (
-          <div key={opt} className="flex items-center justify-between bg-muted p-2 rounded">
+        {options.map((option) => (
+          <div key={option} className="flex items-center justify-between bg-muted p-2 rounded">
             <div className="flex items-center gap-2">
-              {onAnswerChange && <input type="checkbox" checked={selectedAnswers.includes(opt)} onChange={() => toggleAnswer(opt)} />}
-              <span>{opt}</span>
+              {onAnswerChange && <input type="checkbox" checked={selectedAnswers.includes(option)} onChange={() => toggleAnswer(option)} className="h-4 w-4" />}
+              <span>{option}</span>
             </div>
-            <Button size="sm" variant="ghost" className="text-destructive" onClick={() => removeOption(opt)}>
+            <Button size="sm" variant="ghost" className="text-destructive" onClick={() => removeOption(option)}>
               <Trash2 className="w-4 h-4" />
             </Button>
           </div>
         ))}
       </div>
+
+      {error && <p className="text-sm text-red-500">{error}</p>}
     </div>
   );
 }

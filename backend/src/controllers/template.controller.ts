@@ -1,14 +1,16 @@
 import { Request, Response } from "express";
 import { prisma } from "../lib/prisma.ts";
 import { cache } from "../lib/cache.ts";
+import { refreshEvents } from "../lib/refresh.ts";
 
-// getAllTemplates with caching
 export const getAllTemplates = async (req: Request, res: Response) => {
   try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
+    const offset = (page - 1) * limit;
     const sortBy = (req.query.sortBy as string) || "createdAt";
     const sortOrder = (req.query.sortOrder as string) || "desc";
+
     const titleFilter = req.query.title as string | undefined;
     const topicId = req.query.topicId ? parseInt(req.query.topicId as string) : undefined;
     const isPublic = req.query.isPublic === "true" ? true : req.query.isPublic === "false" ? false : undefined;
@@ -16,66 +18,63 @@ export const getAllTemplates = async (req: Request, res: Response) => {
     const isPublished = req.query.isPublished === "true" ? true : req.query.isPublished === "false" ? false : undefined;
     const tagName = req.query.tag as string | undefined;
 
-    const where = {
-      ...(titleFilter && { title: { contains: titleFilter, mode: "insensitive" as const } }),
-      ...(topicId && { topicId }),
-      ...(isPublic !== undefined && { isPublic }),
-      ...(userId && { userId }),
-      ...(isPublished !== undefined && { isPublished }),
-      ...(tagName && {
-        tags: {
-          some: {
-            tag: {
-              name: { contains: tagName, mode: "insensitive" as const },
-            },
-          },
-        },
-      }),
-    };
+    const filters: string[] = [];
+    if (titleFilter) filters.push(`LOWER(t.title) LIKE LOWER('%${titleFilter}%')`);
+    if (topicId) filters.push(`t."topic"->>'id' = '${topicId}'`);
+    if (userId) filters.push(`t."user"->>'id' = '${userId}'`);
+    if (isPublic !== undefined) filters.push(`t."isPublic" = ${isPublic}`);
+    if (isPublished !== undefined) filters.push(`t."isPublished" = ${isPublished}`);
+    if (tagName) filters.push(`EXISTS (SELECT 1 FROM jsonb_array_elements(t."tags") tag WHERE LOWER(tag->>'name') LIKE LOWER('%${tagName}%'))`);
 
-    const cacheKey = `templates:${page}:${limit}:${sortBy}:${sortOrder}:${JSON.stringify(where)}`;
+    const whereClause = filters.length > 0 ? `WHERE ${filters.join(" AND ")}` : "";
 
+    const cacheKey = `joined-view:${page}:${limit}:${sortBy}:${sortOrder}:${JSON.stringify(filters)}`;
     const cached = cache.get(cacheKey);
     if (cached) {
       return res.json(cached);
     }
 
-    const templates = await prisma.template.findMany({
-      where,
-      orderBy: { [sortBy]: sortOrder },
-      skip: (page - 1) * limit,
-      take: limit,
-      include: {
-        user: { select: { id: true, clerkId: true, name: true, email: true } },
-        topic: true,
-        tags: { include: { tag: true } },
-        _count: { select: { questions: true, comments: true, likes: true } },
-        likes: {
-          include: {
-            user: {
-              select: {
-                clerkId: true,
-              },
-            },
-          },
-        },
+    const templates = await prisma.$queryRawUnsafe<any[]>(`
+      SELECT * FROM template_search_joined_view t
+      ${whereClause}
+      ORDER BY t."${sortBy}" ${sortOrder}
+      LIMIT ${limit} OFFSET ${offset}
+    `);
+
+    const countResult = await prisma.$queryRawUnsafe<any[]>(`
+      SELECT COUNT(*) FROM template_search_joined_view t
+      ${whereClause}
+    `);
+
+    const totalCount = Number(countResult[0].count || 0);
+
+    const formattedTemplates = templates.map((t) => ({
+      id: Number(t.id),
+      title: t.title,
+      description: t.description,
+      imageUrl: t.imageUrl,
+      isPublic: t.isPublic,
+      isPublished: t.isPublished,
+      createdAt: t.createdAt,
+      updatedAt: t.updatedAt,
+      user: {
+        ...t.user,
+        id: Number(t.user.id),
       },
-    });
-
-    const formattedTemplates = templates.map((template) => {
-      const { likes, ...templateData } = template;
-
-      return {
-        ...templateData,
-        tags: template.tags.map((t) => t.tag),
-        questionCount: template._count.questions,
-        commentCount: template._count.comments,
-        likesCount: template._count.likes,
-        peopleLiked: template.likes.map((like) => like.user.clerkId),
-      };
-    });
-
-    const totalCount = await prisma.template.count({ where });
+      topic: {
+        ...t.topic,
+        id: Number(t.topic.id),
+      },
+      tags: (t.tags || []).map((tag: any) => ({
+        ...tag,
+        id: Number(tag.id),
+        usageCount: Number(tag.usageCount),
+      })),
+      questionCount: Number(t.questionCount),
+      commentCount: Number(t.commentCount),
+      likesCount: Number(t.likesCount),
+      peopleLiked: t.peopleLiked || [],
+    }));
 
     const responseData = {
       templates: formattedTemplates,
@@ -84,11 +83,11 @@ export const getAllTemplates = async (req: Request, res: Response) => {
       totalCount,
     };
 
-    cache.set(cacheKey, responseData); // Store in cache
+    cache.set(cacheKey, responseData);
     res.json(responseData);
   } catch (err) {
-    console.error("Error fetching templates:", err);
-    res.status(500).json({ error: "Failed to fetch templates" });
+    console.error("Error fetching templates from view:", err);
+    res.status(500).json({ error: "Failed to fetch templates from view" });
   }
 };
 
@@ -247,6 +246,7 @@ export const createTemplate = async (req: Request, res: Response) => {
     };
 
     res.status(201).json(formattedTemplate);
+    refreshEvents.emit("refreshView");
     cache.flushAll(); // Clear cache after creating a new template
   } catch (err) {
     console.error("Error creating template:", err);
@@ -433,6 +433,7 @@ export const updateTemplate = async (req: Request, res: Response) => {
     };
 
     res.json(response);
+    refreshEvents.emit("refreshView");
     cache.flushAll(); // Clear cache after updating a template
   } catch (err) {
     console.error("Error updating template:", err);
@@ -465,205 +466,10 @@ export const deleteTemplate = async (req: Request, res: Response) => {
     });
 
     res.json({ message: "Template deleted successfully" });
+    refreshEvents.emit("refreshView");
     cache.flushAll(); // Clear cache after deleting a template
   } catch (err) {
     console.error("Error deleting template:", err);
     res.status(500).json({ error: "Failed to delete template" });
   }
 };
-
-export const searchTemplates = async (req: Request, res: Response) => {
-  const searchText = req.query.q as string;
-  const page = parseInt(req.query.page as string) || 1;
-  const limit = parseInt(req.query.limit as string) || 10;
-  const offset = (page - 1) * limit;
-
-  if (!searchText) {
-    return res.status(400).json({ error: "Missing search text" });
-  }
-
-  try {
-    // Step 1: Get matched template IDs via full-text search
-    const matchedTemplates: { id: number }[] = await prisma.$queryRaw`
-      SELECT DISTINCT t.id
-      FROM "Template" t
-      LEFT JOIN "Question" q ON q."templateId" = t.id
-      LEFT JOIN "_TemplateToTag" tt ON tt."A" = t.id
-      LEFT JOIN "Tag" tag ON tag.id = tt."B"
-      LEFT JOIN "Comment" c ON c."templateId" = t.id
-      WHERE
-        to_tsvector('english', coalesce(t.title, '') || ' ' || coalesce(t.description, ''))
-        || to_tsvector('english', coalesce(q.description, ''))
-        || to_tsvector('english', coalesce(tag.name, ''))
-        || to_tsvector('english', coalesce(c.content, ''))
-        @@ plainto_tsquery('english', ${searchText})
-      LIMIT ${limit} OFFSET ${offset};
-    `;
-
-    const templateIds = matchedTemplates.map((t) => t.id);
-
-    if (templateIds.length === 0) {
-      return res.json({ templates: [], totalPages: 0, hasNextPage: false, totalCount: 0 });
-    }
-
-    // Step 2: Get enriched data like getAllTemplates
-    const templates = await prisma.template.findMany({
-      where: { id: { in: templateIds } },
-      include: {
-        user: { select: { id: true, clerkId: true, name: true, email: true } },
-        topic: true,
-        tags: { include: { tag: true } },
-        _count: { select: { questions: true, comments: true, likes: true } },
-        likes: {
-          include: {
-            user: {
-              select: {
-                clerkId: true,
-              },
-            },
-          },
-        },
-      },
-    });
-
-    // Step 3: Format like getAllTemplates
-    const formattedTemplates = templates.map((template) => {
-      const { likes, ...templateData } = template;
-
-      return {
-        ...templateData,
-        tags: template.tags.map((t) => t.tag),
-        questionCount: template._count.questions,
-        commentCount: template._count.comments,
-        likesCount: template._count.likes,
-        peopleLiked: likes.map((like) => like.user.clerkId),
-      };
-    });
-
-    // Optional: Total count for pagination
-    const totalCountResult: { count: number }[] = await prisma.$queryRaw`
-      SELECT COUNT(DISTINCT t.id) AS count
-      FROM "Template" t
-      LEFT JOIN "Question" q ON q."templateId" = t.id
-      LEFT JOIN "_TemplateToTag" tt ON tt."A" = t.id
-      LEFT JOIN "Tag" tag ON tag.id = tt."B"
-      LEFT JOIN "Comment" c ON c."templateId" = t.id
-      WHERE
-        to_tsvector('english', coalesce(t.title, '') || ' ' || coalesce(t.description, ''))
-        || to_tsvector('english', coalesce(q.description, ''))
-        || to_tsvector('english', coalesce(tag.name, ''))
-        || to_tsvector('english', coalesce(c.content, ''))
-        @@ plainto_tsquery('english', ${searchText});
-    `;
-
-    const totalCount = totalCountResult[0]?.count || 0;
-
-    res.json({
-      templates: formattedTemplates,
-      totalPages: Math.ceil(totalCount / limit),
-      hasNextPage: page * limit < totalCount,
-      totalCount,
-    });
-  } catch (error) {
-    console.error("Search error:", error);
-    res.status(500).json({ error: "Search failed" });
-  }
-};
-
-/*
-export const getAllTemplates = async (req: Request, res: Response) => {
-  try {
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 10;
-    const sortBy = (req.query.sortBy as string) || "createdAt";
-    const sortOrder = (req.query.sortOrder as string) || "desc";
-    const titleFilter = req.query.title as string | undefined;
-    const topicId = req.query.topicId ? parseInt(req.query.topicId as string) : undefined;
-    const isPublic = req.query.isPublic === "true" ? true : req.query.isPublic === "false" ? false : undefined;
-    const userId = req.query.userId ? parseInt(req.query.userId as string) : undefined;
-    const isPublished = req.query.isPublished === "true" ? true : req.query.isPublished === "false" ? false : undefined;
-    const tagName = req.query.tag as string | undefined;
-
-    const where = {
-      ...(titleFilter && { title: { contains: titleFilter, mode: "insensitive" as const } }),
-      ...(topicId && { topicId }),
-      ...(isPublic !== undefined && { isPublic }),
-      ...(userId && { userId }),
-      ...(isPublished !== undefined && { isPublished }),
-      ...(tagName && {
-        tags: {
-          some: {
-            tag: {
-              name: { contains: tagName, mode: "insensitive" as const },
-            },
-          },
-        },
-      }),
-    };
-
-    const templates = await prisma.template.findMany({
-      where,
-      orderBy: { [sortBy]: sortOrder },
-      skip: (page - 1) * limit,
-      take: limit,
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        imageUrl: true,
-        isPublic: true,
-        isPublished: true,
-        createdAt: true,
-        user: { select: { id: true, name: true, email: true, clerkId: true } },
-
-        topic: { select: { id: true, name: true } },
-        tags: { select: { tag: { select: { name: true } } } },
-        _count: { select: { questions: true, comments: true, likes: true } },
-        likes: { select: { user: { select: { clerkId: true } } } },
-      },
-      // include: {
-      //   user: { select: { id: true, clerkId: true, name: true, email: true } },
-      //   topic: true,
-      //   tags: { include: { tag: true } },
-      //   _count: { select: { questions: true, comments: true, likes: true } },
-      //   likes: {
-      //     include: {
-      //       user: {
-      //         select: {
-      //           clerkId: true,
-      //         },
-      //       },
-      //     },
-      //   },
-      // },
-    });
-
-    const formattedTemplates = templates.map((template) => {
-      // Destructure to remove the likes array we don't want in the response
-      const { likes, ...templateData } = template;
-
-      return {
-        ...templateData,
-        tags: template.tags.map((t) => t.tag),
-        questionCount: template._count.questions,
-        commentCount: template._count.comments,
-        likesCount: template._count.likes,
-        peopleLiked: template.likes.map((like) => like.user.clerkId),
-      };
-    });
-
-    const totalCount = await prisma.template.count({ where });
-
-    res.json({
-      templates: formattedTemplates,
-      totalPages: Math.ceil(totalCount / limit),
-      hasNextPage: page * limit < totalCount,
-      totalCount,
-    });
-  } catch (err) {
-    console.error("Error fetching templates:", err);
-    res.status(500).json({ error: "Failed to fetch templates" });
-  }
-};
-
-*/

@@ -1,7 +1,5 @@
-import { useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,71 +12,110 @@ import { UserSelector } from "@/components/UserSelector";
 import ImageUpload from "@/components/ImageUpload";
 import { TopicSelector } from "@/components/TopicSelector";
 import { QuestionManagement } from "@/components/QuestionManagement";
-import { z } from "zod";
-import MDEditor from "@uiw/react-md-editor";
-import { Question } from "@/types";
 import { useCreateTemplate } from "@/hooks/useTemplates";
-import { User } from "@/types";
-
-const templateFormSchema = z.object({
-  title: z.string().min(1, "Title is required").max(100),
-  description: z.string().min(1, "Description is required").max(500),
-  topicId: z.coerce.number().min(1, "Topic is required"),
-});
-
-type TemplateFormValues = z.infer<typeof templateFormSchema>;
+import { Question, User } from "@/types";
+import { Icons } from "@/components/global/icons";
 
 export default function TemplateCreationForm() {
   const navigate = useNavigate();
-  const [isPublic, setIsPublic] = useState<boolean>(true);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [topicId, setTopicId] = useState(1);
+  const [isPublic, setIsPublic] = useState(true);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
-  const [imageUrl, setImageUrl] = useState<string>("");
+  const [imageUrl, setImageUrl] = useState("");
+  const [activeTab, setActiveTab] = useState("general");
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [activeTab, setActiveTab] = useState<string>("general");
-  const MemoizedTopicSelector = useMemo(() => TopicSelector, []);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGeneralInvalid, setIsGeneralInvalid] = useState(false);
+  const [isQuestionInvalid, setIsQuestionInvalid] = useState(false);
 
   const createTemplate = useCreateTemplate();
 
-  const {
-    register,
-    handleSubmit,
-    control,
-    formState: { errors },
-  } = useForm<TemplateFormValues>({
-    resolver: zodResolver(templateFormSchema),
-    defaultValues: {
-      title: "",
-      description: "",
-      topicId: 1,
-    },
-  });
+  const validate = () => {
+    const newErrors: Record<string, string> = {};
 
-  const onSubmit = async (data: TemplateFormValues, publish: boolean) => {
+    if (!title.trim()) {
+      newErrors.title = "Title is required";
+      setIsGeneralInvalid(true);
+    }
+    if (title.length > 100) {
+      newErrors.title = "Title cannot exceed 100 characters";
+      setIsGeneralInvalid(true);
+    }
+
+    if (!description.trim()) {
+      newErrors.description = "Description is required";
+      setIsGeneralInvalid(true);
+    }
+    if (description.length > 500) {
+      newErrors.description = "Description cannot exceed 500 characters";
+      setIsGeneralInvalid(true);
+    }
+
+    if (title.trim() && title.length < 100 && description.trim() && description.length < 500) {
+      setIsGeneralInvalid(false);
+    }
+
+    // if (topicId < 1) newErrors.topicId = "Topic is required";
+
+    if (questions.length === 0) {
+      newErrors.questions = "At least one question is required";
+      setIsQuestionInvalid(true);
+    } else {
+      setIsQuestionInvalid(false);
+    }
+
+    setErrors(newErrors);
+
+    return Object.keys(newErrors).length === 0;
+
+    // setIsGeneralInvalid(false);
+    // setIsQuestionInvalid(false);
+  };
+
+  useEffect(() => {
+    if ((title && title.length > 0) || (description && description.length > 0) || (questions && questions.length > 0)) {
+      validate();
+    }
+  }, [title, description, questions]);
+
+  const onSubmit = async (publish: boolean) => {
+    // if (!validate()) return;
+    console.log("isGeneralInvalid", isGeneralInvalid);
+    console.log("isQuestionInvalid", isQuestionInvalid);
+
+    validate();
+    if (isGeneralInvalid) {
+      setActiveTab("general");
+      return;
+    }
+    console.log("isGeneralInvalid", isGeneralInvalid);
+    console.log("isQuestionInvalid", isQuestionInvalid);
+
+    if (isQuestionInvalid) {
+      setActiveTab("questions");
+      return;
+    }
+
+    // if (isGeneralInvalid || isQuestionInvalid) return;
+    setIsSubmitting(true);
+
     try {
-      if (questions.length === 0) {
-        toast.error("Please add at least one question to your template");
-        setActiveTab("questions");
-        return;
-      }
-
       const templateData = {
-        title: data.title,
-        description: data.description,
-        topicId: data.topicId,
+        title,
+        description,
+        topicId,
         isPublic,
         isPublished: publish,
         imageUrl: imageUrl || null,
         tags: selectedTags,
         accessUsers: !isPublic ? selectedUsers.map((user) => user.id) : [],
         questions: questions.map((q, index) => ({
-          title: q.title,
-          description: q.description,
-          questionType: q.questionType,
+          ...q,
           position: index,
-          showInTable: q.showInTable,
-          options: q.options || null,
-          correctAnswers: q.correctAnswers || null,
         })),
       };
 
@@ -91,12 +128,8 @@ export default function TemplateCreationForm() {
     }
   };
 
-  const handleTabChange = (value: string) => {
-    setActiveTab(value);
-  };
-
   return (
-    <form onSubmit={handleSubmit((data) => onSubmit(data, true))} className="space-y-6">
+    <div className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>Create New Template</CardTitle>
@@ -104,7 +137,7 @@ export default function TemplateCreationForm() {
         </CardHeader>
 
         <CardContent>
-          <Tabs defaultValue="general" value={activeTab} onValueChange={handleTabChange}>
+          <Tabs defaultValue="general" value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="mb-4">
               <TabsTrigger value="general">General Settings</TabsTrigger>
               <TabsTrigger value="questions">Questions ({questions.length})</TabsTrigger>
@@ -114,27 +147,19 @@ export default function TemplateCreationForm() {
             <TabsContent value="general" className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="title">Title *</Label>
-                <Input id="title" placeholder="Enter template title" {...register("title")} />
-                {errors.title && <p className="text-sm text-red-500">{errors.title.message}</p>}
+                <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Enter template title" />
+                {errors.title && <p className="text-sm text-red-500">{errors.title}</p>}
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="description">Description *</Label>
-                <Controller
-                  name="description"
-                  control={control}
-                  render={({ field }) => (
-                    <div className="rounded border" data-color-mode="light">
-                      <MDEditor value={field.value} onChange={field.onChange} preview="edit" height={300} />
-                    </div>
-                  )}
-                />
-                {errors.description && <p className="text-sm text-red-500">{errors.description.message}</p>}
+                <textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Enter template description" className="w-full min-h-[200px] p-2 border rounded" />
+                {errors.description && <p className="text-sm text-red-500">{errors.description}</p>}
               </div>
 
               <div className="space-y-2">
-                <Controller name="topicId" control={control} render={({ field }) => <MemoizedTopicSelector value={field.value?.toString() || null} onChange={field.onChange} />} />
-                {errors.topicId && <p className="text-sm text-red-500">{errors.topicId.message}</p>}
+                <TopicSelector value={topicId.toString()} onChange={(id) => setTopicId(id)} />
+                {errors.topicId && <p className="text-sm text-red-500">{errors.topicId}</p>}
               </div>
 
               <div className="space-y-2">
@@ -149,7 +174,8 @@ export default function TemplateCreationForm() {
             </TabsContent>
 
             <TabsContent value="questions">
-              <QuestionManagement questions={questions} onQuestionsUpdate={setQuestions} />
+              <QuestionManagement questions={questions} setQuestions={setQuestions} />
+              {errors.questions && <p className="text-sm text-red-500">{errors.questions}</p>}
             </TabsContent>
 
             <TabsContent value="access" className="space-y-4">
@@ -161,12 +187,7 @@ export default function TemplateCreationForm() {
               {!isPublic && (
                 <div className="space-y-2">
                   <Label>Select users who can access this template</Label>
-
-                  <UserSelector
-                    selectedUsers={selectedUsers}
-                    onChange={setSelectedUsers}
-                    // excludeUsers={[currentUserId]} // Optional: exclude current user
-                  />
+                  <UserSelector selectedUsers={selectedUsers} onChange={setSelectedUsers} />
                 </div>
               )}
             </TabsContent>
@@ -174,33 +195,19 @@ export default function TemplateCreationForm() {
         </CardContent>
 
         <CardFooter className="flex justify-between">
-          <Button variant="outline" type="button" onClick={() => navigate(-1)} disabled={createTemplate.isPending}>
+          <Button variant="outline" onClick={() => navigate(-1)}>
             Cancel
           </Button>
-
-          <Button className="ml-auto" type="button" variant="secondary" onClick={() => handleSubmit((data) => onSubmit(data, false))()} disabled={createTemplate.isPending}>
-            {createTemplate.isPending ? (
-              <>
-                <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-t-transparent border-white"></span>
-                Saving...
-              </>
-            ) : (
-              "Draft Template"
-            )}
-          </Button>
-
-          <Button className="ml-3" type="button" variant="default" onClick={() => handleSubmit((data) => onSubmit(data, true))()} disabled={createTemplate.isPending}>
-            {createTemplate.isPending ? (
-              <>
-                <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-t-transparent border-white"></span>
-                Publishing...
-              </>
-            ) : (
-              "Publish Template"
-            )}
-          </Button>
+          <div className="flex gap-2">
+            <Button className="cursor-pointer" disabled={isSubmitting} variant="secondary" onClick={() => onSubmit(false)}>
+              {isSubmitting && <Icons.spinner className="h-4 w-4 mr-2 animate-spin" />}Save as Draft
+            </Button>
+            <Button className="cursor-pointer" disabled={isSubmitting} onClick={() => onSubmit(true)}>
+              {isSubmitting && <Icons.spinner className="h-4 w-4 mr-2 animate-spin" />} Publish Template
+            </Button>
+          </div>
         </CardFooter>
       </Card>
-    </form>
+    </div>
   );
 }

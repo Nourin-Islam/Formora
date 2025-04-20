@@ -26,6 +26,7 @@ import ManageTagsPage from "@/pages/ManageTags";
 import ManageTopics from "@/pages/ManageTopics";
 import TemplatesHome from "@/pages/TemplatesHome";
 import FormView from "@/pages/FormView";
+import SearchPage from "@/pages/Search";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
@@ -51,6 +52,7 @@ const router = createBrowserRouter([
           { path: "sign-in/*", element: <SignInPage /> },
           { path: "sign-up", element: <SignUpPage /> },
           { path: "sign-up/*", element: <SignUpPage /> },
+          { path: "search", element: <SearchPage /> },
         ],
       },
       {

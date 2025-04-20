@@ -2,6 +2,7 @@
 import { Request, Response } from "express";
 import { prisma } from "../lib/prisma.ts";
 import { clerkClient } from "@clerk/express";
+import { refreshEvents } from "../lib/refresh.ts";
 
 export const searchUsers = async (req: Request, res: Response) => {
   try {
@@ -85,6 +86,7 @@ export const updateUser = async (req: Request, res: Response) => {
     }
 
     res.json(user);
+    refreshEvents.emit("refreshView");
   } catch (error) {
     console.error("Error updating user:", error);
     res.status(500).json({ error: "Failed to update user" });
@@ -116,6 +118,7 @@ export const deleteUser = async (req: Request, res: Response) => {
 
     await prisma.user.delete({ where: { id: userId } });
     res.json({ message: "User deleted successfully" });
+    refreshEvents.emit("refreshView");
   } catch (error) {
     console.error("Error deleting user:", error);
     res.status(500).json({ error: "Failed to delete user" });

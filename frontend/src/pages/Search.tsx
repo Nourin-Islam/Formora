@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { format } from "date-fns";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -10,55 +10,70 @@ import { Badge } from "@/components/ui/badge";
 import { Pagination } from "@/components/ui/pagination";
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MoreHorizontal, Heart, MessageSquare, Search, Plus, Edit, Eye, Trash2, Check, Filter } from "lucide-react";
+import { MoreHorizontal, Heart, MessageSquare, Plus, Edit, Eye, Trash2, Check, Filter } from "lucide-react";
 import TemplatesSkeleton from "@/components/global/TemplatesSkeleton";
 import { toast } from "sonner";
 import { useAuth } from "@clerk/clerk-react";
 
 import { FilterOptions, Template } from "@/types/index";
-import { useTopics } from "@/hooks/useTopics";
-import { useTemplates, useDeleteTemplate } from "@/hooks/useTemplates";
-import { useLikeTemplate, useUnlikeTemplate } from "@/hooks/useTemplateInteractions";
 
-export default function TemplatesHome() {
+import { useLikeTemplate, useUnlikeTemplate } from "@/hooks/useTemplateInteractions";
+import { publicApi } from "@/lib/api";
+
+export default function SearchPage() {
   const { userId } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const query = searchParams.get("query") || "";
+
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [templateToDelete, setTemplateToDelete] = useState<Template | null>(null);
+  const [templates, setTemplates] = useState<Template[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<FilterOptions>({
     page: 1,
     limit: 6,
     sortBy: "createdAt",
     sortOrder: "desc",
   });
-  const [showFilters, setShowFilters] = useState(false);
-  // const [searchTerm, setSearchTerm] = useState("");
-  // const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
 
-  // Fetch topics for filter dropdown
-  const { data: topicsData } = useTopics({});
-  const topics = topicsData?.topics || [];
+  const [totalPages, setTotalPages] = useState(0);
 
-  // Fetch templates with filters
-  const { data: templatesData, isLoading, isError, refetch } = useTemplates(filters);
-  const templates = templatesData?.templates || [];
-  const totalPages = templatesData?.totalPages || 1;
+  // Fetch search results when query or filters change
+  useEffect(() => {
+    const fetchSearchResults = async () => {
+      if (!query) return;
+
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const response = await publicApi.get("/search", {
+          params: {
+            q: query,
+            ...filters,
+          },
+        });
+        setTemplates(response.data.templates || []);
+        setTotalPages(response.data.totalPages || 0);
+      } catch (err) {
+        setError("Failed to load search results");
+        console.error("Search error:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchSearchResults();
+  }, [query, filters]);
 
   // Template mutations
   const { mutate: addLike } = useLikeTemplate(filters);
   const { mutate: removeLike } = useUnlikeTemplate(filters);
-  const { mutate: deleteTemplate, isPending: isDeleting } = useDeleteTemplate();
 
   const handlePageChange = (page: number) => {
     setFilters((prev) => ({ ...prev, page }));
-  };
-
-  const handleFilterChange = (key: keyof FilterOptions, value: any) => {
-    setFilters((prev) => ({
-      ...prev,
-      [key]: value,
-      page: 1, // Reset to first page on filter change
-    }));
   };
 
   const handleLike = (templateId: number) => {
@@ -66,17 +81,7 @@ export default function TemplatesHome() {
       toast.info("Please sign in to like templates");
       return;
     }
-    addLike(templateId, {
-      onSuccess: () => {
-        toast.success("Successfully added a like.");
-
-        // refetch();
-      },
-      onError: (error) => {
-        console.error("Error toggling like:", error);
-        toast.error("Failed to update like status");
-      },
-    });
+    addLike(templateId);
   };
 
   const handleUnLike = (templateId: number) => {
@@ -84,17 +89,7 @@ export default function TemplatesHome() {
       toast.info("Please sign in to Unlike templates");
       return;
     }
-    removeLike(templateId, {
-      onSuccess: () => {
-        toast.success("Successfully removed a like.");
-
-        // refetch();
-      },
-      onError: (error) => {
-        console.error("Error toggling like:", error);
-        toast.error("Failed to update like status");
-      },
-    });
+    removeLike(templateId);
   };
 
   const handleEditTemplate = (id: number) => {
@@ -105,41 +100,19 @@ export default function TemplatesHome() {
     navigate(`/fill-form/${id}`);
   };
 
-  const confirmDeleteTemplate = () => {
-    if (!templateToDelete) return;
-
-    deleteTemplate(templateToDelete.id, {
-      onSuccess: () => {
-        toast.success("Template deleted successfully");
-        setIsDeleteDialogOpen(false);
-        setTemplateToDelete(null);
-        refetch();
-      },
-      onError: (error) => {
-        console.error("Error deleting template:", error);
-        toast.error("Failed to delete template");
-      },
-    });
-  };
-
-  const handleDeleteTemplateClick = (template: Template) => {
-    setTemplateToDelete(template);
-    setIsDeleteDialogOpen(true);
-  };
-
   const createNewTemplate = () => {
     navigate("/create-template");
   };
 
-  if (isLoading && templates.length === 0) {
+  if (isLoading) {
     return <TemplatesSkeleton />;
   }
 
-  if (isError) {
+  if (error) {
     return (
       <div className="container mx-auto py-8 text-center">
-        <p className="text-red-500">Failed to load templates. Please try again.</p>
-        <Button onClick={() => refetch()} className="mt-4">
+        <p className="text-red-500">{error}</p>
+        <Button onClick={() => window.location.reload()} className="mt-4">
           Retry
         </Button>
       </div>
@@ -150,87 +123,17 @@ export default function TemplatesHome() {
   return (
     <div className="container mx-auto py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Templates</h1>
+        <h1 className="text-3xl font-bold">Search Results for "{query}"</h1>
         <Button onClick={createNewTemplate} className="ml-auto">
           <Plus className="mr-2 h-4 w-4" /> Create Template
         </Button>
-        <Button variant="outline" onClick={() => setShowFilters(!showFilters)} className="ml-2">
-          <Filter className="h-4 w-4 mr-2" />
-          Filters
-        </Button>
-      </div>
-
-      <div className="mb-6">
-        {showFilters && (
-          <div className="mt-4 p-4 border rounded-md grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="text-sm font-medium">Topic</label>
-              <Select
-                value={filters.topicId?.toString() || ""}
-                onValueChange={(value) => {
-                  handleFilterChange("topicId", value === "all" ? undefined : parseInt(value));
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="All topics" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All topics</SelectItem>
-                  {topics.map((topic) => (
-                    <SelectItem key={topic.id} value={topic.id.toString()}>
-                      {topic.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium">Status</label>
-              <Select
-                value={filters.isPublished?.toString() || ""}
-                onValueChange={(value) => {
-                  handleFilterChange("isPublished", value === "all" ? undefined : value === "true");
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="All statuses" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All statuses</SelectItem>
-                  <SelectItem value="true">Published</SelectItem>
-                  <SelectItem value="false">Draft</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium">Visibility</label>
-              <Select
-                value={filters.isPublic?.toString() || ""}
-                onValueChange={(value) => {
-                  handleFilterChange("isPublic", value === "all" ? undefined : value === "true");
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="All visibility" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All visibility</SelectItem>
-                  <SelectItem value="true">Public</SelectItem>
-                  <SelectItem value="false">Private</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        )}
       </div>
 
       {templates.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-lg text-gray-500">No templates found</p>
+          <p className="text-lg text-gray-500">No templates found matching "{query}"</p>
           <Button onClick={createNewTemplate} className="mt-4">
-            <Plus className="mr-2 h-4 w-4" /> Create your first template
+            <Plus className="mr-2 h-4 w-4" /> Create a new template
           </Button>
         </div>
       ) : (
@@ -263,10 +166,6 @@ export default function TemplatesHome() {
                             Edit
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => handleDeleteTemplateClick(template)} className="text-red-600">
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
-                          </DropdownMenuItem>
                         </>
                       )}
                     </DropdownMenuContent>
@@ -352,10 +251,6 @@ export default function TemplatesHome() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
               Cancel
-            </Button>
-            <Button variant="destructive" onClick={confirmDeleteTemplate} disabled={isDeleting}>
-              {isDeleting && <Icons.spinner className="h-4 w-4 mr-2 animate-spin" />}
-              Delete
             </Button>
           </DialogFooter>
         </DialogContent>

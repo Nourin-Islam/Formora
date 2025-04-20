@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { prisma } from "../lib/prisma.ts";
+import { refreshEvents } from "../lib/refresh.ts";
 
 import { broadcastCommentUpdate } from "../websocket.ts";
 
@@ -58,6 +59,7 @@ export const addLike = async (req: Request, res: Response): Promise<void> => {
     ]);
 
     res.status(201).json(like);
+    refreshEvents.emit("refreshView");
   } catch (error) {
     console.error("Error adding like:", error);
     res.status(500).json({ message: "Failed to add like" });
@@ -104,6 +106,7 @@ export const removeLike = async (req: Request, res: Response): Promise<void> => 
     ]);
 
     res.status(200).json({ message: "Like removed successfully" });
+    refreshEvents.emit("refreshView");
   } catch (error) {
     console.error("Error removing like:", error);
     res.status(500).json({ message: "Failed to remove like" });
@@ -150,6 +153,7 @@ export const createComment = async (req: Request, res: Response): Promise<void> 
     });
 
     res.status(201).json(comment);
+    refreshEvents.emit("refreshView");
   } catch (error) {
     console.error("Error creating comment:", error);
     res.status(500).json({ message: "Failed to create comment" });
@@ -269,6 +273,7 @@ export const updateComment = async (req: Request, res: Response): Promise<void> 
     });
 
     res.status(200).json(updatedComment);
+    refreshEvents.emit("refreshView");
   } catch (error) {
     console.error("Error updating comment:", error);
     res.status(500).json({ message: "Failed to update comment" });
@@ -311,6 +316,7 @@ export const deleteComment = async (req: Request, res: Response): Promise<void> 
     });
 
     res.status(200).json({ message: "Comment deleted successfully" });
+    refreshEvents.emit("refreshView");
   } catch (error) {
     console.error("Error deleting comment:", error);
     res.status(500).json({ message: "Failed to delete comment" });

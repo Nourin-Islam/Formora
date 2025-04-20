@@ -19,9 +19,11 @@ export interface Topic {
 }
 
 export const topicFormSchema = z.object({
-  name: z.string().min(2, {
-    message: "Topic name must be at least 2 characters.",
-  }),
+  name: z
+    .string()
+    .min(2, "Topic name must be at least 2 characters long")
+    .max(20, "Topic name cannot exceed 20 characters")
+    .regex(/^[a-zA-Z0-9 ]*$/, "Topic name can only contain letters, numbers, and spaces"),
 });
 
 export type TopicFormValues = z.infer<typeof topicFormSchema>;
@@ -35,10 +37,19 @@ export interface Tag {
 }
 
 export const tagFormSchema = z.object({
-  name: z.string().min(2, {
-    message: "Tag name must be at least 2 characters.",
-  }),
+  name: z
+    .string()
+    .min(2, "Tag name must be at least 2 characters long")
+    .max(20, "Tag name cannot exceed 20 characters")
+    .regex(/^[a-zA-Z0-9 ]*$/, "Tag name can only contain letters, numbers, and spaces"),
 });
+
+export enum QuestionType {
+  STRING = "STRING",
+  TEXT = "TEXT",
+  INTEGER = "INTEGER",
+  CHECKBOX = "CHECKBOX",
+}
 
 export interface Question {
   id: string;
@@ -60,6 +71,40 @@ export interface QuestionToSubmit {
   options?: any;
   correctAnswers?: any; // For future use with select options
 }
+
+export interface QuestionFormValues {
+  title: string;
+  description?: string;
+  questionType: QuestionType;
+  showInTable: boolean;
+  options?: string[];
+  correctAnswers?: string[] | number | null;
+}
+
+export interface Question extends QuestionFormValues {
+  id: string;
+  position: number;
+}
+
+// Add to your types file (e.g., @/types/question.ts)
+
+export const questionFormSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  description: z.string().optional(),
+  questionType: z.nativeEnum(QuestionType),
+  position: z.number().optional(),
+  showInTable: z.boolean(),
+  options: z.array(z.string()).default([]),
+  correctAnswers: z.union([z.array(z.string()), z.number(), z.null()]).default([]),
+});
+
+export const templateFormSchema = z.object({
+  title: z.string().min(1, "Title is required").max(100),
+  description: z.string().min(1, "Description is required").max(500),
+  topicId: z.coerce.number().min(1, "Topic is required"),
+  questions: z.array(questionFormSchema).min(1, "At least one question is required"),
+});
 
 export interface Like {
   id: number;
@@ -185,10 +230,3 @@ export interface QuestionOption {
 }
 
 export type QuestionCorrectAnswer = string | string[] | number | number[];
-
-export enum QuestionType {
-  STRING = "STRING",
-  TEXT = "TEXT",
-  INTEGER = "INTEGER",
-  CHECKBOX = "CHECKBOX",
-}
