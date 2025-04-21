@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Pagination } from "@/components/ui/pagination";
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MoreHorizontal, Heart, MessageSquare, Search, Plus, Edit, Eye, Trash2, Check, Filter } from "lucide-react";
+import { MoreHorizontal, Heart, MessageSquare, Plus, Edit, Eye, Trash2, Check, Filter } from "lucide-react";
 import TemplatesSkeleton from "@/components/global/TemplatesSkeleton";
 import { toast } from "sonner";
 import { useAuth } from "@clerk/clerk-react";
@@ -66,11 +66,13 @@ export default function TemplatesHome() {
       toast.info("Please sign in to like templates");
       return;
     }
+
     addLike(templateId, {
       onSuccess: () => {
         toast.success("Successfully added a like.");
-
-        // refetch();
+        setTimeout(() => {
+          refetch();
+        }, 30000);
       },
       onError: (error) => {
         console.error("Error toggling like:", error);
@@ -84,11 +86,13 @@ export default function TemplatesHome() {
       toast.info("Please sign in to Unlike templates");
       return;
     }
+
     removeLike(templateId, {
       onSuccess: () => {
         toast.success("Successfully removed a like.");
-
-        // refetch();
+        setTimeout(() => {
+          refetch();
+        }, 30000);
       },
       onError: (error) => {
         console.error("Error toggling like:", error);
@@ -146,7 +150,7 @@ export default function TemplatesHome() {
     );
   }
 
-  console.log("Templates: ", templates);
+  // console.log("Templates: ", templates);
   return (
     <div className="container mx-auto py-8">
       <div className="flex justify-between items-center mb-6">

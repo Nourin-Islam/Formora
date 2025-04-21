@@ -31,6 +31,8 @@ export const getAllTemplates = async (req: Request, res: Response) => {
     const cacheKey = `joined-view:${page}:${limit}:${sortBy}:${sortOrder}:${JSON.stringify(filters)}`;
     const cached = cache.get(cacheKey);
     if (cached) {
+      // console.log("returning cached value: ", cached);
+      // console.log("=====================================================================================================");
       return res.json(cached);
     }
 
@@ -84,6 +86,8 @@ export const getAllTemplates = async (req: Request, res: Response) => {
     };
 
     cache.set(cacheKey, responseData);
+    // console.log("returning normal value: ", responseData);
+    // console.log("=====================================================================================================");
     res.json(responseData);
   } catch (err) {
     console.error("Error fetching templates from view:", err);
@@ -247,7 +251,6 @@ export const createTemplate = async (req: Request, res: Response) => {
 
     res.status(201).json(formattedTemplate);
     refreshEvents.emit("refreshView");
-    cache.flushAll(); // Clear cache after creating a new template
   } catch (err) {
     console.error("Error creating template:", err);
     res.status(500).json({ error: "Failed to create template" });
@@ -434,7 +437,6 @@ export const updateTemplate = async (req: Request, res: Response) => {
 
     res.json(response);
     refreshEvents.emit("refreshView");
-    cache.flushAll(); // Clear cache after updating a template
   } catch (err) {
     console.error("Error updating template:", err);
     res.status(500).json({ error: "Failed to update template" });
@@ -467,7 +469,6 @@ export const deleteTemplate = async (req: Request, res: Response) => {
 
     res.json({ message: "Template deleted successfully" });
     refreshEvents.emit("refreshView");
-    cache.flushAll(); // Clear cache after deleting a template
   } catch (err) {
     console.error("Error deleting template:", err);
     res.status(500).json({ error: "Failed to delete template" });

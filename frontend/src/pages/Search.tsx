@@ -3,14 +3,12 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { format } from "date-fns";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Icons } from "@/components/global/icons";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Pagination } from "@/components/ui/pagination";
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MoreHorizontal, Heart, MessageSquare, Plus, Edit, Eye, Trash2, Check, Filter } from "lucide-react";
+import { MoreHorizontal, Heart, MessageSquare, Plus, Edit, Eye, Check } from "lucide-react";
 import TemplatesSkeleton from "@/components/global/TemplatesSkeleton";
 import { toast } from "sonner";
 import { useAuth } from "@clerk/clerk-react";
@@ -26,8 +24,6 @@ export default function SearchPage() {
   const [searchParams] = useSearchParams();
   const query = searchParams.get("query") || "";
 
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [templateToDelete, setTemplateToDelete] = useState<Template | null>(null);
   const [templates, setTemplates] = useState<Template[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -41,30 +37,29 @@ export default function SearchPage() {
   const [totalPages, setTotalPages] = useState(0);
 
   // Fetch search results when query or filters change
+  const fetchSearchResults = async () => {
+    if (!query) return;
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await publicApi.get("/search", {
+        params: {
+          q: query,
+          ...filters,
+        },
+      });
+      setTemplates(response.data.templates || []);
+      setTotalPages(response.data.totalPages || 0);
+    } catch (err) {
+      setError("Failed to load search results");
+      console.error("Search error:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
   useEffect(() => {
-    const fetchSearchResults = async () => {
-      if (!query) return;
-
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        const response = await publicApi.get("/search", {
-          params: {
-            q: query,
-            ...filters,
-          },
-        });
-        setTemplates(response.data.templates || []);
-        setTotalPages(response.data.totalPages || 0);
-      } catch (err) {
-        setError("Failed to load search results");
-        console.error("Search error:", err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchSearchResults();
   }, [query, filters]);
 
@@ -81,7 +76,28 @@ export default function SearchPage() {
       toast.info("Please sign in to like templates");
       return;
     }
-    addLike(templateId);
+
+    // add like to the template
+    setTemplates((prev) =>
+      prev.map((template) => {
+        if (template.id === templateId) {
+          return { ...template, likesCount: template.likesCount + 1, peopleLiked: [...template.peopleLiked, userId as string] };
+        }
+        return template;
+      })
+    );
+    addLike(templateId, {
+      onSuccess: () => {
+        toast.success("Successfully add a like.");
+      },
+      onError: (error) => {
+        console.error("Error toggling like:", error);
+        toast.error("Failed to update like status");
+        setTimeout(() => {
+          fetchSearchResults();
+        }, 30000);
+      },
+    });
   };
 
   const handleUnLike = (templateId: number) => {
@@ -89,7 +105,29 @@ export default function SearchPage() {
       toast.info("Please sign in to Unlike templates");
       return;
     }
-    removeLike(templateId);
+
+    // add like to the template
+    setTemplates((prev) =>
+      prev.map((template) => {
+        if (template.id === templateId) {
+          return { ...template, likesCount: template.likesCount - 1, peopleLiked: [...template.peopleLiked, userId as string] };
+        }
+        return template;
+      })
+    );
+
+    removeLike(templateId, {
+      onSuccess: () => {
+        toast.success("Successfully removed a like.");
+      },
+      onError: (error) => {
+        console.error("Error toggling like:", error);
+        toast.error("Failed to update like status");
+        setTimeout(() => {
+          fetchSearchResults();
+        }, 30000);
+      },
+    });
   };
 
   const handleEditTemplate = (id: number) => {
@@ -241,20 +279,6 @@ export default function SearchPage() {
           </Pagination>
         </div>
       )}
-
-      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirm Deletion</DialogTitle>
-            <DialogDescription>Are you sure you want to delete the template "{templateToDelete?.title}"?</DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
-              Cancel
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

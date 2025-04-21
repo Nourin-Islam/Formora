@@ -34,10 +34,25 @@ function SortableQuestion({ question, onEdit, onDelete }: { question: Question; 
           </div>
           <CardTitle className="text-base flex-1 truncate">{question.title || "Untitled Question"}</CardTitle>
           <span className="text-xs bg-slate-100 rounded-full px-2 py-1 dark:bg-slate-700">{questionTypeLabels[question.questionType]}</span>
-          <Button variant="ghost" size="icon" onClick={() => onEdit(question.id)}>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={(e) => {
+              e.preventDefault();
+              onEdit(question.id);
+            }}
+          >
             <PencilLine className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="icon" className="text-destructive" onClick={() => onDelete(question.id)}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-destructive"
+            onClick={(e) => {
+              e.preventDefault();
+              onDelete(question.id);
+            }}
+          >
             <Trash2 className="h-4 w-4" />
           </Button>
         </CardHeader>
@@ -83,7 +98,8 @@ export function QuestionManagement({ questions, setQuestions }: { questions: Que
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-medium">Questions</h3>
         <Button
-          onClick={() => {
+          onClick={(e) => {
+            e.preventDefault();
             setEditingQuestion(null);
             setIsDialogOpen(true);
           }}

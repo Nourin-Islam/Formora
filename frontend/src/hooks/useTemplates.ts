@@ -2,21 +2,24 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createAuthenticatedApi } from "@/lib/api";
 import { Template, Question, TemplateFormData, TemplatesResponse, FilterOptions } from "@/types";
 import { useAuth } from "@clerk/clerk-react";
-
+// refetchInterval default value set to 300000 (5 minutes)
 export const useTemplates = (filters?: FilterOptions) => {
   const { getToken } = useAuth();
 
   return useQuery<TemplatesResponse, Error>({
-    queryKey: ["templates", filters], // Include filters in query key
+    queryKey: ["templates", filters],
     queryFn: async () => {
       const { authenticatedApi } = await createAuthenticatedApi(getToken);
       const response = await authenticatedApi.get("/templates", {
-        params: filters, // Pass filters as query parameters
+        params: filters,
       });
-      // console.log("Templates response:", response.data);
+      // console.log current time
+      console.log("Current time:", new Date().toLocaleString()); // Log the current time
+      console.log("Response from API:", response.data); // Log the response data
       return response.data;
     },
-    staleTime: 1000 * 60,
+    staleTime: 0,
+    refetchInterval: false,
   });
 };
 

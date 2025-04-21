@@ -48,7 +48,8 @@ export const useLikeTemplate = (filters: FilterOptions) => {
       toast.error("Failed to like template");
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey });
+      // This is intentional to avoid refetching the data after adding/removing like. Because Backend has View and Cache. First View refreshes then cache refreshes. If we refetch here then we get old data. So will refetch manually after 20/30 seconds.
+      // queryClient.invalidateQueries({ queryKey });
     },
   });
 };
@@ -96,7 +97,8 @@ export const useUnlikeTemplate = (filters: FilterOptions) => {
       toast.error("Failed to unlike template");
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey });
+      // This is intentional to avoid refetching the data after adding/removing like. Because Backend has View and Cache. First View refreshes then cache refreshes. If we refetch here then we get old data. So will refetch manually after 20/30 seconds.
+      // queryClient.invalidateQueries({ queryKey });
     },
   });
 };

@@ -58,8 +58,8 @@ export const addLike = async (req: Request, res: Response): Promise<void> => {
       }),
     ]);
 
-    res.status(201).json(like);
     refreshEvents.emit("refreshView");
+    res.status(201).json(like);
   } catch (error) {
     console.error("Error adding like:", error);
     res.status(500).json({ message: "Failed to add like" });
@@ -105,8 +105,9 @@ export const removeLike = async (req: Request, res: Response): Promise<void> => 
       }),
     ]);
 
-    res.status(200).json({ message: "Like removed successfully" });
     refreshEvents.emit("refreshView");
+
+    res.status(200).json({ message: "Like removed successfully" });
   } catch (error) {
     console.error("Error removing like:", error);
     res.status(500).json({ message: "Failed to remove like" });

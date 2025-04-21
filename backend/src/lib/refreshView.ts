@@ -1,6 +1,7 @@
 // cron/refreshMaterializedView.ts
 import { refreshEvents } from "./refresh.ts";
 import { PrismaClient } from "@prisma/client";
+import { cache } from "./cache.ts";
 
 const prisma = new PrismaClient();
 
@@ -17,8 +18,10 @@ refreshEvents.on("refreshView", () => {
     try {
       console.log("⏳ Refreshing materialized view...");
       await prisma.$executeRaw`REFRESH MATERIALIZED VIEW CONCURRENTLY template_search_joined_view`;
-      await prisma.$executeRaw`REFRESH MATERIALIZED VIEW CONCURRENTLY template_search_view`;
+      // await prisma.$executeRaw`REFRESH MATERIALIZED VIEW CONCURRENTLY template_search_view`;
       console.log("✅ View refreshed");
+      cache.flushAll(); // Clear all cache after refresh
+      console.log("✅ Cache cleared");
     } catch (err) {
       console.error("❌ Refresh failed:", err);
     } finally {

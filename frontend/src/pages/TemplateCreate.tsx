@@ -29,78 +29,33 @@ export default function TemplateCreationForm() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isGeneralInvalid, setIsGeneralInvalid] = useState(false);
-  const [isQuestionInvalid, setIsQuestionInvalid] = useState(false);
 
   const createTemplate = useCreateTemplate();
 
-  const validate = () => {
-    const newErrors: Record<string, string> = {};
-
-    if (!title.trim()) {
-      newErrors.title = "Title is required";
-      setIsGeneralInvalid(true);
-    }
-    if (title.length > 100) {
-      newErrors.title = "Title cannot exceed 100 characters";
-      setIsGeneralInvalid(true);
-    }
-
-    if (!description.trim()) {
-      newErrors.description = "Description is required";
-      setIsGeneralInvalid(true);
-    }
-    if (description.length > 500) {
-      newErrors.description = "Description cannot exceed 500 characters";
-      setIsGeneralInvalid(true);
-    }
-
-    if (title.trim() && title.length < 100 && description.trim() && description.length < 500) {
-      setIsGeneralInvalid(false);
-    }
-
-    // if (topicId < 1) newErrors.topicId = "Topic is required";
-
-    if (questions.length === 0) {
-      newErrors.questions = "At least one question is required";
-      setIsQuestionInvalid(true);
-    } else {
-      setIsQuestionInvalid(false);
-    }
-
-    setErrors(newErrors);
-
-    return Object.keys(newErrors).length === 0;
-
-    // setIsGeneralInvalid(false);
-    // setIsQuestionInvalid(false);
-  };
-
-  useEffect(() => {
-    if ((title && title.length > 0) || (description && description.length > 0) || (questions && questions.length > 0)) {
-      validate();
-    }
-  }, [title, description, questions]);
-
   const onSubmit = async (publish: boolean) => {
-    // if (!validate()) return;
-    console.log("isGeneralInvalid", isGeneralInvalid);
-    console.log("isQuestionInvalid", isQuestionInvalid);
-
-    validate();
-    if (isGeneralInvalid) {
+    if (!title.trim()) {
+      toast.error("Title is required");
       setActiveTab("general");
       return;
     }
-    console.log("isGeneralInvalid", isGeneralInvalid);
-    console.log("isQuestionInvalid", isQuestionInvalid);
 
-    if (isQuestionInvalid) {
-      setActiveTab("questions");
+    if (!description.trim()) {
+      toast.error("Description is required");
+      setActiveTab("general");
       return;
     }
 
-    // if (isGeneralInvalid || isQuestionInvalid) return;
+    if (!topicId) {
+      toast.error("Topic is required");
+      setActiveTab("general");
+      return;
+    }
+
+    if (questions.length === 0) {
+      toast.error("Please add at least one question");
+      setActiveTab("questions");
+      return;
+    }
     setIsSubmitting(true);
 
     try {
