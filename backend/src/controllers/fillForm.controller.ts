@@ -127,7 +127,7 @@ export const getFilledForm = async (req: Request, res: Response) => {
     // Check permissions
     const isAdmin = req.user?.isAdmin;
     const isFormOwner = form.userId === parseInt(userId as string);
-    const isTemplateOwner = form.template.userId === parseInt(userId as string);
+    const isTemplateOwner = form?.template?.userId === parseInt(userId as string);
 
     if (!isAdmin && !isFormOwner && !isTemplateOwner) {
       res.status(403).json({ error: "Not authorized to view this form" });
@@ -140,11 +140,11 @@ export const getFilledForm = async (req: Request, res: Response) => {
       createdAt: form.createdAt,
       updatedAt: form.updatedAt,
       template: {
-        id: form.template.id,
-        title: form.template.title,
-        description: form.template.description,
-        user: form.template.user,
-        topic: form.template.topic,
+        id: form?.template?.id,
+        title: form.template?.title,
+        description: form.template?.description,
+        user: form.template?.user,
+        topic: form.template?.topic,
       },
       user: form.user,
       answers: form.answers.map((a) => ({
@@ -399,7 +399,7 @@ export const deleteFilledForm = async (req: Request, res: Response) => {
     // Check permissions
     const isAdmin = req.user?.isAdmin;
     const isFormOwner = form.userId === parseInt(userId as string);
-    const isTemplateOwner = form.template.userId === parseInt(userId as string);
+    const isTemplateOwner = form.template?.userId === parseInt(userId as string);
 
     if (!isAdmin && !isFormOwner && !isTemplateOwner) {
       res.status(403).json({ error: "Not authorized to delete this form" });
@@ -425,8 +425,7 @@ export const deleteFilledForm = async (req: Request, res: Response) => {
   }
 };
 
-// Get all filled forms by template ID
-export const getAllFormByTemplate = async (req: Request, res: Response) => {
+export const getAllSubmissionsByTemplate = async (req: Request, res: Response) => {
   try {
     const templateId = parseInt(req.params.id);
     const userId = req.user?.id;
@@ -437,7 +436,8 @@ export const getAllFormByTemplate = async (req: Request, res: Response) => {
     });
 
     if (!template) {
-      return res.status(404).json({ error: "Template not found" });
+      res.status(404).json({ error: "Template not found" });
+      return;
     }
 
     // Check permissions
@@ -445,98 +445,19 @@ export const getAllFormByTemplate = async (req: Request, res: Response) => {
     const isTemplateOwner = template.userId === parseInt(userId as string);
 
     if (!isAdmin && !isTemplateOwner) {
-      return res.status(403).json({ error: "Not authorized to view forms for this template" });
+      res.status(403).json({ error: "Not authorized to view submissions for this template" });
+      return;
     }
 
-    // Fetch all forms for this template with required data
-    const forms = await prisma.form.findMany({
-      where: { templateId },
-      select: {
-        id: true,
-        createdAt: true,
-        updatedAt: true,
-        user: {
-          select: {
-            name: true,
-          },
-        },
-        answers: {
-          select: {
-            question: {
-              select: {
-                id: true,
-                questionType: true,
-                correctAnswers: true,
-              },
-            },
-            value: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
+    // Fetch all submissions for this template with required data
+    const submissions = await prisma.$queryRawUnsafe(`
+  SELECT * FROM "form_submissions_view" WHERE "templateId" = ${templateId}
+`);
 
-    // Process each form to calculate correctness percentages
-    const processedForms = forms.map((form) => {
-      // Filter answers that are for integer or checkbox questions
-      const scorableAnswers = form.answers.filter((answer) => answer.question.questionType === "INTEGER" || answer.question.questionType === "CHECKBOX");
-
-      let correctCount = 0;
-
-      scorableAnswers.forEach((answer) => {
-        const { questionType, correctAnswers } = answer.question;
-
-        if (questionType === "INTEGER") {
-          // For integer questions, compare exact value
-          const correctValue = Array.isArray(correctAnswers) ? correctAnswers[0] : correctAnswers;
-
-          if (answer.value === correctValue?.toString()) {
-            correctCount++;
-          }
-        } else if (questionType === "CHECKBOX") {
-          // For checkbox questions, compare arrays
-          try {
-            const userAnswers = Array.isArray(answer.value) ? answer.value : JSON.parse(answer.value || "[]");
-
-            const correctAnswersParsed = correctAnswers ? (Array.isArray(correctAnswers) ? correctAnswers : JSON.parse(String(correctAnswers))) : [];
-
-            if (arraysEqual(userAnswers, correctAnswersParsed)) {
-              correctCount++;
-            }
-          } catch (e) {
-            // Silently handle parse errors
-          }
-        }
-      });
-
-      // Calculate percentage (avoid division by zero)
-      const scorePercentage = scorableAnswers.length > 0 ? Math.round((correctCount / scorableAnswers.length) * 100) : null;
-
-      return {
-        formId: form.id,
-        userName: form.user.name,
-        createdAt: form.createdAt,
-        updatedAt: form.updatedAt,
-        scorePercentage: scorePercentage,
-      };
-    });
-
-    return res.json(processedForms);
+    // console.log("Submissions:", submissions);
+    return res.json(submissions);
   } catch (err) {
-    console.error("Error fetching filled forms:", err);
-    return res.status(500).json({ error: "Failed to fetch filled forms" });
+    console.error("Error fetching submissions:", err);
+    return res.status(500).json({ error: "Failed to fetch submissions" });
   }
 };
-
-// Helper function to compare arrays regardless of order
-function arraysEqual(a: any[], b: any[]): boolean {
-  if (a === b) return true;
-  if (a == null || b == null) return false;
-  if (a.length !== b.length) return false;
-
-  const aSorted = [...a].sort().toString();
-  const bSorted = [...b].sort().toString();
-  return aSorted === bSorted;
-}

@@ -39,7 +39,7 @@ export const useUpdateUserAdmin = () => {
   return useMutation({
     mutationFn: async ({ userId, isAdmin }: { userId: number; isAdmin: boolean }) => {
       const { authenticatedApi } = await createAuthenticatedApi(getToken);
-      const response = await authenticatedApi.patch(`/users/${userId}/admin`, { isAdmin });
+      const response = await authenticatedApi.patch(`/users/${userId}`, { isAdmin });
       return response.data;
     },
     onSuccess: () => {
@@ -56,7 +56,7 @@ export const useUpdateUserBlock = () => {
   return useMutation({
     mutationFn: async ({ userId, isBlocked }: { userId: number; isBlocked: boolean }) => {
       const { authenticatedApi } = await createAuthenticatedApi(getToken);
-      const response = await authenticatedApi.patch(`/users/${userId}/block`, { isBlocked });
+      const response = await authenticatedApi.patch(`/users/${userId}`, { isBlocked });
       return response.data;
     },
     onSuccess: () => {

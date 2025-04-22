@@ -7,31 +7,33 @@ import { format } from "date-fns";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown } from "lucide-react";
-import { useState } from "react";
-import { Icons } from "./global/icons";
+import { useState, useMemo } from "react";
+import { Icons } from "../components/global/icons";
 import SmallSkeleton from "@/components/global/SmallSkeleton";
 
-interface Submission {
-  formId: number;
-  userName: string;
-  createdAt: string;
-  updatedAt: string;
-  scorePercentage: number | null;
+interface SubmissionRow {
+  form_id: number;
+  templateId: number;
+  user_id: number;
+  user_name: string;
+  submission_date: string;
+  question_id: number;
+  question_title: string;
+  question_type: "STRING" | "TEXT" | "INTEGER" | "CHECKBOX";
+  show_in_table: boolean;
+  answer: string;
 }
 
 function PreviousSubmissions({ id }: { id: string }) {
   const { getToken } = useAuth();
-  const [sortConfig, setSortConfig] = useState<{
-    key: keyof Submission;
-    direction: "asc" | "desc";
-  }>({ key: "createdAt", direction: "desc" });
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
   const {
-    data: submissions,
+    data: rawSubmissions,
     isLoading,
     error,
-  } = useQuery<Submission[]>({
-    queryKey: ["submissions", id],
+  } = useQuery<SubmissionRow[]>({
+    queryKey: ["form-submissions", id],
     queryFn: async () => {
       const { authenticatedApi } = await createAuthenticatedApi(getToken);
       const response = await authenticatedApi.get(`/forms/of-template/${id}`);
@@ -40,31 +42,58 @@ function PreviousSubmissions({ id }: { id: string }) {
     retry: false,
   });
 
-  const handleSort = (key: keyof Submission) => {
-    let direction: "asc" | "desc" = "asc";
-    if (sortConfig.key === key && sortConfig.direction === "asc") {
-      direction = "desc";
-    }
-    setSortConfig({ key, direction });
-  };
+  // 🧠 Group submissions by form
+  const groupedSubmissions = useMemo(() => {
+    const formMap: Record<
+      number,
+      {
+        formId: number;
+        userName: string;
+        submissionDate: string;
+        questions: Record<string, { answer: string; type: string }>;
+      }
+    > = {};
 
-  const sortedSubmissions = submissions?.sort((a, b) => {
-    if (a[sortConfig.key] === null) return 1;
-    if (b[sortConfig.key] === null) return -1;
-    // @ts-ignore
-    if (a[sortConfig.key] < b[sortConfig.key]) {
-      return sortConfig.direction === "asc" ? -1 : 1;
-    }
-    // @ts-ignore
-    if (a[sortConfig.key] > b[sortConfig.key]) {
-      return sortConfig.direction === "asc" ? 1 : -1;
-    }
-    return 0;
+    rawSubmissions?.forEach((row) => {
+      if (!row.show_in_table) return;
+
+      if (!formMap[row.form_id]) {
+        formMap[row.form_id] = {
+          formId: row.form_id,
+          userName: row.user_name,
+          submissionDate: row.submission_date,
+          questions: {},
+        };
+      }
+
+      formMap[row.form_id].questions[row.question_title] = {
+        answer: row.answer,
+        type: row.question_type,
+      };
+    });
+
+    return Object.values(formMap);
+  }, [rawSubmissions]);
+
+  // 🧠 Get all unique question titles (columns)
+  const questionTitles = useMemo(() => {
+    const titles = new Set<string>();
+    rawSubmissions?.forEach((row) => {
+      if (row.show_in_table) {
+        titles.add(row.question_title);
+      }
+    });
+    return Array.from(titles);
+  }, [rawSubmissions]);
+
+  // 🔁 Sorting
+  const sortedSubmissions = [...groupedSubmissions].sort((a, b) => {
+    const aDate = new Date(a.submissionDate).getTime();
+    const bDate = new Date(b.submissionDate).getTime();
+    return sortDirection === "asc" ? aDate - bDate : bDate - aDate;
   });
 
-  if (isLoading) {
-    return <SmallSkeleton />;
-  }
+  if (isLoading) return <SmallSkeleton />;
 
   if (error) {
     return (
@@ -77,7 +106,7 @@ function PreviousSubmissions({ id }: { id: string }) {
     );
   }
 
-  if (!sortedSubmissions || sortedSubmissions.length === 0) {
+  if (sortedSubmissions.length === 0) {
     return (
       <Card>
         <CardHeader>
@@ -98,45 +127,31 @@ function PreviousSubmissions({ id }: { id: string }) {
           <TableHeader>
             <TableRow>
               <TableHead>
-                <Button variant="ghost" onClick={() => handleSort("formId")} className="p-0 hover:bg-transparent">
-                  Form ID
-                  <ArrowUpDown className="ml-2 h-4 w-4" />
-                </Button>
-              </TableHead>
-              <TableHead>User</TableHead>
-              <TableHead>
-                <Button variant="ghost" onClick={() => handleSort("createdAt")} className="p-0 hover:bg-transparent">
+                <Button variant="ghost" onClick={() => setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"))} className="p-0 hover:bg-transparent">
                   Created
                   <ArrowUpDown className="ml-2 h-4 w-4" />
                 </Button>
               </TableHead>
-              <TableHead>
-                <Button variant="ghost" onClick={() => handleSort("updatedAt")} className="p-0 hover:bg-transparent">
-                  Last Updated
-                  <ArrowUpDown className="ml-2 h-4 w-4" />
-                </Button>
-              </TableHead>
-              <TableHead>
-                <Button variant="ghost" onClick={() => handleSort("scorePercentage")} className="p-0 hover:bg-transparent">
-                  Score
-                  <ArrowUpDown className="ml-2 h-4 w-4" />
-                </Button>
-              </TableHead>
+              <TableHead>User</TableHead>
+              {questionTitles.map((title) => (
+                <TableHead key={title}>{title}</TableHead>
+              ))}
             </TableRow>
           </TableHeader>
           <TableBody>
             {sortedSubmissions.map((submission) => (
               <TableRow key={submission.formId}>
-                <TableCell className="  flex items-center justify-center">
+                <TableCell>
                   <Link to={`/forms/${submission.formId}`} className="text-primary hover:underline flex items-center group">
-                    {submission.formId}
+                    {format(new Date(submission.submissionDate), "MMM dd, yyyy HH:mm")}
                     <Icons.eye className="ml-2 h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
                   </Link>
                 </TableCell>
                 <TableCell>{submission.userName}</TableCell>
-                <TableCell>{format(new Date(submission.createdAt), "MMM dd, yyyy HH:mm")}</TableCell>
-                <TableCell>{format(new Date(submission.updatedAt), "MMM dd, yyyy HH:mm")}</TableCell>
-                <TableCell className="  flex items-center justify-center">{submission.scorePercentage !== null ? <span className={submission.scorePercentage >= 75 ? "text-green-500" : submission.scorePercentage >= 50 ? "text-yellow-500" : "text-red-500"}>{submission.scorePercentage}%</span> : <span className="text-gray-500">N/A</span>}</TableCell>
+                {questionTitles.map((title) => {
+                  const data = submission.questions[title];
+                  return <TableCell key={title}>{data ? formatAnswer(data.answer, data.type) : "—"}</TableCell>;
+                })}
               </TableRow>
             ))}
           </TableBody>
@@ -144,6 +159,22 @@ function PreviousSubmissions({ id }: { id: string }) {
       </CardContent>
     </Card>
   );
+}
+
+// 🎯 Utility function to format answer for CHECKBOX/INTEGER
+function formatAnswer(answer: string, type: string) {
+  if (type === "CHECKBOX") {
+    try {
+      const parsed = JSON.parse(answer);
+      return Array.isArray(parsed) ? parsed.join(", ") : answer;
+    } catch {
+      return answer;
+    }
+  }
+  if (type === "INTEGER") {
+    return isNaN(Number(answer)) ? "Invalid" : answer;
+  }
+  return answer;
 }
 
 export default PreviousSubmissions;

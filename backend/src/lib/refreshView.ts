@@ -16,12 +16,13 @@ refreshEvents.on("refreshView", () => {
 
     isRefreshing = true;
     try {
-      console.log("⏳ Refreshing materialized view...");
-      await prisma.$executeRaw`REFRESH MATERIALIZED VIEW CONCURRENTLY template_search_joined_view`;
-      // await prisma.$executeRaw`REFRESH MATERIALIZED VIEW CONCURRENTLY template_search_view`;
-      console.log("✅ View refreshed");
       cache.flushAll(); // Clear all cache after refresh
       console.log("✅ Cache cleared");
+
+      console.log("⏳ Refreshing materialized view...");
+      await prisma.$executeRaw`REFRESH MATERIALIZED VIEW CONCURRENTLY template_search_joined_view`;
+
+      console.log("✅ View refreshed");
     } catch (err) {
       console.error("❌ Refresh failed:", err);
     } finally {
@@ -35,7 +36,7 @@ refreshEvents.on("refreshView", () => {
 //   try {
 //     console.log("⏳ Refreshing materialized view...");
 //     await prisma.$executeRaw`REFRESH MATERIALIZED VIEW CONCURRENTLY template_search_joined_view`;
-//     await prisma.$executeRaw`REFRESH MATERIALIZED VIEW CONCURRENTLY template_search_view`;
+
 //     console.log("✅ View refreshed");
 //   } catch (err) {
 //     console.error("❌ Refresh failed:", err);

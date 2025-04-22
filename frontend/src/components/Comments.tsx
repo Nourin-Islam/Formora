@@ -182,7 +182,7 @@ export function Comments({ templateId }: CommentsProps) {
   }
 
   return (
-    <Card className="mt-6">
+    <Card className="mt-6" id="comments">
       <CardHeader>
         <CardTitle>Comments ({comments?.length || 0})</CardTitle>
       </CardHeader>

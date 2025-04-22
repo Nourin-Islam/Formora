@@ -64,6 +64,7 @@ export const getAllUsers = async (req: Request, res: Response) => {
 };
 
 export const updateUser = async (req: Request, res: Response) => {
+  console.log("Updating user:", req.body, req.params.id);
   try {
     const { isAdmin, isBlocked } = req.body;
     const userId = parseInt(req.params.id);

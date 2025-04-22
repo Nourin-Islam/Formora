@@ -28,23 +28,21 @@ export const getAllTemplates = async (req: Request, res: Response) => {
 
     const whereClause = filters.length > 0 ? `WHERE ${filters.join(" AND ")}` : "";
 
-    const cacheKey = `joined-view:${page}:${limit}:${sortBy}:${sortOrder}:${JSON.stringify(filters)}`;
-    const cached = cache.get(cacheKey);
-    if (cached) {
-      // console.log("returning cached value: ", cached);
-      // console.log("=====================================================================================================");
-      return res.json(cached);
-    }
+    // const cacheKey = `joined-view:${page}:${limit}:${sortBy}:${sortOrder}:${JSON.stringify(filters)}`;
+    // const cached = cache.get(cacheKey);
+    // if (cached) {
+    //   return res.json(cached);
+    // }
 
     const templates = await prisma.$queryRawUnsafe<any[]>(`
-      SELECT * FROM template_search_joined_view t
+      SELECT * FROM template_search_view t
       ${whereClause}
       ORDER BY t."${sortBy}" ${sortOrder}
       LIMIT ${limit} OFFSET ${offset}
     `);
 
     const countResult = await prisma.$queryRawUnsafe<any[]>(`
-      SELECT COUNT(*) FROM template_search_joined_view t
+      SELECT COUNT(*) FROM template_search_view t
       ${whereClause}
     `);
 
@@ -72,8 +70,8 @@ export const getAllTemplates = async (req: Request, res: Response) => {
         id: Number(tag.id),
         usageCount: Number(tag.usageCount),
       })),
-      questionCount: Number(t.questionCount),
-      commentCount: Number(t.commentCount),
+      questionCount: Number(t.questionsCount),
+      commentCount: Number(t.commentsCount),
       likesCount: Number(t.likesCount),
       peopleLiked: t.peopleLiked || [],
     }));
@@ -85,9 +83,9 @@ export const getAllTemplates = async (req: Request, res: Response) => {
       totalCount,
     };
 
-    cache.set(cacheKey, responseData);
-    // console.log("returning normal value: ", responseData);
-    // console.log("=====================================================================================================");
+    // cache.set(cacheKey, responseData);
+    // console.log("Templates fetched from view:", responseData);
+
     res.json(responseData);
   } catch (err) {
     console.error("Error fetching templates from view:", err);
@@ -161,10 +159,13 @@ export const getTemplateById = async (req: Request, res: Response) => {
 export const createTemplate = async (req: Request, res: Response) => {
   if (!req.user) return res.status(401).json({ message: "Unauthorized" });
 
+  console.log("Creating template by: ", req.user);
+
   try {
     const { title, description, topicId, isPublic, isPublished, imageUrl, tags, accessUsers, questions } = req.body;
     const userId = req.user.id;
-    if (!userId || !req.user.isAdmin) {
+
+    if (!userId && !req.user.isAdmin) {
       return res.status(403).json({ error: "Not Authorized" });
     }
 
@@ -259,6 +260,7 @@ export const createTemplate = async (req: Request, res: Response) => {
 
 export const updateTemplate = async (req: Request, res: Response) => {
   if (!req.user) return res.status(401).json({ message: "Unauthorized" });
+  // console.log("Updating template : ", req.body);
 
   try {
     const templateId = parseInt(req.params.id);
@@ -283,9 +285,9 @@ export const updateTemplate = async (req: Request, res: Response) => {
       return res.status(403).json({ error: "Not authorized to update this template" });
     }
 
-    const updatedTemplate = await prisma.$transaction(async (prisma) => {
+    const updatedTemplate = await prisma.$transaction(async (tx) => {
       // Update template basic info
-      const template = await prisma.template.update({
+      const template = await tx.template.update({
         where: { id: templateId },
         data: {
           title,
@@ -298,35 +300,33 @@ export const updateTemplate = async (req: Request, res: Response) => {
         },
       });
 
-      // Handle tags update
+      // Handle tags
       const existingTagNames = existingTemplate.tags.map((t) => t.tag.name);
       const tagsToRemove = existingTemplate.tags.filter((t) => !tags.includes(t.tag.name)).map((t) => t.tag.id);
       const tagsToAdd = tags.filter((t: string) => !existingTagNames.includes(t));
 
-      // Remove unused tags
       if (tagsToRemove.length > 0) {
-        await prisma.templateTag.deleteMany({
+        await tx.templateTag.deleteMany({
           where: {
             templateId,
             tagId: { in: tagsToRemove },
           },
         });
 
-        // Decrement usage count for removed tags
-        await prisma.tag.updateMany({
+        await tx.tag.updateMany({
           where: { id: { in: tagsToRemove } },
           data: { usageCount: { decrement: 1 } },
         });
       }
 
-      // Add new tags
       for (const tagName of tagsToAdd) {
-        const tag = await prisma.tag.upsert({
+        const tag = await tx.tag.upsert({
           where: { name: tagName },
           update: { usageCount: { increment: 1 } },
           create: { name: tagName, usageCount: 1 },
         });
-        await prisma.templateTag.create({
+
+        await tx.templateTag.create({
           data: { templateId, tagId: tag.id },
         });
       }
@@ -338,7 +338,7 @@ export const updateTemplate = async (req: Request, res: Response) => {
         const usersToAdd = accessUsers.filter((id: number) => !existingAccessUserIds.includes(id));
 
         if (usersToRemove.length > 0) {
-          await prisma.templateAccess.deleteMany({
+          await tx.templateAccess.deleteMany({
             where: {
               templateId,
               userId: { in: usersToRemove },
@@ -347,7 +347,7 @@ export const updateTemplate = async (req: Request, res: Response) => {
         }
 
         if (usersToAdd.length > 0) {
-          await prisma.templateAccess.createMany({
+          await tx.templateAccess.createMany({
             data: usersToAdd.map((userId: number) => ({
               templateId,
               userId,
@@ -356,30 +356,23 @@ export const updateTemplate = async (req: Request, res: Response) => {
           });
         }
       } else {
-        // If template is now public, remove all access records
-        await prisma.templateAccess.deleteMany({ where: { templateId } });
+        await tx.templateAccess.deleteMany({ where: { templateId } });
       }
 
-      // Handle questions update
+      // Questions update
       const existingQuestionIds = existingTemplate.questions.map((q) => q.id);
       const incomingQuestionIds = questions.filter((q: any) => q.id).map((q: any) => q.id);
-
-      // Questions to delete
       const questionsToDelete = existingQuestionIds.filter((id) => !incomingQuestionIds.includes(id));
 
       if (questionsToDelete.length > 0) {
-        await prisma.question.deleteMany({
-          where: {
-            id: { in: questionsToDelete },
-          },
+        await tx.question.deleteMany({
+          where: { id: { in: questionsToDelete } },
         });
       }
 
-      // Update or create questions
       for (const question of questions) {
         if (question.id) {
-          // Update existing question
-          await prisma.question.update({
+          await tx.question.update({
             where: { id: question.id },
             data: {
               title: question.title,
@@ -393,8 +386,7 @@ export const updateTemplate = async (req: Request, res: Response) => {
             },
           });
         } else {
-          // Create new question
-          await prisma.question.create({
+          await tx.question.create({
             data: {
               templateId,
               title: question.title,
@@ -412,7 +404,7 @@ export const updateTemplate = async (req: Request, res: Response) => {
       return template;
     });
 
-    // Fetch the complete updated template with relations
+    // Fetch full updated template
     const fullTemplate = await prisma.template.findUnique({
       where: { id: templateId },
       include: {
@@ -428,7 +420,6 @@ export const updateTemplate = async (req: Request, res: Response) => {
       },
     });
 
-    // Format the response
     const response = {
       ...fullTemplate,
       tags: fullTemplate?.tags.map((t) => t.tag),

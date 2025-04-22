@@ -15,17 +15,13 @@ import { AlertCircle } from "lucide-react";
 import { createAuthenticatedApi } from "@/lib/api";
 import { useAuth } from "@clerk/clerk-react";
 import SmallSkeleton from "@/components/global/SmallSkeleton";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Comments } from "@/components/Comments";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Icons } from "@/components/global/icons";
-import PreviousSubmissions from "@/components/PreviousSubmissions";
 
 const FormFill = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { getToken, userId } = useAuth();
-  const [activeTab, setActiveTab] = useState("fillTemplate");
 
   // Fetch template data and check if user has already submitted
   const {
@@ -35,9 +31,19 @@ const FormFill = () => {
   } = useQuery({
     queryKey: ["templates", id, "fill", userId],
     queryFn: async () => {
-      const { authenticatedApi } = await createAuthenticatedApi(getToken);
-      const response = await authenticatedApi.get(`/forms/fill/${id}`);
-      return response.data;
+      try {
+        const { authenticatedApi } = await createAuthenticatedApi(getToken);
+        const response = await authenticatedApi.get(`/forms/fill/${id}`);
+        return response.data;
+      } catch (err: any) {
+        console.log("Error fetching template data:", err);
+        toast.error(err || "Failed to load form");
+        // if (err.response?.data?.error) {
+        //   // Throw the error with the server message
+        //   throw new Error(err.response.data.error.message);
+        // }
+        // throw err;
+      }
     },
     retry: false,
   });
@@ -201,108 +207,94 @@ const FormFill = () => {
 
   return (
     <div className="container max-w-4xl py-8">
-      <Tabs defaultValue="general" value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="mb-4">
-          <TabsTrigger value="fillTemplate">
-            <Icons.home className="h-4 w-4" />
-          </TabsTrigger>
-
-          <TabsTrigger value="submissions">All Submissions </TabsTrigger>
-        </TabsList>
-        <TabsContent value="fillTemplate" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>{template.title}</CardTitle>
-              {existingForm && (
-                <div className="text-sm text-muted-foreground">
-                  You submitted this form on {new Date(existingForm.createdAt).toLocaleDateString()}{" "}
-                  <Button variant={"link"} className="ml-3 text-red-500" onClick={() => handleDelete.mutate()}>
-                    Delete your Submission?
-                  </Button>
-                </div>
-              )}
-              {template.description && <CardDescription className="whitespace-pre-line">{template.description}</CardDescription>}
-            </CardHeader>
-
-            <CardContent>
-              <form onSubmit={form.handleSubmit((values) => submitForm.mutate(values))} className="space-y-6">
-                {template.questions.map((question: any) => (
-                  <div key={question.id} className="space-y-2">
-                    <Label htmlFor={`question_${question.id}`}>{question.title}</Label>
-                    {question.description && <p className="text-sm text-muted-foreground">{question.description}</p>}
-
-                    <Controller
-                      name={`question_${question.id}`}
-                      control={form.control}
-                      render={({ field }) => {
-                        switch (question.questionType) {
-                          case "STRING":
-                            return <Input id={`question_${question.id}`} {...field} />;
-                          case "TEXT":
-                            return <Textarea id={`question_${question.id}`} {...field} />;
-                          case "INTEGER":
-                            return <Input id={`question_${question.id}`} type="number" value={field.value || ""} onChange={(e) => field.onChange(parseInt(e.target.value) || 0)} />;
-                          case "CHECKBOX":
-                            if (question.options?.length > 0) {
-                              // Multiple choice (checkbox group)
-                              return (
-                                <div className="space-y-2">
-                                  {question.options.map((option: string) => (
-                                    <div key={option} className="flex items-center space-x-2">
-                                      <Checkbox
-                                        id={`${question.id}_${option}`}
-                                        checked={field.value?.includes(option)}
-                                        onCheckedChange={(checked) => {
-                                          const currentValues = field.value || [];
-                                          return checked ? field.onChange([...currentValues, option]) : field.onChange(currentValues.filter((v: string) => v !== option));
-                                        }}
-                                      />
-                                      <Label htmlFor={`${question.id}_${option}`}>{option}</Label>
-                                    </div>
-                                  ))}
-                                </div>
-                              );
-                            } else {
-                              // Single checkbox
-                              return (
-                                <div className="flex items-center space-x-2">
-                                  <Checkbox id={`question_${question.id}`} checked={field.value} onCheckedChange={field.onChange} />
-                                  <Label htmlFor={`question_${question.id}`}>Yes</Label>
-                                </div>
-                              );
-                            }
-                          default:
-                            return <></>;
-                        }
-                      }}
-                    />
-                    {form.formState.errors[`question_${question.id}`]?.message && <p className="text-sm text-destructive">{String(form.formState.errors[`question_${question.id}`]?.message)}</p>}
-                  </div>
-                ))}
-              </form>
-            </CardContent>
-
-            <CardFooter className="flex justify-end">
-              <Button onClick={form.handleSubmit((values) => submitForm.mutate(values))} disabled={submitForm.isPending}>
-                {submitForm.isPending ? (
-                  <>
-                    <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-t-transparent border-white"></span>
-                    {existingForm ? "Updating..." : "Submitting..."}
-                  </>
-                ) : existingForm ? (
-                  "Update Form"
-                ) : (
-                  "Submit Form"
-                )}
+      <Card>
+        <CardHeader>
+          <CardTitle>{template.title}</CardTitle>
+          {existingForm && (
+            <div className="text-sm text-muted-foreground">
+              You submitted this form on {new Date(existingForm.createdAt).toLocaleDateString()}{" "}
+              <Button variant={"link"} className="ml-3 text-red-500" onClick={() => handleDelete.mutate()}>
+                Delete your Submission?
               </Button>
-            </CardFooter>
-          </Card>
-          {id && <Comments templateId={parseInt(id, 10)} />}
-        </TabsContent>
-        <TabsContent value="submissions" className="space-y-4">
-          {id && <PreviousSubmissions id={id} />}
-        </TabsContent>
-      </Tabs>
+            </div>
+          )}
+          {template.description && <CardDescription className="whitespace-pre-line">{template.description}</CardDescription>}
+        </CardHeader>
+
+        <CardContent>
+          <form onSubmit={form.handleSubmit((values) => submitForm.mutate(values))} className="space-y-6">
+            {template.questions.map((question: any) => (
+              <div key={question.id} className="space-y-2">
+                <Label htmlFor={`question_${question.id}`}>{question.title}</Label>
+                {question.description && <p className="text-sm text-muted-foreground">{question.description}</p>}
+
+                <Controller
+                  name={`question_${question.id}`}
+                  control={form.control}
+                  render={({ field }) => {
+                    switch (question.questionType) {
+                      case "STRING":
+                        return <Input id={`question_${question.id}`} {...field} />;
+                      case "TEXT":
+                        return <Textarea id={`question_${question.id}`} {...field} />;
+                      case "INTEGER":
+                        return <Input id={`question_${question.id}`} type="number" value={field.value || ""} onChange={(e) => field.onChange(parseInt(e.target.value) || 0)} />;
+                      case "CHECKBOX":
+                        if (question.options?.length > 0) {
+                          // Multiple choice (checkbox group)
+                          return (
+                            <div className="space-y-2">
+                              {question.options.map((option: string) => (
+                                <div key={option} className="flex items-center space-x-2">
+                                  <Checkbox
+                                    id={`${question.id}_${option}`}
+                                    checked={field.value?.includes(option)}
+                                    onCheckedChange={(checked) => {
+                                      const currentValues = field.value || [];
+                                      return checked ? field.onChange([...currentValues, option]) : field.onChange(currentValues.filter((v: string) => v !== option));
+                                    }}
+                                  />
+                                  <Label htmlFor={`${question.id}_${option}`}>{option}</Label>
+                                </div>
+                              ))}
+                            </div>
+                          );
+                        } else {
+                          // Single checkbox
+                          return (
+                            <div className="flex items-center space-x-2">
+                              <Checkbox id={`question_${question.id}`} checked={field.value} onCheckedChange={field.onChange} />
+                              <Label htmlFor={`question_${question.id}`}>Yes</Label>
+                            </div>
+                          );
+                        }
+                      default:
+                        return <></>;
+                    }
+                  }}
+                />
+                {form.formState.errors[`question_${question.id}`]?.message && <p className="text-sm text-destructive">{String(form.formState.errors[`question_${question.id}`]?.message)}</p>}
+              </div>
+            ))}
+          </form>
+        </CardContent>
+
+        <CardFooter className="flex justify-end">
+          <Button onClick={form.handleSubmit((values) => submitForm.mutate(values))} disabled={submitForm.isPending}>
+            {submitForm.isPending ? (
+              <>
+                <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-t-transparent border-white"></span>
+                {existingForm ? "Updating..." : "Submitting..."}
+              </>
+            ) : existingForm ? (
+              "Update Form"
+            ) : (
+              "Submit Form"
+            )}
+          </Button>
+        </CardFooter>
+      </Card>
+      {id && <Comments templateId={parseInt(id, 10)} />}
     </div>
   );
 };

@@ -16,7 +16,7 @@ interface ClerkWebhookEvent {
 export const handleClerkWebhook = async (req: Request, res: Response, next: NextFunction) => {
   const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET;
 
-  console.log("💥 Webhook triggered");
+  // console.log("💥 Webhook triggered");
 
   if (!WEBHOOK_SECRET) {
     console.error("Missing Clerk webhook secret");
@@ -31,7 +31,7 @@ export const handleClerkWebhook = async (req: Request, res: Response, next: Next
     "svix-signature": req.headers["svix-signature"] as string,
   };
 
-  console.log("Received webhook:", payload, headers);
+  // console.log("Received webhook:", payload, headers);
 
   const wh = new Webhook(WEBHOOK_SECRET);
   let event: ClerkWebhookEvent;

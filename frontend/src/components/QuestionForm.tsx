@@ -16,7 +16,7 @@ export function QuestionForm({ questionData, onSave, onCancel }: { questionData:
       description: "",
       questionType: QuestionType.STRING,
       position: 0,
-      showInTable: true,
+      showInTable: false,
       options: [],
       correctAnswers: [],
     }

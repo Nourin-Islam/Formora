@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
- 
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,20 +7,19 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
- 
 model User {
-  id                 Int      @id @default(autoincrement())
-  email              String   @unique
-  passwordHash       String   
+  id                 Int               @id @default(autoincrement())
+  email              String            @unique
+  passwordHash       String
   name               String
-  clerkId            String?  @unique  
-  languagePreference String   @default("en")
-  themePreference    String   @default("light")
-  isAdmin            Boolean  @default(false)
-  isBlocked          Boolean  @default(false)
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt()
-  status    String   @default("ACTIVE")
+  clerkId            String?           @unique
+  languagePreference String            @default("en")
+  themePreference    String            @default("light")
+  isAdmin            Boolean           @default(false)
+  isBlocked          Boolean           @default(false)
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt()
+  status             String            @default("ACTIVE")
   
   templates          Template[]
   forms              Form[]
@@ -33,29 +29,28 @@ model User {
 }
 
 model Topic {
-  id        Int      @id @default(autoincrement())
-  name      String   @unique
-  createdAt DateTime @default(now())
+  id        Int        @id @default(autoincrement())
+  name      String     @unique
+  createdAt DateTime   @default(now())
   
   templates Template[]
 }
 
 model Template {
-  id           Int      @id @default(autoincrement())
+  id           Int               @id @default(autoincrement())
   userId       Int
   topicId      Int
   title        String
   description  String
   imageUrl     String?
   isPublic     Boolean
-  isPublished  Boolean  @default(false) 
-  likesCount   Int      @default(0)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt()
-  // searchVector String   @default("") @db.TSVector
+  isPublished  Boolean           @default(false)
+  likesCount   Int               @default(0)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt()
 
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  topic        Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topic        Topic             @relation(fields: [topicId], references: [id], onDelete: Cascade)
   questions    Question[]
   forms        Form[]
   comments     Comment[]
@@ -65,12 +60,10 @@ model Template {
 
   @@index([title])
   @@index([description])
-@@index([userId])
-@@index([topicId])
-@@index([isPublic])
-@@index([isPublished]) 
-
-  // @@index([searchVector], type: "GIN")
+  @@index([userId])
+  @@index([topicId])
+  @@index([isPublic])
+  @@index([isPublished])
 }
 
 enum QuestionType {
@@ -80,48 +73,47 @@ enum QuestionType {
   CHECKBOX
 }
 
-
 model Question {
   id           Int          @id @default(autoincrement())
-  templateId   Int
+  templateId   Int?
   title        String
   description  String
   questionType QuestionType
   position     Int
   showInTable  Boolean
-  options      Json?        // Store options array
-  correctAnswers Json?      // Store correct answers
+  options      Json?
+  correctAnswers Json?
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt()
 
-  template     Template     @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  template     Template?     @relation(fields: [templateId], references: [id], onDelete: SetNull)
   answers      Answer[]
 }
 
 model Form {
   id          Int      @id @default(autoincrement())
-  templateId  Int
+  templateId  Int?
   userId      Int
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt()
- 
 
-  template    Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  template    Template? @relation(fields: [templateId], references: [id], onDelete: SetNull)
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   answers     Answer[]
-   @@unique([templateId, userId]) // A user can only have one form per template
+
+  @@unique([templateId, userId])
 }
 
 model Answer {
   id         Int      @id @default(autoincrement())
   formId     Int
-  questionId Int
+  questionId Int?
   value      String
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt()
 
   form       Form     @relation(fields: [formId], references: [id], onDelete: Cascade)
-  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  question   Question? @relation(fields: [questionId], references: [id], onDelete: SetNull)
 }
 
 model Comment {
@@ -148,10 +140,10 @@ model Like {
 }
 
 model Tag {
-  id         Int      @id @default(autoincrement())
-  name       String   @unique
-  usageCount Int      @default(0)
-  createdAt  DateTime @default(now())
+  id         Int            @id @default(autoincrement())
+  name       String         @unique
+  usageCount Int            @default(0)
+  createdAt  DateTime       @default(now())
   
   templates  TemplateTag[]
 }
@@ -176,3 +168,42 @@ model TemplateAccess {
   
   @@id([templateId, userId])
 }
+
+model TemplateSearchView {
+  id             Int      @id
+  title          String
+  description    String?
+  imageUrl       String?
+  isPublic       Boolean
+  isPublished    Boolean
+  likesCount     Int
+  createdAt      DateTime
+  updatedAt      DateTime
+  userId         Int
+  topicId        Int
+  user           Json     // Added to match your view's jsonb_build_object
+  topic          Json     // Added to match your view's jsonb_build_object
+  tags           Json?    // Added for the tags array
+  peopleLiked    Json?    // Added for the clerkIds array
+  commentsCount  Int
+  questionsCount Int
+  @@map("template_search_view")
+}
+
+model FormSubmissionView {
+  form_id        Int       @map("form_id")
+  templateId     Int
+  user_id        Int       @map("user_id")
+  user_name      String    @map("user_name")
+  submission_date DateTime @map("submission_date")
+  question_id    Int       @map("question_id")
+  question_title String    @map("question_title")
+  question_type  String    @map("question_type") // Or use an enum if you have fixed types
+  show_in_table  Boolean   @map("show_in_table")
+  answer         String
+
+  @@id([form_id, question_id])
+  @@map("form_submissions_view")
+}
+
+

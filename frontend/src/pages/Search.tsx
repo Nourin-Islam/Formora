@@ -1,22 +1,20 @@
+// pages/SearchPage.tsx
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { format } from "date-fns";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Pagination } from "@/components/ui/pagination";
-
-import { MoreHorizontal, Heart, MessageSquare, Plus, Edit, Eye, Check } from "lucide-react";
-import TemplatesSkeleton from "@/components/global/TemplatesSkeleton";
+import { Plus, Filter } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@clerk/clerk-react";
 
-import { FilterOptions, Template } from "@/types/index";
-
+import { TemplateFilterOptions, Template } from "@/types";
 import { useLikeTemplate, useUnlikeTemplate } from "@/hooks/useTemplateInteractions";
+import { useDeleteTemplate } from "@/hooks/useTemplates";
+import { useTopics } from "@/hooks/useTopics";
 import { publicApi } from "@/lib/api";
+
+// Import our new common components
+import TemplateList from "@/components/templateShow/TemplateList";
+import TemplateFilters from "@/components/templateShow/TemplateFilters";
 
 export default function SearchPage() {
   const { userId } = useAuth();
@@ -25,16 +23,22 @@ export default function SearchPage() {
   const query = searchParams.get("query") || "";
 
   const [templates, setTemplates] = useState<Template[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [filters, setFilters] = useState<FilterOptions>({
+  const [filters, setFilters] = useState<TemplateFilterOptions>({
     page: 1,
     limit: 6,
     sortBy: "createdAt",
     sortOrder: "desc",
   });
 
-  const [totalPages, setTotalPages] = useState(0);
+  // Add state for filters UI
+  const [showFilters, setShowFilters] = useState<boolean>(false);
+  const [totalPages, setTotalPages] = useState<number>(0);
+
+  // Fetch topics for filter dropdown
+  const { data: topicsData } = useTopics({});
+  const topics = topicsData?.topics || [];
 
   // Fetch search results when query or filters change
   const fetchSearchResults = async () => {
@@ -59,6 +63,7 @@ export default function SearchPage() {
       setIsLoading(false);
     }
   };
+
   useEffect(() => {
     fetchSearchResults();
   }, [query, filters]);
@@ -66,9 +71,18 @@ export default function SearchPage() {
   // Template mutations
   const { mutate: addLike } = useLikeTemplate(filters);
   const { mutate: removeLike } = useUnlikeTemplate(filters);
+  const { mutate: deleteTemplate, isPending: isDeleting } = useDeleteTemplate();
 
   const handlePageChange = (page: number) => {
     setFilters((prev) => ({ ...prev, page }));
+  };
+
+  const handleFilterChange = (key: keyof TemplateFilterOptions, value: any) => {
+    setFilters((prev) => ({
+      ...prev,
+      [key]: value,
+      page: 1, // Reset to first page on filter change
+    }));
   };
 
   const handleLike = (templateId: number) => {
@@ -77,40 +91,47 @@ export default function SearchPage() {
       return;
     }
 
-    // add like to the template
     setTemplates((prev) =>
       prev.map((template) => {
         if (template.id === templateId) {
-          return { ...template, likesCount: template.likesCount + 1, peopleLiked: [...template.peopleLiked, userId as string] };
+          return {
+            ...template,
+            likesCount: template.likesCount + 1,
+            peopleLiked: [...template.peopleLiked, userId],
+          };
         }
         return template;
       })
     );
+
     addLike(templateId, {
       onSuccess: () => {
-        toast.success("Successfully add a like.");
+        toast.success("Successfully added a like.");
       },
       onError: (error) => {
         console.error("Error toggling like:", error);
         toast.error("Failed to update like status");
         setTimeout(() => {
           fetchSearchResults();
-        }, 30000);
+        }, 1000);
       },
     });
   };
 
   const handleUnLike = (templateId: number) => {
     if (!userId) {
-      toast.info("Please sign in to Unlike templates");
+      toast.info("Please sign in to unlike templates");
       return;
     }
 
-    // add like to the template
     setTemplates((prev) =>
       prev.map((template) => {
         if (template.id === templateId) {
-          return { ...template, likesCount: template.likesCount - 1, peopleLiked: [...template.peopleLiked, userId as string] };
+          return {
+            ...template,
+            likesCount: template.likesCount - 1,
+            peopleLiked: template.peopleLiked.filter((id) => id !== userId),
+          };
         }
         return template;
       })
@@ -125,7 +146,7 @@ export default function SearchPage() {
         toast.error("Failed to update like status");
         setTimeout(() => {
           fetchSearchResults();
-        }, 30000);
+        }, 1000);
       },
     });
   };
@@ -138,147 +159,42 @@ export default function SearchPage() {
     navigate(`/fill-form/${id}`);
   };
 
+  const handleDeleteTemplate = (templateId: number, options?: { onSuccess?: () => void }) => {
+    deleteTemplate(templateId, {
+      onSuccess: () => {
+        toast.success("Template deleted successfully");
+        if (options?.onSuccess) options.onSuccess();
+        fetchSearchResults(); // Refresh the list
+      },
+      onError: (error) => {
+        console.error("Error deleting template:", error);
+        toast.error("Failed to delete template");
+      },
+    });
+  };
+
   const createNewTemplate = () => {
     navigate("/create-template");
   };
 
-  if (isLoading) {
-    return <TemplatesSkeleton />;
-  }
-
-  if (error) {
-    return (
-      <div className="container mx-auto py-8 text-center">
-        <p className="text-red-500">{error}</p>
-        <Button onClick={() => window.location.reload()} className="mt-4">
-          Retry
-        </Button>
-      </div>
-    );
-  }
-
-  console.log("Templates: ", templates);
   return (
     <div className="container mx-auto py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Search Results for "{query}"</h1>
-        <Button onClick={createNewTemplate} className="ml-auto">
-          <Plus className="mr-2 h-4 w-4" /> Create Template
-        </Button>
-      </div>
-
-      {templates.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-lg text-gray-500">No templates found matching "{query}"</p>
-          <Button onClick={createNewTemplate} className="mt-4">
-            <Plus className="mr-2 h-4 w-4" /> Create a new template
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setShowFilters(!showFilters)}>
+            <Filter className="h-4 w-4 mr-2" />
+            Filters
+          </Button>
+          <Button onClick={createNewTemplate}>
+            <Plus className="mr-2 h-4 w-4" /> Create Template
           </Button>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {templates.map((template: Template) => (
-            <Card key={template.id} className="flex flex-col h-full hover:shadow-md transition-shadow">
-              <CardHeader className="pb-2">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle className="text-xl mb-1 line-clamp-2">{template.title}</CardTitle>
-                    <CardDescription className="text-sm">
-                      by {template.user.name} • {format(new Date(template.createdAt), "MMM d, yyyy")}
-                    </CardDescription>
-                  </div>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => handleViewTemplate(template.id)}>
-                        <Eye className="mr-2 h-4 w-4" />
-                        View
-                      </DropdownMenuItem>
-                      {userId === template.user.clerkId && (
-                        <>
-                          <DropdownMenuItem onClick={() => handleEditTemplate(template.id)}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                        </>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-                <div className="flex flex-wrap gap-1 mt-2">
-                  <Badge variant="secondary" className="bg-blue-100 text-blue-800 hover:bg-blue-200">
-                    {template.topic.name}
-                  </Badge>
-                  {template.isPublic ? (
-                    <Badge variant="secondary" className="bg-green-100 text-green-800 hover:bg-green-200">
-                      Public
-                    </Badge>
-                  ) : (
-                    <Badge variant="secondary" className="bg-amber-100 text-amber-800 hover:bg-amber-200">
-                      Private
-                    </Badge>
-                  )}
-                  {template.isPublished ? (
-                    <Badge variant="secondary" className="bg-indigo-100 text-indigo-800 hover:bg-indigo-200">
-                      Published
-                    </Badge>
-                  ) : (
-                    <Badge variant="secondary" className="bg-gray-100 text-gray-800 hover:bg-gray-200">
-                      Draft
-                    </Badge>
-                  )}
-                </div>
-              </CardHeader>
-              <CardContent className="flex-grow">
-                <p className="text-gray-600 line-clamp-3">{template.description}</p>
-                <div className="mt-4 flex flex-wrap gap-1">
-                  {template.tags.slice(0, 3).map((tag) => (
-                    <Badge key={tag.id} variant="outline" className="mr-1">
-                      {tag.name}
-                    </Badge>
-                  ))}
-                  {template.tags.length > 3 && <Badge variant="outline">+{template.tags.length - 3} more</Badge>}
-                </div>
-                <div className="mt-3">
-                  <Badge variant="outline" className="bg-purple-50">
-                    <Check className="mr-1 h-3 w-3" /> {template.questionCount} questions
-                  </Badge>
-                </div>
-              </CardContent>
-              <CardFooter className="pt-2 flex justify-between border-t">
-                <Button variant="ghost" size="sm" onClick={() => (template.peopleLiked.includes(userId as string) ? handleUnLike(template.id) : handleLike(template.id))} className={template.peopleLiked.includes(userId as string) ? "text-red-500" : ""}>
-                  <Heart className={`mr-1 h-4 w-4 ${template.peopleLiked.includes(userId as string) ? "fill-current" : ""}`} />
-                  {template.likesCount}
-                </Button>
-                <Button variant="ghost" size="sm" onClick={() => handleViewTemplate(template.id)}>
-                  <MessageSquare className="mr-1 h-4 w-4" />
-                  {template.commentCount}
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
-      )}
+      </div>
 
-      {totalPages > 1 && (
-        <div className="mt-8 flex justify-center">
-          <Pagination>
-            <Button variant="outline" onClick={() => handlePageChange(filters.page - 1)} disabled={filters.page === 1}>
-              Previous
-            </Button>
-            <div className="flex items-center mx-4">
-              Page {filters.page} of {totalPages}
-            </div>
-            <Button variant="outline" onClick={() => handlePageChange(filters.page + 1)} disabled={filters.page === totalPages}>
-              Next
-            </Button>
-          </Pagination>
-        </div>
-      )}
+      {showFilters && <TemplateFilters filters={filters} onFilterChange={handleFilterChange} topics={topics} />}
+
+      <TemplateList templates={templates} isLoading={isLoading} isError={!!error} userId={userId ?? null} filters={filters} totalPages={totalPages} onPageChange={handlePageChange} onRefetch={fetchSearchResults} onLike={handleLike} onUnlike={handleUnLike} onView={handleViewTemplate} onEdit={handleEditTemplate} onDelete={handleDeleteTemplate} isDeleting={isDeleting} emptyStateMessage={`No templates found matching "${query}"`} createButtonText="Create a new template" />
     </div>
   );
 }

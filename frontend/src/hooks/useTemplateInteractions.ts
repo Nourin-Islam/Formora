@@ -49,7 +49,7 @@ export const useLikeTemplate = (filters: FilterOptions) => {
     },
     onSettled: () => {
       // This is intentional to avoid refetching the data after adding/removing like. Because Backend has View and Cache. First View refreshes then cache refreshes. If we refetch here then we get old data. So will refetch manually after 20/30 seconds.
-      // queryClient.invalidateQueries({ queryKey });
+      queryClient.invalidateQueries({ queryKey });
     },
   });
 };
@@ -98,7 +98,7 @@ export const useUnlikeTemplate = (filters: FilterOptions) => {
     },
     onSettled: () => {
       // This is intentional to avoid refetching the data after adding/removing like. Because Backend has View and Cache. First View refreshes then cache refreshes. If we refetch here then we get old data. So will refetch manually after 20/30 seconds.
-      // queryClient.invalidateQueries({ queryKey });
+      queryClient.invalidateQueries({ queryKey });
     },
   });
 };

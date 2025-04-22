@@ -2,7 +2,7 @@ import { z } from "zod";
 // Base User type
 export interface User {
   id: number;
-  email: string;
+  email?: string;
   name: string;
   isAdmin: boolean;
   clerkId: string;
@@ -15,7 +15,6 @@ export interface User {
 export interface Topic {
   id: number;
   name: string;
-  createdAt: Date | string;
 }
 
 export const topicFormSchema = z.object({
@@ -117,6 +116,7 @@ export interface Like {
 }
 
 // Extend this as needed for other entities in your application
+
 export interface Template {
   id: number;
   userId: number;
@@ -157,19 +157,6 @@ export interface TemplatesResponse {
   totalPages: number;
   hasNextPage: boolean;
   totalCount: number;
-}
-
-export interface FilterOptions {
-  title?: string;
-  topicId?: number;
-  isPublic?: boolean;
-  userId?: number;
-  isPublished?: boolean;
-  tag?: string;
-  page: number;
-  limit: number;
-  sortBy: string;
-  sortOrder: string;
 }
 
 // API Response types
@@ -230,3 +217,31 @@ export interface QuestionOption {
 }
 
 export type QuestionCorrectAnswer = string | string[] | number | number[];
+
+export interface FilterOptions {
+  title?: string;
+  topicId?: number;
+  isPublic?: boolean;
+  userId?: number;
+  isPublished?: boolean;
+  tag?: string;
+  page: number;
+  limit: number;
+  sortBy: string;
+  sortOrder?: "asc" | "desc";
+}
+
+// Template show Related?
+
+// types/index.ts - Add these to your existing types file
+
+export interface TemplateFilterOptions {
+  page: number;
+  limit: number;
+  sortBy: string;
+  sortOrder?: "asc" | "desc";
+  topicId?: number;
+  isPublished?: boolean;
+  isPublic?: boolean;
+  [key: string]: any;
+}

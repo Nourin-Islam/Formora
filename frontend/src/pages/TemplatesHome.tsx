@@ -1,39 +1,30 @@
+// pages/TemplatesHome.tsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { format } from "date-fns";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Icons } from "@/components/global/icons";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Pagination } from "@/components/ui/pagination";
-
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MoreHorizontal, Heart, MessageSquare, Plus, Edit, Eye, Trash2, Check, Filter } from "lucide-react";
-import TemplatesSkeleton from "@/components/global/TemplatesSkeleton";
+import { Plus, Filter } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@clerk/clerk-react";
 
-import { FilterOptions, Template } from "@/types/index";
+import { TemplateFilterOptions } from "@/types";
 import { useTopics } from "@/hooks/useTopics";
 import { useTemplates, useDeleteTemplate } from "@/hooks/useTemplates";
 import { useLikeTemplate, useUnlikeTemplate } from "@/hooks/useTemplateInteractions";
 
+// Import our new common components
+import TemplateList from "@/components/templateShow/TemplateList";
+import TemplateFilters from "@/components/templateShow/TemplateFilters";
+
 export default function TemplatesHome() {
   const { userId } = useAuth();
   const navigate = useNavigate();
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [templateToDelete, setTemplateToDelete] = useState<Template | null>(null);
-  const [filters, setFilters] = useState<FilterOptions>({
+  const [filters, setFilters] = useState<TemplateFilterOptions>({
     page: 1,
     limit: 6,
     sortBy: "createdAt",
     sortOrder: "desc",
   });
-  const [showFilters, setShowFilters] = useState(false);
-  // const [searchTerm, setSearchTerm] = useState("");
-  // const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
+  const [showFilters, setShowFilters] = useState<boolean>(false);
 
   // Fetch topics for filter dropdown
   const { data: topicsData } = useTopics({});
@@ -53,7 +44,7 @@ export default function TemplatesHome() {
     setFilters((prev) => ({ ...prev, page }));
   };
 
-  const handleFilterChange = (key: keyof FilterOptions, value: any) => {
+  const handleFilterChange = (key: keyof TemplateFilterOptions, value: any) => {
     setFilters((prev) => ({
       ...prev,
       [key]: value,
@@ -70,9 +61,9 @@ export default function TemplatesHome() {
     addLike(templateId, {
       onSuccess: () => {
         toast.success("Successfully added a like.");
-        setTimeout(() => {
-          refetch();
-        }, 30000);
+        // setTimeout(() => {
+        //   refetch();
+        // }, 1000);
       },
       onError: (error) => {
         console.error("Error toggling like:", error);
@@ -83,16 +74,16 @@ export default function TemplatesHome() {
 
   const handleUnLike = (templateId: number) => {
     if (!userId) {
-      toast.info("Please sign in to Unlike templates");
+      toast.info("Please sign in to unlike templates");
       return;
     }
 
     removeLike(templateId, {
       onSuccess: () => {
         toast.success("Successfully removed a like.");
-        setTimeout(() => {
-          refetch();
-        }, 30000);
+        // setTimeout(() => {
+        //   refetch();
+        // }, 1000);
       },
       onError: (error) => {
         console.error("Error toggling like:", error);
@@ -109,14 +100,11 @@ export default function TemplatesHome() {
     navigate(`/fill-form/${id}`);
   };
 
-  const confirmDeleteTemplate = () => {
-    if (!templateToDelete) return;
-
-    deleteTemplate(templateToDelete.id, {
+  const handleDeleteTemplate = (templateId: number, options?: { onSuccess?: () => void }) => {
+    deleteTemplate(templateId, {
       onSuccess: () => {
         toast.success("Template deleted successfully");
-        setIsDeleteDialogOpen(false);
-        setTemplateToDelete(null);
+        if (options?.onSuccess) options.onSuccess();
         refetch();
       },
       onError: (error) => {
@@ -126,244 +114,28 @@ export default function TemplatesHome() {
     });
   };
 
-  const handleDeleteTemplateClick = (template: Template) => {
-    setTemplateToDelete(template);
-    setIsDeleteDialogOpen(true);
-  };
-
   const createNewTemplate = () => {
     navigate("/create-template");
   };
 
-  if (isLoading && templates.length === 0) {
-    return <TemplatesSkeleton />;
-  }
-
-  if (isError) {
-    return (
-      <div className="container mx-auto py-8 text-center">
-        <p className="text-red-500">Failed to load templates. Please try again.</p>
-        <Button onClick={() => refetch()} className="mt-4">
-          Retry
-        </Button>
-      </div>
-    );
-  }
-
-  // console.log("Templates: ", templates);
   return (
     <div className="container mx-auto py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Templates</h1>
-        <Button onClick={createNewTemplate} className="ml-auto">
-          <Plus className="mr-2 h-4 w-4" /> Create Template
-        </Button>
-        <Button variant="outline" onClick={() => setShowFilters(!showFilters)} className="ml-2">
-          <Filter className="h-4 w-4 mr-2" />
-          Filters
-        </Button>
-      </div>
-
-      <div className="mb-6">
-        {showFilters && (
-          <div className="mt-4 p-4 border rounded-md grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="text-sm font-medium">Topic</label>
-              <Select
-                value={filters.topicId?.toString() || ""}
-                onValueChange={(value) => {
-                  handleFilterChange("topicId", value === "all" ? undefined : parseInt(value));
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="All topics" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All topics</SelectItem>
-                  {topics.map((topic) => (
-                    <SelectItem key={topic.id} value={topic.id.toString()}>
-                      {topic.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium">Status</label>
-              <Select
-                value={filters.isPublished?.toString() || ""}
-                onValueChange={(value) => {
-                  handleFilterChange("isPublished", value === "all" ? undefined : value === "true");
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="All statuses" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All statuses</SelectItem>
-                  <SelectItem value="true">Published</SelectItem>
-                  <SelectItem value="false">Draft</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium">Visibility</label>
-              <Select
-                value={filters.isPublic?.toString() || ""}
-                onValueChange={(value) => {
-                  handleFilterChange("isPublic", value === "all" ? undefined : value === "true");
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="All visibility" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All visibility</SelectItem>
-                  <SelectItem value="true">Public</SelectItem>
-                  <SelectItem value="false">Private</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {templates.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-lg text-gray-500">No templates found</p>
-          <Button onClick={createNewTemplate} className="mt-4">
-            <Plus className="mr-2 h-4 w-4" /> Create your first template
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setShowFilters(!showFilters)}>
+            <Filter className="h-4 w-4 mr-2" />
+            Filters
+          </Button>
+          <Button onClick={createNewTemplate}>
+            <Plus className="mr-2 h-4 w-4" /> Create Template
           </Button>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {templates.map((template: Template) => (
-            <Card key={template.id} className="flex flex-col h-full hover:shadow-md transition-shadow">
-              <CardHeader className="pb-2">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle className="text-xl mb-1 line-clamp-2">{template.title}</CardTitle>
-                    <CardDescription className="text-sm">
-                      by {template.user.name} • {format(new Date(template.createdAt), "MMM d, yyyy")}
-                    </CardDescription>
-                  </div>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => handleViewTemplate(template.id)}>
-                        <Eye className="mr-2 h-4 w-4" />
-                        View
-                      </DropdownMenuItem>
-                      {userId === template.user.clerkId && (
-                        <>
-                          <DropdownMenuItem onClick={() => handleEditTemplate(template.id)}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => handleDeleteTemplateClick(template)} className="text-red-600">
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
-                          </DropdownMenuItem>
-                        </>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-                <div className="flex flex-wrap gap-1 mt-2">
-                  <Badge variant="secondary" className="bg-blue-100 text-blue-800 hover:bg-blue-200">
-                    {template.topic.name}
-                  </Badge>
-                  {template.isPublic ? (
-                    <Badge variant="secondary" className="bg-green-100 text-green-800 hover:bg-green-200">
-                      Public
-                    </Badge>
-                  ) : (
-                    <Badge variant="secondary" className="bg-amber-100 text-amber-800 hover:bg-amber-200">
-                      Private
-                    </Badge>
-                  )}
-                  {template.isPublished ? (
-                    <Badge variant="secondary" className="bg-indigo-100 text-indigo-800 hover:bg-indigo-200">
-                      Published
-                    </Badge>
-                  ) : (
-                    <Badge variant="secondary" className="bg-gray-100 text-gray-800 hover:bg-gray-200">
-                      Draft
-                    </Badge>
-                  )}
-                </div>
-              </CardHeader>
-              <CardContent className="flex-grow">
-                <p className="text-gray-600 line-clamp-3">{template.description}</p>
-                <div className="mt-4 flex flex-wrap gap-1">
-                  {template.tags.slice(0, 3).map((tag) => (
-                    <Badge key={tag.id} variant="outline" className="mr-1">
-                      {tag.name}
-                    </Badge>
-                  ))}
-                  {template.tags.length > 3 && <Badge variant="outline">+{template.tags.length - 3} more</Badge>}
-                </div>
-                <div className="mt-3">
-                  <Badge variant="outline" className="bg-purple-50">
-                    <Check className="mr-1 h-3 w-3" /> {template.questionCount} questions
-                  </Badge>
-                </div>
-              </CardContent>
-              <CardFooter className="pt-2 flex justify-between border-t">
-                <Button variant="ghost" size="sm" onClick={() => (template.peopleLiked.includes(userId as string) ? handleUnLike(template.id) : handleLike(template.id))} className={template.peopleLiked.includes(userId as string) ? "text-red-500" : ""}>
-                  <Heart className={`mr-1 h-4 w-4 ${template.peopleLiked.includes(userId as string) ? "fill-current" : ""}`} />
-                  {template.likesCount}
-                </Button>
-                <Button variant="ghost" size="sm" onClick={() => handleViewTemplate(template.id)}>
-                  <MessageSquare className="mr-1 h-4 w-4" />
-                  {template.commentCount}
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
-      )}
+      </div>
 
-      {totalPages > 1 && (
-        <div className="mt-8 flex justify-center">
-          <Pagination>
-            <Button variant="outline" onClick={() => handlePageChange(filters.page - 1)} disabled={filters.page === 1}>
-              Previous
-            </Button>
-            <div className="flex items-center mx-4">
-              Page {filters.page} of {totalPages}
-            </div>
-            <Button variant="outline" onClick={() => handlePageChange(filters.page + 1)} disabled={filters.page === totalPages}>
-              Next
-            </Button>
-          </Pagination>
-        </div>
-      )}
+      {showFilters && <TemplateFilters filters={filters} onFilterChange={handleFilterChange} topics={topics} />}
 
-      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirm Deletion</DialogTitle>
-            <DialogDescription>Are you sure you want to delete the template "{templateToDelete?.title}"?</DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button variant="destructive" onClick={confirmDeleteTemplate} disabled={isDeleting}>
-              {isDeleting && <Icons.spinner className="h-4 w-4 mr-2 animate-spin" />}
-              Delete
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <TemplateList templates={templates} isLoading={isLoading} isError={isError} userId={userId ?? null} filters={filters} totalPages={totalPages} onPageChange={handlePageChange} onRefetch={refetch} onLike={handleLike} onUnlike={handleUnLike} onView={handleViewTemplate} onEdit={handleEditTemplate} onDelete={handleDeleteTemplate} isDeleting={isDeleting} emptyStateMessage="No templates found" createButtonText="Create your first template" />
     </div>
   );
 }

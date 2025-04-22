@@ -110,7 +110,17 @@ export default function ManageUsersTable() {
   };
 
   if (isLoading) return <LoadingSpinner />;
-  if (isError) return <div>Error loading users: {error?.message}</div>;
+
+  if (isError) {
+    return (
+      <div className="container mx-auto py-8 text-center">
+        <p className="text-red-500">{error?.message}</p>
+        <Button onClick={() => window.location.reload()} className="mt-4">
+          Retry
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">

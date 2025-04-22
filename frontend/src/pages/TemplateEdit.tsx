@@ -16,6 +16,8 @@ import MDEditor from "@uiw/react-md-editor";
 import { Question, User } from "@/types";
 import { useUpdateTemplate, useTemplateById } from "@/hooks/useTemplates";
 import LoadingSpinner from "@/components/global/LoadingSpinner";
+import PreviousSubmissions from "@/components/PreviousSubmissions";
+import { Comments } from "@/components/Comments";
 
 export default function TemplateEdit() {
   const { id } = useParams<{ id: string }>();
@@ -56,7 +58,7 @@ export default function TemplateEdit() {
 
     return false;
   }, [title, description, topicId, isPublic, imageUrl, selectedTags, questions, selectedUsers, template]);
-
+  console.log("Received template:", template);
   const handleSubmit = async (publish: boolean) => {
     if (!title.trim()) {
       toast.error("Title is required");
@@ -94,6 +96,8 @@ export default function TemplateEdit() {
         tags: selectedTags,
         accessUsers: !isPublic ? selectedUsers.map((u) => u.id) : [],
         questions: questions.map((q, index) => ({
+          // only send id field if q.id is a number
+          id: typeof q.id === "number" ? q.id : undefined,
           title: q.title,
           description: q.description,
           questionType: q.questionType,
@@ -118,95 +122,104 @@ export default function TemplateEdit() {
   if (!template) return <div>Template not found</div>;
 
   return (
-    <form className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Edit Template</CardTitle>
-          <CardDescription>Update your form template with custom questions</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="mb-4">
-              <TabsTrigger value="general">General Settings</TabsTrigger>
-              <TabsTrigger value="questions">Questions ({questions.length})</TabsTrigger>
-              <TabsTrigger value="access">Access Settings</TabsTrigger>
-            </TabsList>
+    <>
+      <form className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Manage Template</CardTitle>
+            <CardDescription>Edit Details || Add Question || Change Access || Check Submissions</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="mb-4">
+                <TabsTrigger value="general">General Settings</TabsTrigger>
+                <TabsTrigger value="questions">Questions ({questions.length})</TabsTrigger>
+                <TabsTrigger value="access">Access Settings</TabsTrigger>
+                <TabsTrigger value="previousSubmissions">Previous Submissions</TabsTrigger>
+              </TabsList>
 
-            <TabsContent value="general" className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="title">Title *</Label>
-                <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="description">Description *</Label>
-                <div className="rounded border" data-color-mode="light">
-                  <MDEditor value={description} onChange={(value) => setDescription(value || "")} preview="edit" height={300} />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <TopicSelector value={topicId?.toString() || null} onChange={(val) => setTopicId(Number(val))} />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Tags</Label>
-                <TagInput value={selectedTags} onChange={setSelectedTags} />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Image (Optional)</Label>
-                <ImageUpload imageUrl={imageUrl} setImageUrl={setImageUrl} />
-              </div>
-            </TabsContent>
-
-            <TabsContent value="questions">
-              <QuestionManagement questions={questions} setQuestions={setQuestions} />
-            </TabsContent>
-
-            <TabsContent value="access" className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <Switch id="isPublic" checked={isPublic} onCheckedChange={setIsPublic} />
-                <Label htmlFor="isPublic">Public template (accessible to all authenticated users)</Label>
-              </div>
-              {!isPublic && (
+              <TabsContent value="general" className="space-y-4">
                 <div className="space-y-2">
-                  <Label>Select users who can access this template</Label>
-                  <UserSelector selectedUsers={selectedUsers} onChange={setSelectedUsers} />
+                  <Label htmlFor="title">Title *</Label>
+                  <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} />
                 </div>
-              )}
-            </TabsContent>
-          </Tabs>
-        </CardContent>
 
-        <CardFooter className="flex justify-between">
-          <Button variant="outline" type="button" onClick={() => navigate(-1)} disabled={updateTemplate.isPending}>
-            Cancel
-          </Button>
+                <div className="space-y-2">
+                  <Label htmlFor="description">Description *</Label>
+                  <div className="rounded border" data-color-mode="light">
+                    <MDEditor value={description} onChange={(value) => setDescription(value || "")} preview="edit" height={300} />
+                  </div>
+                </div>
 
-          <Button className="ml-auto mr-3" variant="secondary" type="button" onClick={() => handleSubmit(false)} disabled={updateTemplate.isPending || !isFormDirty}>
-            {updateTemplate.isPending ? (
-              <>
-                <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-t-transparent border-white"></span>
-                Saving...
-              </>
-            ) : (
-              "Update Draft"
-            )}
-          </Button>
+                <div className="space-y-2">
+                  <TopicSelector value={topicId?.toString() || null} onChange={(val) => setTopicId(Number(val))} />
+                </div>
 
-          <Button variant="default" type="button" onClick={() => handleSubmit(true)} disabled={updateTemplate.isPending || !isFormDirty}>
-            {updateTemplate.isPending ? (
-              <>
-                <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-t-transparent border-white"></span>
-                Publishing...
-              </>
-            ) : (
-              "Publish Template"
-            )}
-          </Button>
-        </CardFooter>
-      </Card>
-    </form>
+                <div className="space-y-2">
+                  <Label>Tags</Label>
+                  <TagInput value={selectedTags} onChange={setSelectedTags} />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Image (Optional)</Label>
+                  <ImageUpload imageUrl={imageUrl} setImageUrl={setImageUrl} />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="questions">
+                <QuestionManagement questions={questions} setQuestions={setQuestions} />
+              </TabsContent>
+
+              <TabsContent value="access" className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <Switch id="isPublic" checked={isPublic} onCheckedChange={setIsPublic} />
+                  <Label htmlFor="isPublic">Public template (accessible to all authenticated users)</Label>
+                </div>
+                {!isPublic && (
+                  <div className="space-y-2">
+                    <Label>Select users who can access this template</Label>
+                    <UserSelector selectedUsers={selectedUsers} onChange={setSelectedUsers} />
+                  </div>
+                )}
+              </TabsContent>
+              <TabsContent value="previousSubmissions">
+                <PreviousSubmissions id={id!} />
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+
+          {activeTab !== "previousSubmissions" && (
+            <CardFooter className="flex justify-between">
+              <Button variant="outline" type="button" onClick={() => navigate(-1)} disabled={updateTemplate.isPending}>
+                Cancel
+              </Button>
+
+              <Button className="ml-auto mr-3" variant="secondary" type="button" onClick={() => handleSubmit(false)} disabled={updateTemplate.isPending || !isFormDirty}>
+                {updateTemplate.isPending ? (
+                  <>
+                    <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-t-transparent border-white"></span>
+                    Saving...
+                  </>
+                ) : (
+                  "Update Draft"
+                )}
+              </Button>
+
+              <Button variant="default" type="button" onClick={() => handleSubmit(true)} disabled={updateTemplate.isPending || !isFormDirty}>
+                {updateTemplate.isPending ? (
+                  <>
+                    <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-t-transparent border-white"></span>
+                    Publishing...
+                  </>
+                ) : (
+                  "Publish Template"
+                )}
+              </Button>
+            </CardFooter>
+          )}
+        </Card>
+      </form>
+      {id && <Comments templateId={parseInt(id, 10)} />}
+    </>
   );
 }
