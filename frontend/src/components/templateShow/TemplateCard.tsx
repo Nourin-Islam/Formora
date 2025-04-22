@@ -171,7 +171,7 @@ export default function TemplateCard({ template, userId, onDelete, onLike, onUnl
           {template.tags.length > 3 && <Badge variant="outline">+{template.tags.length - 3} more</Badge>}
         </div>
         <div className="mt-3">
-          <Badge variant="outline" className="bg-purple-50">
+          <Badge variant="outline">
             <Check className="mr-1 h-3 w-3" /> {template.questionCount} questions
           </Badge>
         </div>

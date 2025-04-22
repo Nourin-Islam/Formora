@@ -154,10 +154,10 @@ export default function TemplateCreationForm() {
             Cancel
           </Button>
           <div className="flex gap-2">
-            <Button className="cursor-pointer" disabled={isSubmitting} variant="secondary" onClick={() => onSubmit(false)}>
+            <Button variant={"outline"} className="cursor-pointer" disabled={isSubmitting} onClick={() => onSubmit(false)}>
               {isSubmitting && <Icons.spinner className="h-4 w-4 mr-2 animate-spin" />}Save as Draft
             </Button>
-            <Button className="cursor-pointer" disabled={isSubmitting} onClick={() => onSubmit(true)}>
+            <Button variant={"outline"} className="cursor-pointer" disabled={isSubmitting} onClick={() => onSubmit(true)}>
               {isSubmitting && <Icons.spinner className="h-4 w-4 mr-2 animate-spin" />} Publish Template
             </Button>
           </div>

@@ -134,8 +134,8 @@ export default function TemplateEdit() {
               <TabsList className="mb-4">
                 <TabsTrigger value="general">General Settings</TabsTrigger>
                 <TabsTrigger value="questions">Questions ({questions.length})</TabsTrigger>
-                <TabsTrigger value="access">Access Settings</TabsTrigger>
-                <TabsTrigger value="previousSubmissions">Previous Submissions</TabsTrigger>
+                <TabsTrigger value="access">Access</TabsTrigger>
+                <TabsTrigger value="previousSubmissions">Submissions</TabsTrigger>
               </TabsList>
 
               <TabsContent value="general" className="space-y-4">

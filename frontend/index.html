@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -9,5 +9,23 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      (function () {
+        const storedThemeData = localStorage.getItem("theme-storage");
+        let theme;
+
+        try {
+          const themeData = JSON.parse(storedThemeData || "{}");
+          theme = themeData.state?.theme || "system";
+        } catch (e) {
+          theme = "system";
+        }
+
+        const isDark = theme === "system" ? window.matchMedia("(prefers-color-scheme: dark)").matches : theme === "dark";
+
+        document.documentElement.classList.toggle("dark", isDark);
+        document.documentElement.classList.toggle("light", !isDark);
+      })();
+    </script>
   </body>
 </html>

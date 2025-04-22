@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { X, ChevronsUpDown } from "lucide-react";
 import { useUsers } from "@/hooks/useUsers";
 import { User } from "@/types";
+import { useTranslation } from "react-i18next";
 
 interface UserSelectorProps {
   selectedUsers: User[];
@@ -19,6 +20,8 @@ export function UserSelector({ selectedUsers = [], onChange, excludeUsers = [] }
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<"name" | "email">("name");
   const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
+
+  const { t } = useTranslation();
 
   // Use the useUsers hook with search parameters
   const {
@@ -51,6 +54,7 @@ export function UserSelector({ selectedUsers = [], onChange, excludeUsers = [] }
     if (sortBy === "name") {
       return a.name.localeCompare(b.name);
     }
+    // @ts-ignore
     return a.email.localeCompare(b.email);
   });
 
@@ -103,7 +107,7 @@ export function UserSelector({ selectedUsers = [], onChange, excludeUsers = [] }
         <div className="text-sm text-red-500">
           Error loading users: {error?.message}
           <button onClick={() => window.location.reload()} className="ml-2 text-sm underline">
-            Retry
+            {t("Retry")}
           </button>
         </div>
       )}

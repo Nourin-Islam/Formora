@@ -10,6 +10,8 @@ import TemplatesSkeleton from "@/components/global/TemplatesSkeleton";
 import TemplateCard from "./TemplateCard";
 import { TemplateFilterOptions, Template } from "@/types";
 
+import { useTranslation } from "react-i18next";
+
 interface TemplateListProps {
   templates: Template[];
   isLoading: boolean;
@@ -31,6 +33,7 @@ interface TemplateListProps {
 
 export default function TemplateList({ templates = [], isLoading = false, isError = false, userId, filters, totalPages = 1, onPageChange, onRefetch, onLike, onUnlike, onView, onEdit, onDelete, isDeleting = false, emptyStateMessage = "No templates found", createButtonText = "Create Template" }: TemplateListProps) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false);
   const [templateToDelete, setTemplateToDelete] = useState<Template | null>(null);
 
@@ -63,7 +66,7 @@ export default function TemplateList({ templates = [], isLoading = false, isErro
       <div className="container mx-auto py-8 text-center">
         <p className="text-red-500">Failed to load templates. Please try again.</p>
         <Button onClick={onRefetch} className="mt-4">
-          Retry
+          {t("Retry")}
         </Button>
       </div>
     );
@@ -74,7 +77,7 @@ export default function TemplateList({ templates = [], isLoading = false, isErro
       {templates.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-lg text-gray-500">{emptyStateMessage}</p>
-          <Button onClick={createNewTemplate} className="mt-4">
+          <Button variant={"secondary"} onClick={createNewTemplate} className="mt-4">
             <Plus className="mr-2 h-4 w-4" /> {createButtonText}
           </Button>
         </div>

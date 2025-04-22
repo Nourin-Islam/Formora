@@ -8,7 +8,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { Checkbox } from "@/components/ui/checkbox";
 import { Pagination, PaginationContent, PaginationItem } from "@/components/ui/pagination";
 import { Icons } from "@/components/global/icons";
-import LoadingSpinner from "@/components/global/LoadingSpinner";
+
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,26 +16,12 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { toast } from "sonner";
 import { Tag, tagFormSchema } from "@/types";
 import { useTags, useCreateTag, useUpdateTag, useDeleteTag, useBulkDeleteTags } from "@/hooks/useTags";
-
-export const columns: ColumnDef<Tag>[] = [
-  {
-    id: "select",
-    header: ({ table }) => <Checkbox checked={table.getIsAllPageRowsSelected()} onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)} aria-label="Select all" />,
-    cell: ({ row }) => <Checkbox checked={row.getIsSelected()} onCheckedChange={(value) => row.toggleSelected(!!value)} aria-label="Select row" />,
-    enableSorting: false,
-  },
-  {
-    accessorKey: "id",
-    header: "ID",
-  },
-  {
-    accessorKey: "name",
-    header: "Name",
-    cell: ({ row }) => <div className="font-medium">{row.getValue("name")}</div>,
-  },
-];
+import SmallSkeleton from "@/components/global/SmallSkeleton";
+import { useTranslation } from "react-i18next";
+import { useMemo } from "react";
 
 export default function ManageTagsTable() {
+  const { t } = useTranslation();
   const [nameFilter, setNameFilter] = useState("");
   const [debouncedNameFilter] = useDebounce(nameFilter, 700);
   const [sorting, setSorting] = useState([{ id: "name", desc: false }]);
@@ -100,6 +86,26 @@ export default function ManageTagsTable() {
     setIsDeleteDialogOpen(false);
   };
 
+  const columns = useMemo<ColumnDef<Tag>[]>(
+    () => [
+      {
+        id: "select",
+        header: ({ table }) => <Checkbox checked={table.getIsAllPageRowsSelected()} onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)} aria-label="Select all" />,
+        cell: ({ row }) => <Checkbox checked={row.getIsSelected()} onCheckedChange={(value) => row.toggleSelected(!!value)} aria-label="Select row" />,
+        enableSorting: false,
+      },
+      {
+        accessorKey: "id",
+        header: t("ID"),
+      },
+      {
+        accessorKey: "name",
+        header: t("Name"),
+        cell: ({ row }) => <div className="font-medium">{row.getValue("name")}</div>,
+      },
+    ],
+    [t]
+  );
   // New ends
 
   const form = useForm({
@@ -138,11 +144,11 @@ export default function ManageTagsTable() {
   const handleCreateTag = async (values: { name: string }) => {
     try {
       await createTag.mutateAsync(values);
-      toast.success("Tag created successfully");
+      toast.success(t("Tag created successfully"));
       form.reset();
       setIsCreateDialogOpen(false);
     } catch (error) {
-      toast.error("Failed to create tag");
+      toast.error(t("Failed to create tag"));
     }
   };
 
@@ -158,11 +164,11 @@ export default function ManageTagsTable() {
 
     try {
       await updateTag.mutateAsync({ id: currentTag.id, values });
-      toast.success("Tag updated successfully");
+      toast.success(t("Tag updated successfully"));
       form.reset();
       setIsEditDialogOpen(false);
     } catch (error) {
-      toast.error("Failed to update tag");
+      toast.error(t("Failed to update tag"));
     }
   };
 
@@ -171,10 +177,10 @@ export default function ManageTagsTable() {
 
     try {
       await deleteTag.mutateAsync(currentTag.id);
-      toast.success("Tag deleted successfully");
+      toast.success(t("Tag deleted successfully"));
       setIsDeleteDialogOpen(false);
     } catch (error) {
-      toast.error("Failed to delete tag");
+      toast.error(t("Failed to delete tag"));
     }
   };
 
@@ -196,22 +202,22 @@ export default function ManageTagsTable() {
 
     try {
       await bulkDeleteTags.mutateAsync(selectedTagIds);
-      toast.success(`${selectedTagIds.length} tags deleted successfully`);
+      toast.success(`${selectedTagIds.length} ${t("Tags deleted successfully")}`);
       setIsDeleteDialogOpen(false);
       setRowSelection({});
     } catch (error) {
-      toast.error("Failed to delete some tags");
+      toast.error(t("Failed to delete some tags"));
     }
   };
 
-  if (isLoading) return <LoadingSpinner />;
+  if (isLoading) return <SmallSkeleton />;
 
   if (isError) {
     return (
       <div className="text-red-500">
         Error loading tags: {error?.message}
         <Button variant="outline" onClick={() => window.location.reload()}>
-          Retry
+          {t("Retry")}
         </Button>
       </div>
     );
@@ -226,10 +232,10 @@ export default function ManageTagsTable() {
             <TooltipTrigger asChild>
               <Button variant="outline" size="sm" onClick={openCreateDialog}>
                 <Icons.plus className="h-4 w-4 mr-2" />
-                Create Tag
+                {t("Create Tag")}
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Create a new tag</TooltipContent>
+            <TooltipContent>{t("Create a new tag")}</TooltipContent>
           </Tooltip>
 
           {/* Edit Selected Button */}
@@ -237,10 +243,10 @@ export default function ManageTagsTable() {
             <TooltipTrigger asChild>
               <Button variant="outline" size="sm" onClick={handleEditClick} disabled={table.getSelectedRowModel().rows.length !== 1}>
                 <Icons.edit className="h-4 w-4 mr-2" />
-                Edit
+                {t("Edit")}
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Edit selected tag</TooltipContent>
+            <TooltipContent>{t("Edit selected tag")}</TooltipContent>
           </Tooltip>
 
           {/* Delete Selected Button */}
@@ -248,10 +254,10 @@ export default function ManageTagsTable() {
             <TooltipTrigger asChild>
               <Button variant="outline" size="sm" onClick={handleDeleteClick} disabled={table.getSelectedRowModel().rows.length === 0}>
                 {isUpdating ? <Icons.spinner className="h-4 w-4 mr-2 animate-spin" /> : <Icons.trash className="h-4 w-4 mr-2" />}
-                Delete
+                {t("Delete")}
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Delete selected tags</TooltipContent>
+            <TooltipContent>{t("Delete selected tags")}</TooltipContent>
           </Tooltip>
         </div>
 
@@ -293,17 +299,17 @@ export default function ManageTagsTable() {
         <PaginationContent>
           <PaginationItem>
             <Button variant="outline" size="sm" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>
-              Previous
+              {t("Previous")}
             </Button>
           </PaginationItem>
           <PaginationItem>
             <span className="text-sm">
-              Page {pagination.pageIndex + 1} of {totalPages}
+              {t("Page")} {pagination.pageIndex + 1} {t("of")} {totalPages}
             </span>
           </PaginationItem>
           <PaginationItem>
             <Button variant="outline" size="sm" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
-              Next
+              {t("Next")}
             </Button>
           </PaginationItem>
         </PaginationContent>

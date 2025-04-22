@@ -14,8 +14,10 @@ import { useLikeTemplate, useUnlikeTemplate } from "@/hooks/useTemplateInteracti
 // Import our new common components
 import TemplateList from "@/components/templateShow/TemplateList";
 import TemplateFilters from "@/components/templateShow/TemplateFilters";
+import { useTranslation } from "react-i18next";
 
 export default function TemplatesHome() {
+  const { t } = useTranslation();
   const { userId } = useAuth();
   const navigate = useNavigate();
   const [filters, setFilters] = useState<TemplateFilterOptions>({
@@ -54,40 +56,40 @@ export default function TemplatesHome() {
 
   const handleLike = (templateId: number) => {
     if (!userId) {
-      toast.info("Please sign in to like templates");
+      toast.info(t("Please sign in to like templates"));
       return;
     }
 
     addLike(templateId, {
       onSuccess: () => {
-        toast.success("Successfully added a like.");
+        toast.success(t("Successfully added a like."));
         // setTimeout(() => {
         //   refetch();
         // }, 1000);
       },
       onError: (error) => {
         console.error("Error toggling like:", error);
-        toast.error("Failed to update like status");
+        toast.error(t("Failed to update like status"));
       },
     });
   };
 
   const handleUnLike = (templateId: number) => {
     if (!userId) {
-      toast.info("Please sign in to unlike templates");
+      toast.info(t("Please sign in to unlike templates"));
       return;
     }
 
     removeLike(templateId, {
       onSuccess: () => {
-        toast.success("Successfully removed a like.");
+        toast.success(t("Successfully removed a like."));
         // setTimeout(() => {
         //   refetch();
         // }, 1000);
       },
       onError: (error) => {
         console.error("Error toggling like:", error);
-        toast.error("Failed to update like status");
+        toast.error(t("Failed to update like status"));
       },
     });
   };
@@ -103,13 +105,13 @@ export default function TemplatesHome() {
   const handleDeleteTemplate = (templateId: number, options?: { onSuccess?: () => void }) => {
     deleteTemplate(templateId, {
       onSuccess: () => {
-        toast.success("Template deleted successfully");
+        toast.success(t("Template deleted successfully"));
         if (options?.onSuccess) options.onSuccess();
         refetch();
       },
       onError: (error) => {
         console.error("Error deleting template:", error);
-        toast.error("Failed to delete template");
+        toast.error(t("Failed to delete template"));
       },
     });
   };
@@ -121,21 +123,21 @@ export default function TemplatesHome() {
   return (
     <div className="container mx-auto py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Templates</h1>
+        <h1 className="text-3xl font-bold">{t("Templates")}</h1>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setShowFilters(!showFilters)}>
             <Filter className="h-4 w-4 mr-2" />
-            Filters
+            {t("Filters")}
           </Button>
           <Button onClick={createNewTemplate}>
-            <Plus className="mr-2 h-4 w-4" /> Create Template
+            <Plus className="mr-2 h-4 w-4" /> {t("Create Template")}
           </Button>
         </div>
       </div>
 
       {showFilters && <TemplateFilters filters={filters} onFilterChange={handleFilterChange} topics={topics} />}
 
-      <TemplateList templates={templates} isLoading={isLoading} isError={isError} userId={userId ?? null} filters={filters} totalPages={totalPages} onPageChange={handlePageChange} onRefetch={refetch} onLike={handleLike} onUnlike={handleUnLike} onView={handleViewTemplate} onEdit={handleEditTemplate} onDelete={handleDeleteTemplate} isDeleting={isDeleting} emptyStateMessage="No templates found" createButtonText="Create your first template" />
+      <TemplateList templates={templates} isLoading={isLoading} isError={isError} userId={userId ?? null} filters={filters} totalPages={totalPages} onPageChange={handlePageChange} onRefetch={refetch} onLike={handleLike} onUnlike={handleUnLike} onView={handleViewTemplate} onEdit={handleEditTemplate} onDelete={handleDeleteTemplate} isDeleting={isDeleting} emptyStateMessage={t("No templates found")} createButtonText={t("Create your first template")} />
     </div>
   );
 }

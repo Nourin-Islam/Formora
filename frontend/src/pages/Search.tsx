@@ -15,8 +15,10 @@ import { publicApi } from "@/lib/api";
 // Import our new common components
 import TemplateList from "@/components/templateShow/TemplateList";
 import TemplateFilters from "@/components/templateShow/TemplateFilters";
+import { useTranslation } from "react-i18next";
 
 export default function SearchPage() {
+  const { t } = useTranslation();
   const { userId } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -87,7 +89,7 @@ export default function SearchPage() {
 
   const handleLike = (templateId: number) => {
     if (!userId) {
-      toast.info("Please sign in to like templates");
+      toast.info(t("Please sign in to like templates"));
       return;
     }
 
@@ -106,11 +108,11 @@ export default function SearchPage() {
 
     addLike(templateId, {
       onSuccess: () => {
-        toast.success("Successfully added a like.");
+        toast.success(t("Successfully added a like."));
       },
       onError: (error) => {
         console.error("Error toggling like:", error);
-        toast.error("Failed to update like status");
+        toast.error(t("Failed to update like status"));
         setTimeout(() => {
           fetchSearchResults();
         }, 1000);
@@ -120,7 +122,7 @@ export default function SearchPage() {
 
   const handleUnLike = (templateId: number) => {
     if (!userId) {
-      toast.info("Please sign in to unlike templates");
+      toast.info(t("Please sign in to unlike templates"));
       return;
     }
 
@@ -139,11 +141,11 @@ export default function SearchPage() {
 
     removeLike(templateId, {
       onSuccess: () => {
-        toast.success("Successfully removed a like.");
+        toast.success(t("Successfully removed a like."));
       },
       onError: (error) => {
         console.error("Error toggling like:", error);
-        toast.error("Failed to update like status");
+        toast.error(t("Failed to update like status"));
         setTimeout(() => {
           fetchSearchResults();
         }, 1000);
@@ -162,13 +164,13 @@ export default function SearchPage() {
   const handleDeleteTemplate = (templateId: number, options?: { onSuccess?: () => void }) => {
     deleteTemplate(templateId, {
       onSuccess: () => {
-        toast.success("Template deleted successfully");
+        toast.success(t("Template deleted successfully"));
         if (options?.onSuccess) options.onSuccess();
         fetchSearchResults(); // Refresh the list
       },
       onError: (error) => {
         console.error("Error deleting template:", error);
-        toast.error("Failed to delete template");
+        toast.error(t("Failed to delete template"));
       },
     });
   };
@@ -180,21 +182,23 @@ export default function SearchPage() {
   return (
     <div className="container mx-auto py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Search Results for "{query}"</h1>
+        <h1 className="text-3xl font-bold">
+          {t("Search Results for")} "{query}"
+        </h1>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setShowFilters(!showFilters)}>
             <Filter className="h-4 w-4 mr-2" />
-            Filters
+            {t("Filters")}
           </Button>
           <Button onClick={createNewTemplate}>
-            <Plus className="mr-2 h-4 w-4" /> Create Template
+            <Plus className="mr-2 h-4 w-4" /> {t("Create Template")}
           </Button>
         </div>
       </div>
 
       {showFilters && <TemplateFilters filters={filters} onFilterChange={handleFilterChange} topics={topics} />}
 
-      <TemplateList templates={templates} isLoading={isLoading} isError={!!error} userId={userId ?? null} filters={filters} totalPages={totalPages} onPageChange={handlePageChange} onRefetch={fetchSearchResults} onLike={handleLike} onUnlike={handleUnLike} onView={handleViewTemplate} onEdit={handleEditTemplate} onDelete={handleDeleteTemplate} isDeleting={isDeleting} emptyStateMessage={`No templates found matching "${query}"`} createButtonText="Create a new template" />
+      <TemplateList templates={templates} isLoading={isLoading} isError={!!error} userId={userId ?? null} filters={filters} totalPages={totalPages} onPageChange={handlePageChange} onRefetch={fetchSearchResults} onLike={handleLike} onUnlike={handleUnLike} onView={handleViewTemplate} onEdit={handleEditTemplate} onDelete={handleDeleteTemplate} isDeleting={isDeleting} emptyStateMessage={`${t("No templates found matching")} "${query}"`} createButtonText={t("Create a new template")} />
     </div>
   );
 }
