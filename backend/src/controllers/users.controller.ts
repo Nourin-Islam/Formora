@@ -3,6 +3,8 @@ import { Request, Response } from "express";
 import { prisma } from "../lib/prisma.ts";
 import { clerkClient } from "@clerk/express";
 import { refreshEvents } from "../lib/refresh.ts";
+import { getAuth } from "@clerk/express";
+import { z } from "zod";
 
 export const searchUsers = async (req: Request, res: Response) => {
   try {
@@ -123,5 +125,107 @@ export const deleteUser = async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Error deleting user:", error);
     res.status(500).json({ error: "Failed to delete user" });
+  }
+};
+
+export const getUserPreferences = async (req: Request, res: Response) => {
+  try {
+    if (!req.user) {
+      res.status(403).json({ error: "Not Authorized" });
+      return;
+    }
+
+    const userId = req.user.id;
+
+    const user = await prisma.user.findUnique({
+      where: { id: parseInt(userId) },
+      select: {
+        id: true,
+        clerkId: true,
+        email: true,
+        name: true,
+        isAdmin: true,
+        status: true,
+        languagePreference: true,
+        themePreference: true,
+        isBlocked: true,
+        createdAt: true,
+      },
+    });
+
+    res.json({ user });
+    return;
+  } catch (error) {
+    console.error("Error fetching user preferences:", error);
+    res.status(500).json({
+      error: "Failed to fetch user preferences",
+      details: error instanceof Error ? error.message : "Unknown error",
+    });
+    return;
+  }
+};
+
+const PreferencesSchema = z.object({
+  languagePreference: z.string().min(2).max(5), // e.g. "en", "fr", "es"
+  themePreference: z.enum(["light", "dark", "system"]),
+});
+
+export const setUserPreferences = async (req: Request, res: Response) => {
+  try {
+    if (!req.user) {
+      res.status(403).json({ error: "Not Authorized" });
+      return;
+    }
+
+    // Validate request body
+    const validationResult = PreferencesSchema.safeParse(req.body);
+
+    if (!validationResult.success) {
+      res.status(400).json({
+        error: "Invalid preferences data",
+        details: validationResult.error.flatten(),
+      });
+      return;
+    }
+
+    const { languagePreference, themePreference } = validationResult.data;
+    const userId = req.user.id; // From authenticateUser middleware
+
+    // Update user preferences
+    const updatedUser = await prisma.user.update({
+      where: { id: parseInt(userId) },
+      data: {
+        languagePreference,
+        themePreference,
+        updatedAt: new Date(), // Explicitly set updatedAt
+      },
+      select: {
+        id: true,
+        clerkId: true,
+        email: true,
+        name: true,
+        isAdmin: true,
+        status: true,
+        languagePreference: true,
+        themePreference: true,
+        isBlocked: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    res.json({
+      success: true,
+      message: "Preferences updated successfully",
+      data: { updatedUser },
+    });
+    return;
+  } catch (error) {
+    console.error("Error updating user preferences:", error);
+    res.status(500).json({
+      error: "Failed to update preferences",
+      details: error instanceof Error ? error.message : "Unknown error",
+    });
+    return;
   }
 };

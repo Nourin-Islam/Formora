@@ -8,6 +8,7 @@ import "./index.css";
 import "./i18n.ts";
 
 import { ThemeProvider } from "@/components/global/ThemeProvider";
+import { AuthProvider } from "@/components/global/AuthProvider";
 import MainRoutes from "@/components/routes/MainRoute.tsx";
 
 const queryClient = new QueryClient({
@@ -24,9 +25,11 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <ClerkProvider publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY}>
       <QueryClientProvider client={queryClient}>
         <ReactQueryDevtools initialIsOpen={false} />
-        <ThemeProvider>
-          <MainRoutes />
-        </ThemeProvider>
+        <AuthProvider>
+          <ThemeProvider>
+            <MainRoutes />
+          </ThemeProvider>
+        </AuthProvider>
       </QueryClientProvider>
     </ClerkProvider>
   </React.StrictMode>

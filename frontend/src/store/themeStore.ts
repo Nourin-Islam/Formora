@@ -1,14 +1,16 @@
-// stores/themeStore.ts
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-type Theme = "dark" | "light" | "system";
+type Theme = "light" | "dark" | "system";
+type Language = "en" | "ru";
 
 interface ThemeState {
   theme: Theme;
-  resolvedTheme: "dark" | "light";
+  resolvedTheme: "light" | "dark";
+  language: Language;
   setTheme: (theme: Theme) => void;
   updateResolvedTheme: () => void;
+  setLanguage: (lang: Language) => void;
 }
 
 export const useThemeStore = create<ThemeState>()(
@@ -16,6 +18,7 @@ export const useThemeStore = create<ThemeState>()(
     (set, get) => ({
       theme: "system",
       resolvedTheme: "light",
+      language: "en",
       setTheme: (theme) => {
         set({ theme });
         get().updateResolvedTheme();
@@ -24,18 +27,19 @@ export const useThemeStore = create<ThemeState>()(
         const { theme } = get();
         const isDark = theme === "system" ? window.matchMedia("(prefers-color-scheme: dark)").matches : theme === "dark";
 
-        const resolvedTheme = isDark ? "dark" : "light";
-        set({ resolvedTheme });
-
-        // Update DOM
         document.documentElement.classList.toggle("dark", isDark);
         document.documentElement.classList.toggle("light", !isDark);
+
+        set({ resolvedTheme: isDark ? "dark" : "light" });
       },
+      setLanguage: (language) => set({ language }),
     }),
     {
       name: "theme-storage",
-      // Only store the theme preference, not the resolved theme
-      partialize: (state) => ({ theme: state.theme }),
+      partialize: (state) => ({
+        theme: state.theme,
+        language: state.language,
+      }),
     }
   )
 );
