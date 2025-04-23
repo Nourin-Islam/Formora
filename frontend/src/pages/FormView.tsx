@@ -14,6 +14,7 @@ import { Separator } from "@/components/ui/separator";
 import { createAuthenticatedApi } from "@/lib/api";
 import { useAuth } from "@clerk/clerk-react";
 import { Icons } from "@/components/global/icons";
+import { useTranslation } from "react-i18next";
 
 const FormView = () => {
   const { id } = useParams();
@@ -21,6 +22,7 @@ const FormView = () => {
   const { getToken } = useAuth();
   const success = location.state?.success;
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const {
     data: form,
@@ -41,12 +43,12 @@ const FormView = () => {
   const handleDelete = async () => {
     const { authenticatedApi } = await createAuthenticatedApi(getToken);
     await authenticatedApi.delete(`/forms/delete/${id}`);
-    toast.success("Form deleted successfully");
+    toast.success(t("Form deleted successfully"));
     navigate("/templates");
   };
 
   if (success) {
-    toast.success("Form submitted successfully");
+    toast.success(t("Form submitted successfully"));
   }
 
   if (isLoading) {
@@ -58,7 +60,7 @@ const FormView = () => {
       <div className="container max-w-4xl py-8">
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{(error as any)?.response?.data?.error || "Failed to load form"}</AlertDescription>
+          <AlertDescription>{(error as any)?.response?.data?.error || t("Failed to load form")}</AlertDescription>
         </Alert>
       </div>
     );
@@ -69,7 +71,7 @@ const FormView = () => {
       <div className="container max-w-4xl py-8">
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
-          <AlertDescription>Form not found</AlertDescription>
+          <AlertDescription>{t("Form not found")}</AlertDescription>
         </Alert>
       </div>
     );
@@ -83,7 +85,7 @@ const FormView = () => {
             <div>
               <CardTitle>{form.template.title}</CardTitle>
               <CardDescription className="mt-2">
-                Filled by {form.user.name} on {format(new Date(form.createdAt), "PPPpp")}
+                {t("Filled by")} {form.user.name} {t("on")} {format(new Date(form.createdAt), "PPPpp")}
               </CardDescription>
             </div>
 
@@ -91,30 +93,30 @@ const FormView = () => {
               <TooltipTrigger asChild>
                 <Button variant="outline" className="ml-auto cursor-pointer" onClick={() => navigate(`/fill-form/${form.template.id}`)}>
                   <Icons.eye className="h-4 w-4" />
-                  <span className="sr-only">View Template</span>
+                  <span className="sr-only">{t("View Template")}</span>
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>View Template</TooltipContent>
+              <TooltipContent>{t("View Template")}</TooltipContent>
             </Tooltip>
 
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button variant="outline" className="mx-3 cursor-pointer" onClick={() => navigate(`/fill-form/${form.template.id}`)}>
                   <Icons.edit className="h-4 w-4" />
-                  <span className="sr-only">Edit Answers</span>
+                  <span className="sr-only">{t("Edit Answers")}</span>
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Edit Answers</TooltipContent>
+              <TooltipContent>{t("Edit Answers")}</TooltipContent>
             </Tooltip>
 
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button variant="destructive" className="cursor-pointer" onClick={handleDelete}>
                   <Icons.trash className="h-4 w-4" />
-                  <span className="sr-only">Delete Answers</span>
+                  <span className="sr-only">{t("Delete Answers")}</span>
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Delete Answers</TooltipContent>
+              <TooltipContent>{t("Delete Answers")}</TooltipContent>
             </Tooltip>
           </div>
         </CardHeader>

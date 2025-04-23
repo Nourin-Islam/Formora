@@ -3,10 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 export function OptionInputList({ options, onChange, selectedAnswers = [], onAnswerChange, error }: { options: string[]; onChange: (options: string[]) => void; selectedAnswers?: string[]; onAnswerChange?: (answers: string[]) => void; error?: string }) {
   const [newOption, setNewOption] = useState("");
-
+  const { t } = useTranslation();
   const addOption = () => {
     if (!newOption.trim()) return;
     if (options.includes(newOption.trim())) return;
@@ -37,11 +38,11 @@ export function OptionInputList({ options, onChange, selectedAnswers = [], onAns
 
   return (
     <div className="space-y-2">
-      <Label>Options *</Label>
+      <Label>{t("Options *")}</Label>
       <div className="flex space-x-2">
-        <Input value={newOption} onChange={(e) => setNewOption(e.target.value)} onKeyDown={handleKeyDown} placeholder="Add option" />
+        <Input value={newOption} onChange={(e) => setNewOption(e.target.value)} onKeyDown={handleKeyDown} placeholder={t("Add option")} />
         <Button type="button" onClick={addOption}>
-          Add
+          {t("Add")}
         </Button>
       </div>
 

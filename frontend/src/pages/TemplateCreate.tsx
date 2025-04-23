@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -15,8 +15,10 @@ import { QuestionManagement } from "@/components/QuestionManagement";
 import { useCreateTemplate } from "@/hooks/useTemplates";
 import { Question, User } from "@/types";
 import { Icons } from "@/components/global/icons";
+import { useTranslation } from "react-i18next";
 
 export default function TemplateCreationForm() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -34,25 +36,25 @@ export default function TemplateCreationForm() {
 
   const onSubmit = async (publish: boolean) => {
     if (!title.trim()) {
-      toast.error("Title is required");
+      toast.error(t("Title is required"));
       setActiveTab("general");
       return;
     }
 
     if (!description.trim()) {
-      toast.error("Description is required");
+      toast.error(t("Description is required"));
       setActiveTab("general");
       return;
     }
 
     if (!topicId) {
-      toast.error("Topic is required");
+      toast.error(t("Topic is required"));
       setActiveTab("general");
       return;
     }
 
     if (questions.length === 0) {
-      toast.error("Please add at least one question");
+      toast.error(t("Please add at least one question"));
       setActiveTab("questions");
       return;
     }
@@ -75,10 +77,10 @@ export default function TemplateCreationForm() {
       };
 
       await createTemplate.mutateAsync(templateData);
-      toast.success(`Template ${publish ? "published" : "saved"} successfully`);
+      toast.success(`${t("Template")} ${publish ? t("published") : t("saved")} t("successfully")`);
       navigate(`/templates`);
     } catch (error) {
-      toast.error("Failed to create template");
+      toast.error(t("Failed to create template"));
       console.error("Template creation error:", error);
     }
   };
@@ -87,28 +89,30 @@ export default function TemplateCreationForm() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Create New Template</CardTitle>
-          <CardDescription>Design your form template with custom questions</CardDescription>
+          <CardTitle>{t("Create New Template")}</CardTitle>
+          <CardDescription>{t("Design your form template with custom questions")}</CardDescription>
         </CardHeader>
 
         <CardContent>
           <Tabs defaultValue="general" value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="mb-4">
-              <TabsTrigger value="general">General Settings</TabsTrigger>
-              <TabsTrigger value="questions">Questions ({questions.length})</TabsTrigger>
-              <TabsTrigger value="access">Access Settings</TabsTrigger>
+              <TabsTrigger value="general">{t("General Settings")}</TabsTrigger>
+              <TabsTrigger value="questions">
+                {t("Questions")} ({questions.length})
+              </TabsTrigger>
+              <TabsTrigger value="access">{t("Access Settings")}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="general" className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="title">Title *</Label>
-                <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Enter template title" />
+                <Label htmlFor="title">{t("Title *")}</Label>
+                <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("Enter template title")} />
                 {errors.title && <p className="text-sm text-red-500">{errors.title}</p>}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">Description *</Label>
-                <textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Enter template description" className="w-full min-h-[200px] p-2 border rounded" />
+                <Label htmlFor="description">{t("Description *")}</Label>
+                <textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t("Enter template description")} className="w-full min-h-[200px] p-2 border rounded" />
                 {errors.description && <p className="text-sm text-red-500">{errors.description}</p>}
               </div>
 
@@ -118,12 +122,12 @@ export default function TemplateCreationForm() {
               </div>
 
               <div className="space-y-2">
-                <Label>Tags</Label>
+                <Label>{t("Tags")}</Label>
                 <TagInput value={selectedTags} onChange={setSelectedTags} />
               </div>
 
               <div className="space-y-2">
-                <Label>Image (Optional)</Label>
+                <Label>{t("Image (Optional)")}</Label>
                 <ImageUpload imageUrl={imageUrl} setImageUrl={setImageUrl} />
               </div>
             </TabsContent>
@@ -136,12 +140,12 @@ export default function TemplateCreationForm() {
             <TabsContent value="access" className="space-y-4">
               <div className="flex items-center space-x-2">
                 <Switch id="isPublic" checked={isPublic} onCheckedChange={setIsPublic} />
-                <Label htmlFor="isPublic">Public template (accessible to all authenticated users)</Label>
+                <Label htmlFor="isPublic">{t("Public template (accessible to all authenticated users)")}</Label>
               </div>
 
               {!isPublic && (
                 <div className="space-y-2">
-                  <Label>Select users who can access this template</Label>
+                  <Label>{t("Select users who can access this template")}</Label>
                   <UserSelector selectedUsers={selectedUsers} onChange={setSelectedUsers} />
                 </div>
               )}
@@ -151,14 +155,15 @@ export default function TemplateCreationForm() {
 
         <CardFooter className="flex justify-between">
           <Button variant="outline" onClick={() => navigate(-1)}>
-            Cancel
+            {t("Cancel")}
           </Button>
           <div className="flex gap-2">
             <Button variant={"outline"} className="cursor-pointer" disabled={isSubmitting} onClick={() => onSubmit(false)}>
-              {isSubmitting && <Icons.spinner className="h-4 w-4 mr-2 animate-spin" />}Save as Draft
+              {isSubmitting && <Icons.spinner className="h-4 w-4 mr-2 animate-spin" />}
+              {t("Save as Draft")}
             </Button>
             <Button variant={"outline"} className="cursor-pointer" disabled={isSubmitting} onClick={() => onSubmit(true)}>
-              {isSubmitting && <Icons.spinner className="h-4 w-4 mr-2 animate-spin" />} Publish Template
+              {isSubmitting && <Icons.spinner className="h-4 w-4 mr-2 animate-spin" />} {t("Publish Template")}
             </Button>
           </div>
         </CardFooter>

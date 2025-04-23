@@ -9,13 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { CSS } from "@dnd-kit/utilities";
 import { Question, QuestionType } from "@/types";
 import { QuestionForm } from "./QuestionForm.tsx";
-
-const questionTypeLabels = {
-  [QuestionType.STRING]: "Single Line Text",
-  [QuestionType.TEXT]: "Multi-Line Text",
-  [QuestionType.INTEGER]: "Number",
-  [QuestionType.CHECKBOX]: "Checkbox",
-};
+import { useTranslation } from "react-i18next";
 
 function SortableQuestion({ question, onEdit, onDelete }: { question: Question; onEdit: (id: string) => void; onDelete: (id: string) => void }) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: question.id });
@@ -25,6 +19,15 @@ function SortableQuestion({ question, onEdit, onDelete }: { question: Question; 
     transition,
   };
 
+  const { t } = useTranslation();
+
+  const questionTypeLabels = {
+    [QuestionType.STRING]: t("Single Line Text"),
+    [QuestionType.TEXT]: t("Multi-Line Text"),
+    [QuestionType.INTEGER]: t("Number"),
+    [QuestionType.CHECKBOX]: t("Checkbox"),
+  };
+
   return (
     <div ref={setNodeRef} style={style} className="mb-3">
       <Card className="border-2 border-dashed hover:border-primary/50">
@@ -32,7 +35,7 @@ function SortableQuestion({ question, onEdit, onDelete }: { question: Question; 
           <div className="cursor-move touch-none" {...attributes} {...listeners}>
             <GripVertical className="mr-2 h-5 w-5 text-gray-400" />
           </div>
-          <CardTitle className="text-base flex-1 truncate">{question.title || "Untitled Question"}</CardTitle>
+          <CardTitle className="text-base flex-1 truncate">{question.title || t("Untitled Question")}</CardTitle>
           <span className="text-xs bg-slate-100 rounded-full px-2 py-1 dark:bg-slate-700">{questionTypeLabels[question.questionType]}</span>
           <Button
             variant="ghost"
@@ -67,6 +70,8 @@ export function QuestionManagement({ questions, setQuestions }: { questions: Que
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }), useSensor(KeyboardSensor));
 
+  const { t } = useTranslation();
+
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
       const { active, over } = event;
@@ -96,7 +101,7 @@ export function QuestionManagement({ questions, setQuestions }: { questions: Que
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-medium">Questions</h3>
+        <h3 className="text-lg font-medium">{t("Questions")}</h3>
         <Button
           onClick={(e) => {
             e.preventDefault();
@@ -104,14 +109,14 @@ export function QuestionManagement({ questions, setQuestions }: { questions: Que
             setIsDialogOpen(true);
           }}
         >
-          <PlusCircle className="h-4 w-4 mr-2" /> Add Question
+          <PlusCircle className="h-4 w-4 mr-2" /> {t("Add Question")}
         </Button>
       </div>
 
       {questions.length === 0 ? (
         <Card className="bg-muted/50">
           <CardContent className="flex flex-col items-center justify-center py-10">
-            <p className="text-muted-foreground mb-4">No questions added yet</p>
+            <p className="text-muted-foreground mb-4">{t("No questions added yet")}</p>
             <Button
               onClick={() => {
                 setEditingQuestion(null);
@@ -119,7 +124,7 @@ export function QuestionManagement({ questions, setQuestions }: { questions: Que
               }}
               variant="outline"
             >
-              <PlusCircle className="h-4 w-4 mr-2" /> Add Your First Question
+              <PlusCircle className="h-4 w-4 mr-2" /> {t("Add Your First Question")}
             </Button>
           </CardContent>
         </Card>
@@ -149,8 +154,8 @@ export function QuestionManagement({ questions, setQuestions }: { questions: Que
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>{editingQuestion ? "Edit Question" : "Add New Question"}</DialogTitle>
-            <DialogDescription>{editingQuestion ? "Update the question details" : "Configure your new question"}</DialogDescription>
+            <DialogTitle>{editingQuestion ? t("Edit Question") : t("Add New Question")}</DialogTitle>
+            <DialogDescription>{editingQuestion ? t("Update the question details") : t("Configure your new question")}</DialogDescription>
           </DialogHeader>
           <QuestionForm questionData={editingQuestion} onSave={handleSaveQuestion} onCancel={() => setIsDialogOpen(false)} />
         </DialogContent>

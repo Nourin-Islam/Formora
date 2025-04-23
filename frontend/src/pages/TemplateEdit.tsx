@@ -18,10 +18,12 @@ import { useUpdateTemplate, useTemplateById } from "@/hooks/useTemplates";
 import LoadingSpinner from "@/components/global/LoadingSpinner";
 import PreviousSubmissions from "@/components/PreviousSubmissions";
 import { Comments } from "@/components/Comments";
+import { useTranslation } from "react-i18next";
 
 export default function TemplateEdit() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -61,25 +63,25 @@ export default function TemplateEdit() {
   console.log("Received template:", template);
   const handleSubmit = async (publish: boolean) => {
     if (!title.trim()) {
-      toast.error("Title is required");
+      toast.error(t("Title is required"));
       setActiveTab("general");
       return;
     }
 
     if (!description.trim()) {
-      toast.error("Description is required");
+      toast.error(t("Description is required"));
       setActiveTab("general");
       return;
     }
 
     if (!topicId) {
-      toast.error("Topic is required");
+      toast.error(t("Topic is required"));
       setActiveTab("general");
       return;
     }
 
     if (questions.length === 0) {
-      toast.error("Please add at least one question");
+      toast.error(t("Please add at least one question"));
       setActiveTab("questions");
       return;
     }
@@ -109,43 +111,50 @@ export default function TemplateEdit() {
       };
 
       await updateTemplate.mutateAsync({ id: id!, templateData });
-      toast.success(`Template ${publish ? "published" : "updated"} successfully`);
+      toast.success(`${t("Template")} ${publish ? t("published") : t("updated")} t("successfully")`);
       navigate("/templates");
     } catch (error) {
-      toast.error("Failed to update template");
+      toast.error(t("Failed to update template"));
       console.error("Template update error:", error);
     }
   };
 
   if (isLoading) return <LoadingSpinner />;
-  if (error) return <div className="text-red-500">Error loading template: {error.message}</div>;
-  if (!template) return <div>Template not found</div>;
+  if (error)
+    return (
+      <div className="text-red-500">
+        {t("Error loading template:")} {error.message}
+      </div>
+    );
+  if (!template) return <div>{t("Template not found")}</div>;
 
   return (
     <>
       <form className="space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle>Manage Template</CardTitle>
-            <CardDescription>Edit Details || Add Question || Change Access || Check Submissions</CardDescription>
+            <CardTitle>{t("Manage Template")}</CardTitle>
+            <CardDescription>{t("Edit Details || Add Question || Change Access || Check Submissions")}</CardDescription>
           </CardHeader>
           <CardContent>
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="mb-4">
-                <TabsTrigger value="general">General Settings</TabsTrigger>
-                <TabsTrigger value="questions">Questions ({questions.length})</TabsTrigger>
-                <TabsTrigger value="access">Access</TabsTrigger>
-                <TabsTrigger value="previousSubmissions">Submissions</TabsTrigger>
+                <TabsTrigger value="general">{t("General Settings")}</TabsTrigger>
+                <TabsTrigger value="questions">
+                  {t("Questions")} ({questions.length})
+                </TabsTrigger>
+                <TabsTrigger value="access">{t("Access")}</TabsTrigger>
+                <TabsTrigger value="previousSubmissions">{t("Submissions")}</TabsTrigger>
               </TabsList>
 
               <TabsContent value="general" className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="title">Title *</Label>
+                  <Label htmlFor="title">{t("Title *")}</Label>
                   <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="description">Description *</Label>
+                  <Label htmlFor="description">{t("Description *")}</Label>
                   <div className="rounded border" data-color-mode="light">
                     <MDEditor value={description} onChange={(value) => setDescription(value || "")} preview="edit" height={300} />
                   </div>
@@ -156,12 +165,12 @@ export default function TemplateEdit() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Tags</Label>
+                  <Label>{t("Tags")}</Label>
                   <TagInput value={selectedTags} onChange={setSelectedTags} />
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Image (Optional)</Label>
+                  <Label>{t("Image (Optional)")}</Label>
                   <ImageUpload imageUrl={imageUrl} setImageUrl={setImageUrl} />
                 </div>
               </TabsContent>
@@ -173,11 +182,11 @@ export default function TemplateEdit() {
               <TabsContent value="access" className="space-y-4">
                 <div className="flex items-center space-x-2">
                   <Switch id="isPublic" checked={isPublic} onCheckedChange={setIsPublic} />
-                  <Label htmlFor="isPublic">Public template (accessible to all authenticated users)</Label>
+                  <Label htmlFor="isPublic">{t("Public template (accessible to all authenticated users)")}</Label>
                 </div>
                 {!isPublic && (
                   <div className="space-y-2">
-                    <Label>Select users who can access this template</Label>
+                    <Label>{t("Select users who can access this template")}</Label>
                     <UserSelector selectedUsers={selectedUsers} onChange={setSelectedUsers} />
                   </div>
                 )}
@@ -191,17 +200,17 @@ export default function TemplateEdit() {
           {activeTab !== "previousSubmissions" && (
             <CardFooter className="flex justify-between">
               <Button variant="outline" type="button" onClick={() => navigate(-1)} disabled={updateTemplate.isPending}>
-                Cancel
+                {t("Cancel")}
               </Button>
 
               <Button className="ml-auto mr-3" variant="secondary" type="button" onClick={() => handleSubmit(false)} disabled={updateTemplate.isPending || !isFormDirty}>
                 {updateTemplate.isPending ? (
                   <>
                     <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-t-transparent border-white"></span>
-                    Saving...
+                    {t("Saving...")}
                   </>
                 ) : (
-                  "Update Draft"
+                  t("Update Draft")
                 )}
               </Button>
 
@@ -209,10 +218,10 @@ export default function TemplateEdit() {
                 {updateTemplate.isPending ? (
                   <>
                     <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-t-transparent border-white"></span>
-                    Publishing...
+                    {t("Publishing...")}
                   </>
                 ) : (
-                  "Publish Template"
+                  t("Publish Template")
                 )}
               </Button>
             </CardFooter>

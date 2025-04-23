@@ -64,7 +64,7 @@ export default function TemplateList({ templates = [], isLoading = false, isErro
   if (isError) {
     return (
       <div className="container mx-auto py-8 text-center">
-        <p className="text-red-500">Failed to load templates. Please try again.</p>
+        <p className="text-red-500">{t("Failed to load templates. Please try again.")}</p>
         <Button onClick={onRefetch} className="mt-4">
           {t("Retry")}
         </Button>
@@ -93,13 +93,13 @@ export default function TemplateList({ templates = [], isLoading = false, isErro
         <div className="mt-8 flex justify-center">
           <Pagination>
             <Button variant="outline" onClick={() => onPageChange(filters.page - 1)} disabled={filters.page === 1}>
-              Previous
+              {t("Previous")}
             </Button>
             <div className="flex items-center mx-4">
-              Page {filters.page} of {totalPages}
+              {t("Page")} {filters.page} {t("of")} {totalPages}
             </div>
             <Button variant="outline" onClick={() => onPageChange(filters.page + 1)} disabled={filters.page === totalPages}>
-              Next
+              {t("Next")}
             </Button>
           </Pagination>
         </div>
@@ -108,16 +108,19 @@ export default function TemplateList({ templates = [], isLoading = false, isErro
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Confirm Deletion</DialogTitle>
-            <DialogDescription>Are you sure you want to delete the template "{templateToDelete?.title}"?</DialogDescription>
+            <DialogTitle>{t("Confirm Deletion")}</DialogTitle>
+            <DialogDescription>
+              {t("Are you sure you want to delete the template")}
+              {templateToDelete?.title}"?
+            </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
-              Cancel
+              {t("Cancel")}
             </Button>
             <Button variant="destructive" onClick={confirmDeleteTemplate} disabled={isDeleting}>
               {isDeleting && <Icons.spinner className="h-4 w-4 mr-2 animate-spin" />}
-              Delete
+              {t("Delete")}
             </Button>
           </DialogFooter>
         </DialogContent>

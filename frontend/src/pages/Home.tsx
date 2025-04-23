@@ -8,3 +8,8 @@ export default function Home() {
     </div>
   );
 }
+
+// Like below page I want to import useTranslation and add t() to proper places and then give a list of phrases where t() is added
+// Find all translatable phrases. (sorted by appearance) Then give translation for English and Russian
+
+// is t() added to all possible places?

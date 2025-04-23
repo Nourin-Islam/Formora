@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useTranslation } from "react-i18next";
 
 // shadcnUI components
 import { Button } from "@/components/ui/button";
@@ -36,19 +37,19 @@ type CommentsProps = {
   templateId: number;
 };
 
-// Form validation schema
-const commentFormSchema = z.object({
-  content: z.string().min(1, "Comment cannot be empty").max(1000, "Comment too long"),
-});
-
 export function Comments({ templateId }: CommentsProps) {
   const { getToken, userId } = useAuth();
   const { comments, isConnected, requestingUser } = useCommentsWebSocket(templateId);
-
+  const { t } = useTranslation();
   // const [requestingUser, setRequestingUser] = useState<RequestingUser | null>(null);
   const queryClient = useQueryClient();
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  // Form validation schema
+  const commentFormSchema = z.object({
+    content: z.string().min(1, t("Comment cannot be empty")).max(1000, t("Comment too long")),
+  });
 
   // Cleanup function for pointer-events
   useEffect(() => {
@@ -75,23 +76,6 @@ export function Comments({ templateId }: CommentsProps) {
     };
   }, [isDialogOpen]);
 
-  // Fetch comments
-  // const { data, isLoading } = useQuery<CommentsResponse>({
-  //   queryKey: ["comments", templateId, userId],
-  //   queryFn: async () => {
-  //     const { authenticatedApi } = await createAuthenticatedApi(getToken);
-  //     if (userId) {
-  //       const { data } = await authenticatedApi.get<CommentsResponse>(`/interact/templates/${templateId}/comments-for-user`);
-  //       setRequestingUser(data.requestingUser);
-  //       return data;
-  //     } else {
-  //       const { data } = await publicApi.get<CommentsResponse>(`/interact/templates/${templateId}/comments`);
-  //       return data;
-  //     }
-  //   },
-  //   enabled: typeof userId !== "undefined",
-  // });
-
   // Create comment form
   const createForm = useForm<z.infer<typeof commentFormSchema>>({
     resolver: zodResolver(commentFormSchema),
@@ -115,10 +99,10 @@ export function Comments({ templateId }: CommentsProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["comments", templateId] });
       createForm.reset();
-      toast.success("Comment added successfully");
+      toast.success(t("Comment added successfully"));
     },
     onError: () => {
-      toast.error("Failed to add comment");
+      toast.error(t("Failed to add comment"));
     },
   });
 
@@ -134,10 +118,10 @@ export function Comments({ templateId }: CommentsProps) {
       queryClient.invalidateQueries({ queryKey: ["comments", templateId] });
       setEditingCommentId(null);
       setIsDialogOpen(false);
-      toast.success("Comment updated successfully");
+      toast.success(t("Comment updated successfully"));
     },
     onError: () => {
-      toast.error("Failed to update comment");
+      toast.error(t("Failed to update comment"));
     },
   });
 
@@ -149,10 +133,10 @@ export function Comments({ templateId }: CommentsProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["comments", templateId] });
-      toast.success("Comment deleted successfully");
+      toast.success(t("Comment deleted successfully"));
     },
     onError: () => {
-      toast.error("Failed to delete comment");
+      toast.error(t("Failed to delete comment"));
     },
   });
 
@@ -178,13 +162,15 @@ export function Comments({ templateId }: CommentsProps) {
   };
 
   if (!isConnected) {
-    return <div>Connecting to live comments...</div>;
+    return <div>{t("Connecting to live comments...")}</div>;
   }
 
   return (
     <Card className="mt-6" id="comments">
       <CardHeader>
-        <CardTitle>Comments ({comments?.length || 0})</CardTitle>
+        <CardTitle>
+          {t("Comments")} ({comments?.length || 0})
+        </CardTitle>
       </CardHeader>
       <CardContent>
         {/* Create comment form */}
@@ -197,14 +183,14 @@ export function Comments({ templateId }: CommentsProps) {
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <Textarea placeholder="Add a comment..." className="min-h-[100px]" {...field} />
+                      <Textarea placeholder={t("Add a comment...")} className="min-h-[100px]" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
               <Button className="cursor-pointer" type="submit" disabled={createComment.isPending}>
-                {createComment.isPending ? "Posting..." : "Post Comment"}
+                {createComment.isPending ? t("Posting...") : t("Post Comment")}
               </Button>
             </form>
           </Form>
@@ -242,11 +228,11 @@ export function Comments({ templateId }: CommentsProps) {
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => handleEditClick(comment)}>
                             <Edit className="mr-2 h-4 w-4" />
-                            <span>Edit</span>
+                            <span>{t("Edit")}</span>
                           </DropdownMenuItem>
                           <DropdownMenuItem className="text-destructive" onClick={() => deleteComment.mutate(comment.id)}>
                             <Trash2 className="mr-2 h-4 w-4" />
-                            <span>Delete</span>
+                            <span>{t("Delete")}</span>
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -259,15 +245,15 @@ export function Comments({ templateId }: CommentsProps) {
             ))}
           </div>
         ) : (
-          <p className="text-muted-foreground">No comments yet. Be the first to comment!</p>
+          <p className="text-muted-foreground">{t("No comments yet. Be the first to comment!")}</p>
         )}
 
         {/* Edit comment dialog */}
         <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Edit Comment</DialogTitle>
-              <DialogDescription>Make changes to your comment here. Click save when you're done.</DialogDescription>
+              <DialogTitle>{t("Edit Comment")}</DialogTitle>
+              <DialogDescription>{t("Make changes to your comment here. Click save when you're done.")}</DialogDescription>
             </DialogHeader>
             <Form {...editForm}>
               <form onSubmit={editForm.handleSubmit((values) => updateComment.mutate(values))} className="space-y-4">
@@ -277,7 +263,7 @@ export function Comments({ templateId }: CommentsProps) {
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <Textarea placeholder="Edit your comment..." className="min-h-[100px]" aria-label="Comment content" {...field} />
+                        <Textarea placeholder={t("Edit your comment...")} className="min-h-[100px]" aria-label="Comment content" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -285,10 +271,10 @@ export function Comments({ templateId }: CommentsProps) {
                 />
                 <div className="flex justify-end gap-2">
                   <Button variant="outline" type="button" onClick={() => handleDialogOpenChange(false)}>
-                    Cancel
+                    {t("Cancel")}
                   </Button>
                   <Button type="submit" disabled={updateComment.isPending}>
-                    {updateComment.isPending ? "Updating..." : "Update Comment"}
+                    {updateComment.isPending ? t("Updating...") : t("Update Comment")}
                   </Button>
                 </div>
               </form>

@@ -42,17 +42,20 @@ function Header() {
         {!isLoaded ? (
           <Skeleton className="h-[30px] w-full max-w-3xl rounded-md" />
         ) : (
-          <div className="flex items-center space-x-4 flex-col md:flex-row justify-end ">
-            <div className="relative ml-auto mr-0 md:mr-3 order-2 md:order-1 mt-3 md:mt-0">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 h-4 w-4" />
+          <div className="grid grid-cols-[auto_auto]   lg:grid-cols-[auto_auto_auto] gap-y-3 lg:gap-x-4  ">
+            {/* First item - always spans full width on mobile, medium+ gets A position */}
+            <div className="col-start-1 col-end-2 row-start-2 row-end-3 lg:col-start-1 lg:col-end-2  lg:row-start-1 lg:row-end-2 relative ">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground   dark:text-gray-500 " />
               <Input placeholder={t("Search templates...")} className="pl-10 bg-white dark:bg-neutral-900 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-neutral-800" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
             </div>
-            <div className="flex items-center order-1 md:order-2">
+
+            {/* Second item - appears first on mobile, then moves to B position on medium+ */}
+            <div className="col-start-1 col-end-3 row-start-1 row-end-2  lg:col-start-2 lg:col-end-3 lg:row-start-1 lg:row-end-2 ml-auto lg:ml-0 ">
               {isSignedIn ? (
                 <>
                   <nav className="flex space-x-4 items-center">
                     <Link to="/templates" className="text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400">
-                      {t("My Templates")}
+                      {t("Templates")}
                     </Link>
 
                     {Boolean(user?.publicMetadata?.isAdmin) && (
@@ -79,6 +82,10 @@ function Header() {
                   </Link>
                 </div>
               )}
+            </div>
+
+            {/* Third item - appears second on mobile, then moves to C position on medium+ */}
+            <div className="col-start-2 col-end-3 row-start-2 row-end-3  lg:col-start-3 lg:col-end-4 lg:row-start-1 lg:row-end-2   ">
               <ThemeToggle />
             </div>
           </div>

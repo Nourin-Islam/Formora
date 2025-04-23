@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Icons } from "@/components/global/icons";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
 
 export function VerifyEmailPage() {
   const { session } = useClerk();
@@ -10,6 +11,7 @@ export function VerifyEmailPage() {
   // const { isLoaded: signInLoaded, signIn } = useSignIn();
   const navigate = useNavigate();
   const [status, setStatus] = useState("verifying");
+  const { t } = useTranslation();
 
   // Debug function
   const logState = () => {
@@ -56,9 +58,9 @@ export function VerifyEmailPage() {
   if (status === "error") {
     return (
       <div className="container flex flex-col items-center justify-center gap-4 py-12">
-        <h1 className="text-2xl font-bold">Verification Error</h1>
-        <p className="text-muted-foreground">Something went wrong during verification</p>
-        <Button onClick={() => window.location.reload()}>Try Again</Button>
+        <h1 className="text-2xl font-bold">{t("Verification Error")}</h1>
+        <p className="text-muted-foreground">{t("Something went wrong during verification")}</p>
+        <Button onClick={() => window.location.reload()}>{t("Try Again")}</Button>
       </div>
     );
   }
@@ -66,10 +68,10 @@ export function VerifyEmailPage() {
   return (
     <div className="container flex flex-col items-center justify-center gap-4 py-12">
       <Icons.spinner className="h-12 w-12 animate-spin" />
-      <h1 className="text-2xl font-bold">Verifying your account</h1>
-      <p className="text-muted-foreground">{signUp?.emailAddress ? `Verifying ${signUp.emailAddress}` : "Completing authentication..."}</p>
+      <h1 className="text-2xl font-bold">{t("Verifying your account")}</h1>
+      <p className="text-muted-foreground">{signUp?.emailAddress ? `${t("Verifying")} ${signUp.emailAddress}` : t("Completing authentication...")}</p>
       <Button variant="ghost" size="sm" onClick={logState} className="mt-4">
-        Debug Info
+        {t("Debug Info")}
       </Button>
     </div>
   );

@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { useSearchTags } from "@/hooks/useTags";
 import { useCreateTag } from "@/hooks/useTags";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 interface TagInputProps {
   value?: string[];
@@ -15,6 +16,7 @@ interface TagInputProps {
 }
 
 export function TagInput({ value = [], onChange }: TagInputProps) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -47,15 +49,15 @@ export function TagInput({ value = [], onChange }: TagInputProps) {
       // .regex(/^[a-zA-Z0-9 ]*$/, "Tag name can only contain letters, numbers, and spaces"),
       if (inputValue.length < 2) {
         // alert("Tag name must be at least 2 characters long");
-        toast.error("Tag name must be at least 2 characters long");
+        toast.error(t("Tag name must be at least 2 characters long"));
         return;
       } else if (inputValue.length > 20) {
         // alert("Tag name cannot exceed 20 characters");
-        toast.error("Tag name cannot exceed 20 characters");
+        toast.error(t("Tag name cannot exceed 20 characters"));
         return;
       } else if (!/^[a-zA-Z0-9 ]*$/.test(inputValue)) {
         // alert("Tag name can only contain letters, numbers, and spaces");
-        toast.error("Tag name can only contain letters, numbers, and spaces");
+        toast.error(t("Tag name can only contain letters, numbers, and spaces"));
         return;
       }
 
@@ -78,7 +80,9 @@ export function TagInput({ value = [], onChange }: TagInputProps) {
             {tag}
             <button type="button" className="ml-2 rounded-full outline-none focus:ring-2 focus:ring-ring" onClick={() => handleRemoveTag(tag)}>
               <X className="h-3 w-3" />
-              <span className="sr-only">Remove {tag}</span>
+              <span className="sr-only">
+                {t("Remove")} {tag}
+              </span>
             </button>
           </Badge>
         ))}
@@ -87,23 +91,30 @@ export function TagInput({ value = [], onChange }: TagInputProps) {
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button variant="outline" role="combobox" aria-expanded={open} className="w-full justify-between">
-            {inputValue || "Add tags..."}
+            {inputValue || t("Add tags...")}
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-full p-0">
           <Command shouldFilter={false}>
-            <CommandInput placeholder="Search tags..." value={inputValue} onValueChange={setInputValue} ref={inputRef} onKeyDown={handleKeyDown} />
+            <CommandInput placeholder={t("Search tags...")} value={inputValue} onValueChange={setInputValue} ref={inputRef} onKeyDown={handleKeyDown} />
             {isLoading ? (
               <div className="flex items-center justify-center p-4">
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Searching...
+                {t("Searching...")}
               </div>
             ) : isError ? (
-              <div className="p-2 text-sm text-red-500">Failed to load tags</div>
+              <div className="p-2 text-sm text-red-500">{t("Failed to load tags")}</div>
             ) : (
               <>
-                <CommandEmpty>{inputValue && <div className="p-2 text-sm">No tags found. Press Enter to create "{inputValue}"</div>}</CommandEmpty>
+                <CommandEmpty>
+                  {inputValue && (
+                    <div className="p-2 text-sm">
+                      {t("No tags found. Press Enter to create ")}
+                      {inputValue}"
+                    </div>
+                  )}
+                </CommandEmpty>
                 <CommandGroup>
                   {filteredTags.map((tag) => (
                     <CommandItem

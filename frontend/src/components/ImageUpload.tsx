@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Card } from "@/components/ui/card";
 import { Upload, X } from "lucide-react";
-
+import { useTranslation } from "react-i18next";
 interface ImageUploadProps {
   imageUrl: string;
   setImageUrl: (url: string) => void;
@@ -16,16 +16,17 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ imageUrl, setImageUrl }) => {
   const [thumbnail, setThumbnail] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState("");
+  const { t } = useTranslation();
 
   const validateFileFunction = (file: File) => {
     const allowedTypes = ["image/jpeg", "image/png"];
     if (!allowedTypes.includes(file.type)) {
-      setError("Only JPEG and PNG files are allowed.");
+      setError(t("Only JPEG and PNG files are allowed."));
       return false;
     }
 
     if (file.size > 5_000_000) {
-      setError("Image must be less than 5MB.");
+      setError(t("Image must be less than 5MB."));
       return false;
     }
 
@@ -76,8 +77,8 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ imageUrl, setImageUrl }) => {
           <label className="cursor-pointer block">
             <div className="border-2 border-dashed border-gray-300 rounded-md p-6 w-full h-40 flex flex-col items-center justify-center hover:border-gray-400 transition-colors aspect-video">
               <Upload className="h-10 w-10 text-gray-400 mb-2" />
-              <p className="text-sm text-gray-500">{isUploading ? "Uploading..." : "Click to upload an image"}</p>
-              <p className="text-xs text-gray-400 mt-1">JPEG or PNG (max. 5MB)</p>
+              <p className="text-sm text-gray-500">{isUploading ? t("Uploading...") : t("Click to upload an image")}</p>
+              <p className="text-xs text-gray-400 mt-1">{t("JPEG or PNG (max. 5MB)")}</p>
             </div>
 
             <IKUpload id="imageInput" fileName="uploaded_image.png" onChange={handleThumbnailChange} onUploadStart={onUploadStart} onUploadProgress={onUploadProgress} validateFile={validateFileFunction} onSuccess={onSuccess} accept="image/jpeg,image/png" className="hidden" />

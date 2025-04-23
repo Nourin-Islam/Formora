@@ -17,11 +17,13 @@ import { useAuth } from "@clerk/clerk-react";
 import SmallSkeleton from "@/components/global/SmallSkeleton";
 import { useEffect } from "react";
 import { Comments } from "@/components/Comments";
+import { useTranslation } from "react-i18next";
 
 const FormFill = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { getToken, userId } = useAuth();
+  const { t } = useTranslation();
 
   // Fetch template data and check if user has already submitted
   const {
@@ -37,7 +39,7 @@ const FormFill = () => {
         return response.data;
       } catch (err: any) {
         console.log("Error fetching template data:", err);
-        toast.error(err || "Failed to load form");
+        toast.error(err || t("Failed to load form"));
         // if (err.response?.data?.error) {
         //   // Throw the error with the server message
         //   throw new Error(err.response.data.error.message);
@@ -155,12 +157,12 @@ const FormFill = () => {
       // }
     },
     onSuccess: (data) => {
-      toast.success(existingForm ? "Form updated successfully" : "Form submitted successfully");
+      toast.success(existingForm ? t("Form updated successfully") : t("Form submitted successfully"));
       // navigate("/forms");
       navigate(`/forms/${data.formId}`, { state: { success: true } });
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.error || "Failed to submit form");
+      toast.error(error.response?.data?.error || t("Failed to submit form"));
     },
   });
 
@@ -171,11 +173,11 @@ const FormFill = () => {
       await authenticatedApi.delete(`/forms/delete/${existingForm?.id}`);
     },
     onSuccess: () => {
-      toast.success("Form deleted successfully");
+      toast.success(t("Form deleted successfully"));
       navigate("/templates");
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.error || "Failed to delete form");
+      toast.error(error.response?.data?.error || t("Failed to delete form"));
     },
   });
 
@@ -188,7 +190,7 @@ const FormFill = () => {
       <div className="container max-w-4xl py-8">
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{(error as any)?.response?.data?.error || "Failed to load form"}</AlertDescription>
+          <AlertDescription>{(error as any)?.response?.data?.error || t("Failed to load form")}</AlertDescription>
         </Alert>
       </div>
     );
@@ -199,7 +201,7 @@ const FormFill = () => {
       <div className="container max-w-4xl py-8">
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
-          <AlertDescription>Form template not found</AlertDescription>
+          <AlertDescription>{t("Form template not found")}</AlertDescription>
         </Alert>
       </div>
     );
@@ -212,9 +214,9 @@ const FormFill = () => {
           <CardTitle>{template.title}</CardTitle>
           {existingForm && (
             <div className="text-sm text-muted-foreground">
-              You submitted this form on {new Date(existingForm.createdAt).toLocaleDateString()}{" "}
+              {t("You submitted this form on")} {new Date(existingForm.createdAt).toLocaleDateString()}{" "}
               <Button variant={"link"} className="ml-3 text-red-500" onClick={() => handleDelete.mutate()}>
-                Delete your Submission?
+                {t("Delete your Submission?")}
               </Button>
             </div>
           )}
@@ -264,7 +266,7 @@ const FormFill = () => {
                           return (
                             <div className="flex items-center space-x-2">
                               <Checkbox id={`question_${question.id}`} checked={field.value} onCheckedChange={field.onChange} />
-                              <Label htmlFor={`question_${question.id}`}>Yes</Label>
+                              <Label htmlFor={`question_${question.id}`}>{t("Yes")}</Label>
                             </div>
                           );
                         }
@@ -284,12 +286,12 @@ const FormFill = () => {
             {submitForm.isPending ? (
               <>
                 <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-t-transparent border-white"></span>
-                {existingForm ? "Updating..." : "Submitting..."}
+                {existingForm ? t("Updating...") : t("Submitting...")}
               </>
             ) : existingForm ? (
-              "Update Form"
+              t("Update Form")
             ) : (
-              "Submit Form"
+              t("Submit Form")
             )}
           </Button>
         </CardFooter>

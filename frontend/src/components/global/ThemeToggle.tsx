@@ -23,7 +23,7 @@ export function ThemeToggle() {
 
   return (
     <div className="flex items-center justify-end space-x-4">
-      <Button className="ml-3" variant="outline" size="icon" onClick={toggleTheme}>
+      <Button className="ml-1" variant="outline" size="icon" onClick={toggleTheme}>
         {/* Show sun in dark mode, moon in light mode */}
         <Sun className="h-5 w-5 rotate-0 scale-0 transition-all dark:rotate-0 dark:scale-100" />
         <Moon className="absolute h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />

@@ -10,6 +10,7 @@ import { ArrowUpDown } from "lucide-react";
 import { useState, useMemo } from "react";
 import { Icons } from "../components/global/icons";
 import SmallSkeleton from "@/components/global/SmallSkeleton";
+import { useTranslation } from "react-i18next";
 
 interface SubmissionRow {
   form_id: number;
@@ -25,6 +26,7 @@ interface SubmissionRow {
 }
 
 function PreviousSubmissions({ id }: { id: string }) {
+  const { t } = useTranslation();
   const { getToken } = useAuth();
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
@@ -41,6 +43,22 @@ function PreviousSubmissions({ id }: { id: string }) {
     },
     retry: false,
   });
+
+  // 🎯 Utility function to format answer for CHECKBOX/INTEGER
+  function formatAnswer(answer: string, type: string) {
+    if (type === "CHECKBOX") {
+      try {
+        const parsed = JSON.parse(answer);
+        return Array.isArray(parsed) ? parsed.join(", ") : answer;
+      } catch {
+        return answer;
+      }
+    }
+    if (type === "INTEGER") {
+      return isNaN(Number(answer)) ? t("Invalid") : answer;
+    }
+    return answer;
+  }
 
   // 🧠 Group submissions by form
   const groupedSubmissions = useMemo(() => {
@@ -99,9 +117,9 @@ function PreviousSubmissions({ id }: { id: string }) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Previous Submissions</CardTitle>
+          <CardTitle>{t("Previous Submissions")}</CardTitle>
         </CardHeader>
-        <CardContent className="text-center py-8 text-red-500">Failed to load submissions</CardContent>
+        <CardContent className="text-center py-8 text-red-500">{t("Failed to load submissions")}</CardContent>
       </Card>
     );
   }
@@ -110,9 +128,9 @@ function PreviousSubmissions({ id }: { id: string }) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Previous Submissions</CardTitle>
+          <CardTitle>{t("Previous Submissions")}</CardTitle>
         </CardHeader>
-        <CardContent className="text-center py-8 text-gray-500">No submissions yet</CardContent>
+        <CardContent className="text-center py-8 text-gray-500">{t("No submissions yet")}</CardContent>
       </Card>
     );
   }
@@ -120,7 +138,7 @@ function PreviousSubmissions({ id }: { id: string }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Previous Submissions</CardTitle>
+        <CardTitle>{t("Previous Submissions")}</CardTitle>
       </CardHeader>
       <CardContent>
         <Table>
@@ -128,11 +146,11 @@ function PreviousSubmissions({ id }: { id: string }) {
             <TableRow>
               <TableHead>
                 <Button variant="ghost" onClick={() => setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"))} className="p-0 hover:bg-transparent">
-                  Created
+                  {t("Created")}
                   <ArrowUpDown className="ml-2 h-4 w-4" />
                 </Button>
               </TableHead>
-              <TableHead>User</TableHead>
+              <TableHead>{t("User")}</TableHead>
               {questionTitles.map((title) => (
                 <TableHead key={title}>{title}</TableHead>
               ))}
@@ -159,22 +177,6 @@ function PreviousSubmissions({ id }: { id: string }) {
       </CardContent>
     </Card>
   );
-}
-
-// 🎯 Utility function to format answer for CHECKBOX/INTEGER
-function formatAnswer(answer: string, type: string) {
-  if (type === "CHECKBOX") {
-    try {
-      const parsed = JSON.parse(answer);
-      return Array.isArray(parsed) ? parsed.join(", ") : answer;
-    } catch {
-      return answer;
-    }
-  }
-  if (type === "INTEGER") {
-    return isNaN(Number(answer)) ? "Invalid" : answer;
-  }
-  return answer;
 }
 
 export default PreviousSubmissions;
