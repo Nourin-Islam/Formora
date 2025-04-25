@@ -1,5 +1,5 @@
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { House, Search } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { ThemeToggle } from "@/components/global/ThemeToggle";
 import { UserButton } from "@clerk/clerk-react";
@@ -35,18 +35,19 @@ function Header() {
 
   return (
     <header className="bg-white dark:bg-black shadow dark:shadow-neutral-800">
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 flex justify-between items-center">
-        <Link to="/">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Formora</h1>
+      <div className="mx-auto max-w-7xl px-4 py-3 md:py-6 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center  justify-center md:justify-between   md:items-center">
+        <Link className="flex justify-center gap-2 items-center" to="/">
+          <House className=" mt-1 inline " />
+          <h1 className="   text-3xl md:text-3xl font-bold text-gray-900 dark:text-white">Formora</h1>
         </Link>
         {!isLoaded ? (
           <Skeleton className="h-[30px] w-full max-w-3xl rounded-md" />
         ) : (
-          <div className="grid grid-cols-[auto_auto]   lg:grid-cols-[auto_auto_auto] gap-y-3 lg:gap-x-4 items-center  ">
+          <div className="grid grid-cols-[auto_auto]   lg:grid-cols-[auto_auto_auto] gap-y-4 lg:gap-y-0 lg:gap-x-4 items-center  ">
             {/* First item - always spans full width on mobile, medium+ gets A position */}
             <div className="col-start-1 col-end-2 row-start-2 row-end-3 lg:col-start-1 lg:col-end-2  lg:row-start-1 lg:row-end-2 relative ">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground   dark:text-gray-500 " />
-              <Input placeholder={t("Search templates...")} className="pl-10 bg-white dark:bg-neutral-900 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-neutral-800 w-[150px] sm:w-auto" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+              <Search className="absolute left-2 md:left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground   dark:text-gray-500 " />
+              <Input placeholder={t("Search templates...")} className="pl-7 md:pl-10 bg-white dark:bg-neutral-900 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-neutral-800 w-[120px] sm:w-auto" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
             </div>
 
             {/* Second item - appears first on mobile, then moves to B position on medium+ */}

@@ -8,9 +8,9 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown } from "lucide-react";
 import { useState, useMemo } from "react";
-import { Icons } from "../components/global/icons";
 import SmallSkeleton from "@/components/global/SmallSkeleton";
 import { useTranslation } from "react-i18next";
+import { Eye } from "lucide-react";
 
 interface SubmissionRow {
   form_id: number;
@@ -25,7 +25,7 @@ interface SubmissionRow {
   answer: string;
 }
 
-function PreviousSubmissions({ id }: { id: string }) {
+function TemplatesPreviousSubmissions({ id }: { id: string }) {
   const { t } = useTranslation();
   const { getToken } = useAuth();
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
@@ -162,7 +162,7 @@ function PreviousSubmissions({ id }: { id: string }) {
                 <TableCell>
                   <Link to={`/forms/${submission.formId}`} className="text-primary hover:underline flex items-center group">
                     {format(new Date(submission.submissionDate), "MMM dd, yyyy HH:mm")}
-                    <Icons.eye className="ml-2 h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <Eye className="ml-2 h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
                   </Link>
                 </TableCell>
                 <TableCell>{submission.userName}</TableCell>
@@ -179,4 +179,4 @@ function PreviousSubmissions({ id }: { id: string }) {
   );
 }
 
-export default PreviousSubmissions;
+export default TemplatesPreviousSubmissions;

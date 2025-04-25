@@ -42,6 +42,7 @@ export const useLikeTemplate = (filters: FilterOptions) => {
       return { previousData };
     },
     onError: (err, templateId, context) => {
+      console.error("Error unliking template: ", templateId, "Error: ", err);
       if (context?.previousData) {
         queryClient.setQueryData(queryKey, context.previousData);
       }
@@ -91,6 +92,7 @@ export const useUnlikeTemplate = (filters: FilterOptions) => {
       return { previousData };
     },
     onError: (err, templateId, context) => {
+      console.error("Error unliking template: ", templateId, "Error: ", err);
       if (context?.previousData) {
         queryClient.setQueryData(queryKey, context.previousData);
       }

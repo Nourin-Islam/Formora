@@ -80,20 +80,7 @@ export const handleClerkWebhook = async (req: Request, res: Response, next: Next
         break;
 
       case "user.deleted":
-        // Use upsert to handle cases where user might not exist
-        await prisma.user.upsert({
-          where: { clerkId: data.id },
-          update: {
-            status: "DELETED",
-          },
-          create: {
-            clerkId: data.id,
-            email: data.email_addresses?.[0]?.email_address || "deleted@example.com",
-            name: "Deleted User",
-            status: "DELETED",
-            passwordHash: "",
-          },
-        });
+        console.log(`Webhook received for deleted user ${data.id}, no DB action taken.`);
         break;
     }
 

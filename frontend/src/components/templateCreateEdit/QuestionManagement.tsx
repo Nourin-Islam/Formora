@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CSS } from "@dnd-kit/utilities";
 import { Question, QuestionType } from "@/types";
-import { QuestionForm } from "./QuestionForm.tsx";
+import { QuestionForm } from "@/components/templateCreateEdit/QuestionForm";
 import { useTranslation } from "react-i18next";
 
 function SortableQuestion({ question, onEdit, onDelete }: { question: Question; onEdit: (id: string) => void; onDelete: (id: string) => void }) {

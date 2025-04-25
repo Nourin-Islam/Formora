@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Pagination } from "@/components/ui/pagination";
-import { Icons } from "@/components/global/icons";
+import { Shell } from "lucide-react";
 import TemplatesSkeleton from "@/components/global/TemplatesSkeleton";
 import TemplateCard from "./TemplateCard";
 import { TemplateFilterOptions, Template } from "@/types";
@@ -119,7 +119,7 @@ export default function TemplateList({ templates = [], isLoading = false, isErro
               {t("Cancel")}
             </Button>
             <Button variant="destructive" onClick={confirmDeleteTemplate} disabled={isDeleting}>
-              {isDeleting && <Icons.spinner className="h-4 w-4 mr-2 animate-spin" />}
+              {isDeleting && <Shell className="h-4 w-4 mr-2 animate-spin" />}
               {t("Delete")}
             </Button>
           </DialogFooter>

@@ -1,6 +1,7 @@
 import express from "express";
 import { authenticateUser } from "../middleware/authenticateUser.ts";
-import { getTemplateForFilling, submitForm, getFilledForm, deleteFilledForm, getAllSubmissionsByTemplate } from "../controllers/fillForm.controller.ts";
+import { getTemplateForFilling, getFilledForm, deleteFilledForm, getAllSubmissionsByTemplate, getAllMyResponses } from "../controllers/fillForm.controller.ts";
+import { submitForm } from "../controllers/submitForm.controller.ts";
 
 const router = express.Router();
 
@@ -21,5 +22,6 @@ router.delete("/delete/:id", authenticateUser, deleteFilledForm);
 // router.get("/of-template/:id", authenticateUser, getAllFormByTemplate);
 // @ts-ignore
 router.get("/of-template/:id", authenticateUser, getAllSubmissionsByTemplate);
+router.get("/my-responses", authenticateUser, getAllMyResponses);
 
 export default router;

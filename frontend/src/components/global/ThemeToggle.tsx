@@ -10,7 +10,6 @@ export function ThemeToggle() {
   const { user } = useUser();
   const { resolvedTheme, setTheme, language, setLanguage } = useThemeStore();
   const { i18n } = useTranslation();
-  // const { updateMetadata } = useUpdateUserMetadata();
 
   const toggleTheme = async () => {
     const newTheme = resolvedTheme === "dark" ? "light" : "dark";
@@ -41,7 +40,7 @@ export function ThemeToggle() {
 
   return (
     <div className="flex items-center space-x-4">
-      <Button variant="outline" size="icon" onClick={toggleTheme}>
+      <Button className="ml-2 md:ml0" variant="outline" size="icon" onClick={toggleTheme}>
         <Sun className="h-5 w-5 hidden dark:inline" />
         <Moon className="h-5 w-5 inline dark:hidden" />
         <span className="sr-only">Toggle theme</span>

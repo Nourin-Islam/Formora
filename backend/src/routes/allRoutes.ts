@@ -9,9 +9,11 @@ import tagRoutes from "./tagsRoute.ts";
 import templateRoutes from "./templatesRoute.ts";
 import topicsRoute from "./topicsRoute.ts";
 import usersRoutes from "./usersRoutes.ts";
+import homeRoutes from "./homeRoutes.ts";
 
 const router = express.Router();
 
+router.use("/home", homeRoutes);
 router.use("/forms", formRoutes);
 router.use("/imagekit", imagekitRoutes);
 router.use("/interact", interactionsRouter);

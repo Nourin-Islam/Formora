@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Pagination, PaginationContent, PaginationItem } from "@/components/ui/pagination";
-import { Icons } from "@/components/global/icons";
+import { FilePenIcon, Plus, Shell, Trash2 } from "lucide-react";
 import LoadingSpinner from "@/components/global/LoadingSpinner";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useForm } from "react-hook-form";
@@ -178,7 +178,7 @@ export default function ManageTopics() {
           <Tooltip>
             <TooltipTrigger asChild>
               <Button variant="outline" size="sm" onClick={() => setIsCreateDialogOpen(true)}>
-                <Icons.plus className="h-4 w-4 mr-2" />
+                <Plus className="h-4 w-4 mr-2" />
                 Create Topic
               </Button>
             </TooltipTrigger>
@@ -200,7 +200,7 @@ export default function ManageTopics() {
                 }}
                 disabled={table.getSelectedRowModel().rows.length !== 1}
               >
-                <Icons.edit className="h-4 w-4 mr-2" />
+                <FilePenIcon className="h-4 w-4 mr-2" />
                 Edit
               </Button>
             </TooltipTrigger>
@@ -223,7 +223,7 @@ export default function ManageTopics() {
                 }}
                 disabled={table.getSelectedRowModel().rows.length === 0}
               >
-                {createTopic.isPending || updateTopic.isPending || deleteTopic.isPending || bulkDeleteTopics.isPending ? <Icons.spinner className="h-4 w-4 mr-2 animate-spin" /> : <Icons.trash className="h-4 w-4 mr-2" />}
+                {createTopic.isPending || updateTopic.isPending || deleteTopic.isPending || bulkDeleteTopics.isPending ? <Shell className="h-4 w-4 mr-2 animate-spin" /> : <Trash2 className="h-4 w-4 mr-2" />}
                 Delete
               </Button>
             </TooltipTrigger>
@@ -312,7 +312,7 @@ export default function ManageTopics() {
                   Cancel
                 </Button>
                 <Button type="submit" disabled={createTopic.isPending}>
-                  {createTopic.isPending && <Icons.spinner className="h-4 w-4 mr-2 animate-spin" />}
+                  {createTopic.isPending && <Shell className="h-4 w-4 mr-2 animate-spin" />}
                   Create Topic
                 </Button>
               </DialogFooter>
@@ -348,7 +348,7 @@ export default function ManageTopics() {
                   Cancel
                 </Button>
                 <Button type="submit" disabled={updateTopic.isPending}>
-                  {updateTopic.isPending && <Icons.spinner className="h-4 w-4 mr-2 animate-spin" />}
+                  {updateTopic.isPending && <Shell className="h-4 w-4 mr-2 animate-spin" />}
                   Save Changes
                 </Button>
               </DialogFooter>
@@ -379,7 +379,7 @@ export default function ManageTopics() {
               }}
               disabled={deleteTopic.isPending || bulkDeleteTopics.isPending}
             >
-              {(deleteTopic.isPending || bulkDeleteTopics.isPending) && <Icons.spinner className="h-4 w-4 mr-2 animate-spin" />}
+              {(deleteTopic.isPending || bulkDeleteTopics.isPending) && <Shell className="h-4 w-4 mr-2 animate-spin" />}
               Delete
             </Button>
           </DialogFooter>

@@ -112,14 +112,16 @@ export const deleteUser = async (req: Request, res: Response) => {
 
     if (user.clerkId) {
       try {
-        await clerkClient.users.deleteUser(user.clerkId);
+        const response = await clerkClient.users.deleteUser(user.clerkId);
+        console.log("Clerk response:", response);
       } catch (clerkError) {
         res.status(500).json({ error: "Failed to delete user from authentication system" });
         return;
       }
     }
 
-    await prisma.user.delete({ where: { id: userId } });
+    const rest = await prisma.user.delete({ where: { id: userId } });
+    console.log("Deleted user from database:", rest);
     res.json({ message: "User deleted successfully" });
     refreshEvents.emit("refreshView");
   } catch (error) {

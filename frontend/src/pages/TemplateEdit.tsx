@@ -7,18 +7,19 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TagInput } from "@/components/TagInput";
-import { UserSelector } from "@/components/UserSelector";
-import ImageUpload from "@/components/ImageUpload";
-import { TopicSelector } from "@/components/TopicSelector";
-import { QuestionManagement } from "@/components/QuestionManagement";
+import { TagInput } from "@/components/templateCreateEdit/TagInput";
+import { UserSelector } from "@/components/templateCreateEdit/UserSelector";
+import ImageUpload from "@/components/templateCreateEdit/ImageUpload";
+import { TopicSelector } from "@/components/templateCreateEdit/TopicSelector";
+import { QuestionManagement } from "@/components/templateCreateEdit/QuestionManagement";
 import MDEditor from "@uiw/react-md-editor";
 import { Question, User } from "@/types";
 import { useUpdateTemplate, useTemplateById } from "@/hooks/useTemplates";
-import LoadingSpinner from "@/components/global/LoadingSpinner";
-import PreviousSubmissions from "@/components/PreviousSubmissions";
-import { Comments } from "@/components/Comments";
+import TemplatesSkeleton from "@/components/global/TemplatesSkeleton";
+import { Comments } from "@/components/formRelated/Comments";
 import { useTranslation } from "react-i18next";
+import { useThemeStore } from "@/store/themeStore";
+import TemplatesPreviousSubmissions from "@/components/templateShow/TemplatesPreviousSubmissions";
 
 export default function TemplateEdit() {
   const { id } = useParams<{ id: string }>();
@@ -37,6 +38,7 @@ export default function TemplateEdit() {
 
   const { data: template, isLoading, error } = useTemplateById(id!);
   const updateTemplate = useUpdateTemplate();
+  const { theme } = useThemeStore();
 
   useEffect(() => {
     if (template) {
@@ -68,8 +70,22 @@ export default function TemplateEdit() {
       return;
     }
 
+    // if title is too long, show error
+    if (title.length > 200) {
+      toast.error(t("Title is too long"));
+      setActiveTab("general");
+      return;
+    }
+
     if (!description.trim()) {
       toast.error(t("Description is required"));
+      setActiveTab("general");
+      return;
+    }
+
+    // if description is too long, show error
+    if (description.length > 500) {
+      toast.error(t("Description is too long"));
       setActiveTab("general");
       return;
     }
@@ -111,7 +127,7 @@ export default function TemplateEdit() {
       };
 
       await updateTemplate.mutateAsync({ id: id!, templateData });
-      toast.success(`${t("Template")} ${publish ? t("published") : t("updated")} t("successfully")`);
+      toast.success(`${t("Template")} ${publish ? t("published") : t("updated")} ${t("successfully")}`);
       navigate("/templates");
     } catch (error) {
       toast.error(t("Failed to update template"));
@@ -119,7 +135,7 @@ export default function TemplateEdit() {
     }
   };
 
-  if (isLoading) return <LoadingSpinner />;
+  if (isLoading) return <TemplatesSkeleton />;
   if (error)
     return (
       <div className="text-red-500">
@@ -155,9 +171,7 @@ export default function TemplateEdit() {
 
                 <div className="space-y-2">
                   <Label htmlFor="description">{t("Description *")}</Label>
-                  <div className="rounded border" data-color-mode="light">
-                    <MDEditor value={description} onChange={(value) => setDescription(value || "")} preview="edit" height={300} />
-                  </div>
+                  <MDEditor data-color-mode={theme === "dark" ? "dark" : "light"} value={description} onChange={(value) => setDescription(value || "")} preview="edit" height={300} />
                 </div>
 
                 <div className="space-y-2">
@@ -192,7 +206,8 @@ export default function TemplateEdit() {
                 )}
               </TabsContent>
               <TabsContent value="previousSubmissions">
-                <PreviousSubmissions id={id!} />
+                {/* <PreviousSubmissions id={id!} /> */}
+                <TemplatesPreviousSubmissions id={id!} />
               </TabsContent>
             </Tabs>
           </CardContent>

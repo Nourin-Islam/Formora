@@ -154,11 +154,11 @@ export default function SearchPage() {
   };
 
   const handleEditTemplate = (id: number) => {
-    navigate(`/edit-template/${id}`);
+    navigate(`/manage-template/${id}`);
   };
 
   const handleViewTemplate = (id: number) => {
-    navigate(`/fill-form/${id}`);
+    navigate(`/check-form/${id}`);
   };
 
   const handleDeleteTemplate = (templateId: number, options?: { onSuccess?: () => void }) => {

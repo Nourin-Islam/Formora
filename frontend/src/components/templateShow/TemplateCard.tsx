@@ -10,6 +10,8 @@ import { MoreHorizontal, Heart, MessageSquare, Edit, Eye, Trash2, Check } from "
 import { toast } from "sonner";
 import { Template } from "@/types";
 import { useTranslation } from "react-i18next";
+import MDEditor from "@uiw/react-md-editor";
+import { useThemeStore } from "@/store/themeStore";
 
 interface TemplateCardProps {
   template: Template;
@@ -24,6 +26,7 @@ interface TemplateCardProps {
 export default function TemplateCard({ template, userId, onDelete, onLike, onUnlike, onView, onEdit }: TemplateCardProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { theme } = useThemeStore();
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -56,7 +59,7 @@ export default function TemplateCard({ template, userId, onDelete, onLike, onUnl
     if (onView) {
       onView(template.id);
     } else {
-      navigate(`/fill-form/${template.id}`);
+      navigate(`/check-form/${template.id}`);
     }
   };
 
@@ -64,7 +67,7 @@ export default function TemplateCard({ template, userId, onDelete, onLike, onUnl
     if (onEdit) {
       onEdit(template.id);
     } else {
-      navigate(`/edit-template/${template.id}`);
+      navigate(`/manage-template/${template.id}`);
     }
   };
 
@@ -163,7 +166,14 @@ export default function TemplateCard({ template, userId, onDelete, onLike, onUnl
         </div>
       </CardHeader>
       <CardContent className="flex-grow">
-        <p className="text-gray-600 line-clamp-3">{template.description}</p>
+        {template.description && (
+          <p data-color-mode={theme} className="prose max-w-none line-clamp-3">
+            <MDEditor.Markdown source={template.description} />
+          </p>
+        )}
+        {/* <p className="text-gray-600 line-clamp-3">
+          <MDEditor.Markdown data-color-mode={theme === "dark" ? "dark" : "light"} source={template.description} />
+        </p> */}
         <div className="mt-4 flex flex-wrap gap-1">
           {template.tags.slice(0, 3).map((tag) => (
             <Badge key={tag.id} variant="outline" className="mr-1">

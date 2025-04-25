@@ -7,15 +7,17 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TagInput } from "@/components/TagInput";
-import { UserSelector } from "@/components/UserSelector";
-import ImageUpload from "@/components/ImageUpload";
-import { TopicSelector } from "@/components/TopicSelector";
-import { QuestionManagement } from "@/components/QuestionManagement";
+import { TagInput } from "@/components/templateCreateEdit/TagInput";
+import { UserSelector } from "@/components/templateCreateEdit/UserSelector";
+import ImageUpload from "@/components/templateCreateEdit/ImageUpload";
+import { TopicSelector } from "@/components/templateCreateEdit/TopicSelector";
+import { QuestionManagement } from "@/components/templateCreateEdit/QuestionManagement";
 import { useCreateTemplate } from "@/hooks/useTemplates";
 import { Question, User } from "@/types";
-import { Icons } from "@/components/global/icons";
+import { Shell } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import MDEditor from "@uiw/react-md-editor";
+import { useThemeStore } from "@/store/themeStore";
 
 export default function TemplateCreationForm() {
   const { t } = useTranslation();
@@ -29,8 +31,8 @@ export default function TemplateCreationForm() {
   const [imageUrl, setImageUrl] = useState("");
   const [activeTab, setActiveTab] = useState("general");
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { theme } = useThemeStore();
 
   const createTemplate = useCreateTemplate();
 
@@ -40,9 +42,21 @@ export default function TemplateCreationForm() {
       setActiveTab("general");
       return;
     }
+    // if title is too long, show error
+    if (title.length > 200) {
+      toast.error(t("Title is too long"));
+      setActiveTab("general");
+      return;
+    }
 
     if (!description.trim()) {
       toast.error(t("Description is required"));
+      setActiveTab("general");
+      return;
+    }
+    // if description is too long, show error
+    if (description.length > 500) {
+      toast.error(t("Description is too long"));
       setActiveTab("general");
       return;
     }
@@ -77,7 +91,7 @@ export default function TemplateCreationForm() {
       };
 
       await createTemplate.mutateAsync(templateData);
-      toast.success(`${t("Template")} ${publish ? t("published") : t("saved")} t("successfully")`);
+      toast.success(`${t("Template")} ${publish ? t("published") : t("saved")} ${t("successfully")}`);
       navigate(`/templates`);
     } catch (error) {
       toast.error(t("Failed to create template"));
@@ -107,18 +121,16 @@ export default function TemplateCreationForm() {
               <div className="space-y-2">
                 <Label htmlFor="title">{t("Title *")}</Label>
                 <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("Enter template title")} />
-                {errors.title && <p className="text-sm text-red-500">{errors.title}</p>}
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="description">{t("Description *")}</Label>
-                <textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t("Enter template description")} className="w-full min-h-[200px] p-2 border rounded" />
-                {errors.description && <p className="text-sm text-red-500">{errors.description}</p>}
+
+                <MDEditor data-color-mode={theme === "dark" ? "dark" : "light"} value={description} onChange={(val) => setDescription(val || "")} preview="edit" height={200} />
               </div>
 
               <div className="space-y-2">
                 <TopicSelector value={topicId.toString()} onChange={(id) => setTopicId(id)} />
-                {errors.topicId && <p className="text-sm text-red-500">{errors.topicId}</p>}
               </div>
 
               <div className="space-y-2">
@@ -134,7 +146,6 @@ export default function TemplateCreationForm() {
 
             <TabsContent value="questions">
               <QuestionManagement questions={questions} setQuestions={setQuestions} />
-              {errors.questions && <p className="text-sm text-red-500">{errors.questions}</p>}
             </TabsContent>
 
             <TabsContent value="access" className="space-y-4">
@@ -159,11 +170,11 @@ export default function TemplateCreationForm() {
           </Button>
           <div className="flex gap-2">
             <Button variant={"outline"} className="cursor-pointer" disabled={isSubmitting} onClick={() => onSubmit(false)}>
-              {isSubmitting && <Icons.spinner className="h-4 w-4 mr-2 animate-spin" />}
+              {isSubmitting && <Shell className="h-4 w-4 mr-2 animate-spin" />}
               {t("Save as Draft")}
             </Button>
             <Button variant={"outline"} className="cursor-pointer" disabled={isSubmitting} onClick={() => onSubmit(true)}>
-              {isSubmitting && <Icons.spinner className="h-4 w-4 mr-2 animate-spin" />} {t("Publish Template")}
+              {isSubmitting && <Shell className="h-4 w-4 mr-2 animate-spin" />} {t("Publish Template")}
             </Button>
           </div>
         </CardFooter>

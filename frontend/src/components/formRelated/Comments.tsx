@@ -17,7 +17,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MoreVertical, Trash2, Edit } from "lucide-react";
-import { useCommentsWebSocket } from "../hooks/useCommentsWebSocket";
+import { useCommentsWebSocket } from "@/hooks/useCommentsWebSocket";
 
 // Types
 interface Comment {

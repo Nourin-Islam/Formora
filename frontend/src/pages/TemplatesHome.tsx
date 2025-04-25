@@ -10,16 +10,18 @@ import { TemplateFilterOptions } from "@/types";
 import { useTopics } from "@/hooks/useTopics";
 import { useTemplates, useDeleteTemplate } from "@/hooks/useTemplates";
 import { useLikeTemplate, useUnlikeTemplate } from "@/hooks/useTemplateInteractions";
-
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 // Import our new common components
 import TemplateList from "@/components/templateShow/TemplateList";
 import TemplateFilters from "@/components/templateShow/TemplateFilters";
 import { useTranslation } from "react-i18next";
+import UserAllResponses from "@/components/UserAllResponses";
 
 export default function TemplatesHome() {
   const { t } = useTranslation();
   const { userId } = useAuth();
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState("templates");
   const [filters, setFilters] = useState<TemplateFilterOptions>({
     page: 1,
     limit: 6,
@@ -95,11 +97,11 @@ export default function TemplatesHome() {
   };
 
   const handleEditTemplate = (id: number) => {
-    navigate(`/edit-template/${id}`);
+    navigate(`/manage-template/${id}`);
   };
 
   const handleViewTemplate = (id: number) => {
-    navigate(`/fill-form/${id}`);
+    navigate(`/check-form/${id}`);
   };
 
   const handleDeleteTemplate = (templateId: number, options?: { onSuccess?: () => void }) => {
@@ -122,22 +124,38 @@ export default function TemplatesHome() {
 
   return (
     <div className="container mx-auto py-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">{t("Templates")}</h1>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setShowFilters(!showFilters)}>
-            <Filter className="h-4 w-4 mr-2" />
-            {t("Filters")}
-          </Button>
-          <Button onClick={createNewTemplate}>
-            <Plus className="mr-2 h-4 w-4" /> {t("Create Template")}
-          </Button>
-        </div>
-      </div>
+      <Tabs defaultValue="general" value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="mb-4">
+          <TabsTrigger value="templates">
+            <h1 className="text-xl font-bold">{t("My Templatess")}</h1>
+          </TabsTrigger>
 
-      {showFilters && <TemplateFilters filters={filters} onFilterChange={handleFilterChange} topics={topics} />}
+          <TabsTrigger value="submissions">
+            <h1 className="text-xl font-bold">{t("My Submissions")}</h1>
+          </TabsTrigger>
+        </TabsList>
 
-      <TemplateList templates={templates} isLoading={isLoading} isError={isError} userId={userId ?? null} filters={filters} totalPages={totalPages} onPageChange={handlePageChange} onRefetch={refetch} onLike={handleLike} onUnlike={handleUnLike} onView={handleViewTemplate} onEdit={handleEditTemplate} onDelete={handleDeleteTemplate} isDeleting={isDeleting} emptyStateMessage={t("No templates found")} createButtonText={t("Create your first template")} />
+        <TabsContent value="templates" className="space-y-4">
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex gap-2 ml-auto">
+              <Button variant="outline" onClick={() => setShowFilters(!showFilters)}>
+                <Filter className="h-4 w-4 mr-2" />
+                {t("Filters")}
+              </Button>
+              <Button onClick={createNewTemplate}>
+                <Plus className="mr-2 h-4 w-4" /> {t("Create Template")}
+              </Button>
+            </div>
+          </div>
+
+          {showFilters && <TemplateFilters filters={filters} onFilterChange={handleFilterChange} topics={topics} />}
+
+          <TemplateList templates={templates} isLoading={isLoading} isError={isError} userId={userId ?? null} filters={filters} totalPages={totalPages} onPageChange={handlePageChange} onRefetch={refetch} onLike={handleLike} onUnlike={handleUnLike} onView={handleViewTemplate} onEdit={handleEditTemplate} onDelete={handleDeleteTemplate} isDeleting={isDeleting} emptyStateMessage={t("No templates found")} createButtonText={t("Create your first template")} />
+        </TabsContent>
+        <TabsContent value="submissions" className="space-y-4">
+          <UserAllResponses />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

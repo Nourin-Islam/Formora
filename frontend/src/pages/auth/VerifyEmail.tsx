@@ -1,7 +1,7 @@
-import { useSignUp, useSignIn, useClerk } from "@clerk/clerk-react";
+import { useSignUp, useClerk } from "@clerk/clerk-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Icons } from "@/components/global/icons";
+import { Shell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
 
@@ -67,7 +67,7 @@ export function VerifyEmailPage() {
 
   return (
     <div className="container flex flex-col items-center justify-center gap-4 py-12">
-      <Icons.spinner className="h-12 w-12 animate-spin" />
+      <Shell className="h-12 w-12 animate-spin" />
       <h1 className="text-2xl font-bold">{t("Verifying your account")}</h1>
       <p className="text-muted-foreground">{signUp?.emailAddress ? `${t("Verifying")} ${signUp.emailAddress}` : t("Completing authentication...")}</p>
       <Button variant="ghost" size="sm" onClick={logState} className="mt-4">

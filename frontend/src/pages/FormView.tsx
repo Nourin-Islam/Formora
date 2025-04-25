@@ -13,7 +13,7 @@ import { AlertCircle } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { createAuthenticatedApi } from "@/lib/api";
 import { useAuth } from "@clerk/clerk-react";
-import { Icons } from "@/components/global/icons";
+import { Eye, FilePenIcon, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 const FormView = () => {
@@ -91,8 +91,8 @@ const FormView = () => {
 
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="outline" className="ml-auto cursor-pointer" onClick={() => navigate(`/fill-form/${form.template.id}`)}>
-                  <Icons.eye className="h-4 w-4" />
+                <Button variant="outline" className="ml-auto cursor-pointer" onClick={() => navigate(`/check-form/${form.template.id}`)}>
+                  <Eye className="h-4 w-4" />
                   <span className="sr-only">{t("View Template")}</span>
                 </Button>
               </TooltipTrigger>
@@ -101,8 +101,8 @@ const FormView = () => {
 
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="outline" className="mx-3 cursor-pointer" onClick={() => navigate(`/fill-form/${form.template.id}`)}>
-                  <Icons.edit className="h-4 w-4" />
+                <Button variant="outline" className="mx-3 cursor-pointer" onClick={() => navigate(`/check-form/${form.template.id}`)}>
+                  <FilePenIcon className="h-4 w-4" />
                   <span className="sr-only">{t("Edit Answers")}</span>
                 </Button>
               </TooltipTrigger>
@@ -112,7 +112,7 @@ const FormView = () => {
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button variant="destructive" className="cursor-pointer" onClick={handleDelete}>
-                  <Icons.trash className="h-4 w-4" />
+                  <Trash2 className="h-4 w-4" />
                   <span className="sr-only">{t("Delete Answers")}</span>
                 </Button>
               </TooltipTrigger>

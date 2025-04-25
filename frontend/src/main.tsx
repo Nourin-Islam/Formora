@@ -5,11 +5,12 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import "./index.css";
+import "@uiw/react-markdown-preview/markdown.css";
 import "./i18n.ts";
 
 import { ThemeProvider } from "@/components/global/ThemeProvider";
 import { AuthProvider } from "@/components/global/AuthProvider";
-import MainRoutes from "@/components/routes/MainRoute.tsx";
+import MainRoutes from "@/routes/MainRoute";
 
 const queryClient = new QueryClient({
   defaultOptions: {

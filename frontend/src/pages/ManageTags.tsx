@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Pagination, PaginationContent, PaginationItem } from "@/components/ui/pagination";
-import { Icons } from "@/components/global/icons";
+
+import { FilePenIcon, Plus, Shell, Trash2 } from "lucide-react";
 
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useForm } from "react-hook-form";
@@ -231,7 +232,7 @@ export default function ManageTagsTable() {
           <Tooltip>
             <TooltipTrigger asChild>
               <Button variant="outline" size="sm" onClick={openCreateDialog}>
-                <Icons.plus className="h-4 w-4 mr-2" />
+                <Plus className="h-4 w-4 mr-2" />
                 {t("Create Tag")}
               </Button>
             </TooltipTrigger>
@@ -242,7 +243,7 @@ export default function ManageTagsTable() {
           <Tooltip>
             <TooltipTrigger asChild>
               <Button variant="outline" size="sm" onClick={handleEditClick} disabled={table.getSelectedRowModel().rows.length !== 1}>
-                <Icons.edit className="h-4 w-4 mr-2" />
+                <FilePenIcon className="h-4 w-4 mr-2" />
                 {t("Edit")}
               </Button>
             </TooltipTrigger>
@@ -253,7 +254,7 @@ export default function ManageTagsTable() {
           <Tooltip>
             <TooltipTrigger asChild>
               <Button variant="outline" size="sm" onClick={handleDeleteClick} disabled={table.getSelectedRowModel().rows.length === 0}>
-                {isUpdating ? <Icons.spinner className="h-4 w-4 mr-2 animate-spin" /> : <Icons.trash className="h-4 w-4 mr-2" />}
+                {isUpdating ? <Shell className="h-4 w-4 mr-2 animate-spin" /> : <Trash2 className="h-4 w-4 mr-2" />}
                 {t("Delete")}
               </Button>
             </TooltipTrigger>
@@ -348,7 +349,7 @@ export default function ManageTagsTable() {
                   Cancel
                 </Button>
                 <Button type="submit" disabled={isUpdating}>
-                  {isUpdating && <Icons.spinner className="h-4 w-4 mr-2 animate-spin" />}
+                  {isUpdating && <Shell className="h-4 w-4 mr-2 animate-spin" />}
                   Create Tag
                 </Button>
               </DialogFooter>
@@ -384,7 +385,7 @@ export default function ManageTagsTable() {
                   Cancel
                 </Button>
                 <Button type="submit" disabled={isUpdating}>
-                  {isUpdating && <Icons.spinner className="h-4 w-4 mr-2 animate-spin" />}
+                  {isUpdating && <Shell className="h-4 w-4 mr-2 animate-spin" />}
                   Save Changes
                 </Button>
               </DialogFooter>
@@ -415,7 +416,7 @@ export default function ManageTagsTable() {
               }}
               disabled={isUpdating}
             >
-              {isUpdating && <Icons.spinner className="h-4 w-4 mr-2 animate-spin" />}
+              {isUpdating && <Shell className="h-4 w-4 mr-2 animate-spin" />}
               Delete
             </Button>
           </DialogFooter>

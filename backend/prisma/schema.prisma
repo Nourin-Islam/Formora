@@ -191,19 +191,38 @@ model TemplateSearchView {
 }
 
 model FormSubmissionView {
-  form_id        Int       @map("form_id")
-  templateId     Int
-  user_id        Int       @map("user_id")
-  user_name      String    @map("user_name")
-  submission_date DateTime @map("submission_date")
-  question_id    Int       @map("question_id")
-  question_title String    @map("question_title")
-  question_type  String    @map("question_type") // Or use an enum if you have fixed types
-  show_in_table  Boolean   @map("show_in_table")
-  answer         String
+  form_id                 Int       @map("form_id")
+  templateId              Int
+  template_title          String
+  template_creator_name   String
+  template_question_count Int
+  template_submission_count Int
+  user_id                 Int       @map("user_id")
+  user_name               String    @map("user_name")
+  submission_date         DateTime  @map("submission_date")
+  question_id             Int       @map("question_id")
+  question_title          String    @map("question_title")
+  question_type           String    @map("question_type")
+  show_in_table           Boolean   @map("show_in_table")
+  answer                  String
 
   @@id([form_id, question_id])
   @@map("form_submissions_view")
 }
 
 
+// model FormSubmissionView {
+//   form_id        Int       @map("form_id")
+//   templateId     Int
+//   user_id        Int       @map("user_id")
+//   user_name      String    @map("user_name")
+//   submission_date DateTime @map("submission_date")
+//   question_id    Int       @map("question_id")
+//   question_title String    @map("question_title")
+//   question_type  String    @map("question_type") // Or use an enum if you have fixed types
+//   show_in_table  Boolean   @map("show_in_table")
+//   answer         String
+
+//   @@id([form_id, question_id])
+//   @@map("form_submissions_view")
+// }

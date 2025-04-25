@@ -1,6 +1,6 @@
 // MainRoutes.tsx
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import App from "./../../App";
+import App from "@/App";
 
 import Home from "@/pages/Home";
 import SignInPage from "@/pages/auth/SignInPage";
@@ -9,9 +9,9 @@ import ManageUsers from "@/pages/auth/ManageUsers";
 import { VerifyEmailPage } from "@/pages/auth/VerifyEmail";
 import { ErrorPage } from "@/pages/auth/ErrorPage";
 
-import PublicRoute from "@/components/routes/PublicRoute";
-import PrivateRoute from "@/components/routes/PrivateRoute";
-import AdminRoute from "@/components/routes/AdminRoute";
+import PublicRoute from "@/routes/PublicRoute";
+import PrivateRoute from "@/routes/PrivateRoute";
+import AdminRoute from "@/routes/AdminRoute";
 
 import TemplateCreation from "@/pages/TemplateCreate";
 import TemplateEdit from "@/pages/TemplateEdit";
@@ -43,8 +43,8 @@ const router = createBrowserRouter([
         children: [
           { path: "templates", element: <TemplatesHome /> },
           { path: "create-template", element: <TemplateCreation /> },
-          { path: "edit-template/:id", element: <TemplateEdit /> },
-          { path: "fill-form/:id", element: <FormFill /> },
+          { path: "manage-template/:id", element: <TemplateEdit /> },
+          { path: "check-form/:id", element: <FormFill /> },
           { path: "forms/:id", element: <FormView /> },
         ],
       },

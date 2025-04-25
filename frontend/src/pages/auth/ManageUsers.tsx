@@ -8,7 +8,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Pagination, PaginationContent, PaginationItem } from "@/components/ui/pagination";
-import { Icons } from "@/components/global/icons";
+import { Shell, Trash2, LockKeyholeOpen, LockKeyhole, ShieldCheck, ShieldMinus } from "lucide-react";
 import { User } from "@/types";
 import { useUsers, useUpdateUserAdmin, useUpdateUserBlock, useDeleteUser } from "@/hooks/useUsers";
 import SmallSkeleton from "@/components/global/SmallSkeleton";
@@ -135,7 +135,7 @@ export default function ManageUsersTable() {
           <Tooltip>
             <TooltipTrigger asChild>
               <Button variant="outline" size="sm" onClick={() => handleBulkAdminToggle(true)} disabled={table.getSelectedRowModel().rows.length === 0 || isUpdating}>
-                {isUpdating ? <Icons.spinner className="h-4 w-4 mr-2 animate-spin" /> : <Icons.shieldPlus className="h-4 w-4 mr-2" />}
+                {isUpdating ? <Shell className="h-4 w-4 mr-2 animate-spin" /> : <ShieldCheck className="h-4 w-4 mr-2" />}
                 {t("Make Admin")}
               </Button>
             </TooltipTrigger>
@@ -145,7 +145,7 @@ export default function ManageUsersTable() {
           <Tooltip>
             <TooltipTrigger asChild>
               <Button variant="outline" size="sm" onClick={() => handleBulkAdminToggle(false)} disabled={table.getSelectedRowModel().rows.length === 0 || isUpdating}>
-                {isUpdating ? <Icons.spinner className="h-4 w-4 mr-2 animate-spin" /> : <Icons.shieldMinus className="h-4 w-4 mr-2" />}
+                {isUpdating ? <Shell className="h-4 w-4 mr-2 animate-spin" /> : <ShieldMinus className="h-4 w-4 mr-2" />}
                 {t("Remove Admin")}
               </Button>
             </TooltipTrigger>
@@ -155,7 +155,7 @@ export default function ManageUsersTable() {
           <Tooltip>
             <TooltipTrigger asChild>
               <Button variant="outline" size="sm" onClick={() => handleBulkBlockToggle(true)} disabled={table.getSelectedRowModel().rows.length === 0 || isUpdating}>
-                {isUpdating ? <Icons.spinner className="h-4 w-4 mr-2 animate-spin" /> : <Icons.lock className="h-4 w-4 mr-2" />}
+                {isUpdating ? <Shell className="h-4 w-4 mr-2 animate-spin" /> : <LockKeyhole className="h-4 w-4 mr-2" />}
                 {t("Block")}
               </Button>
             </TooltipTrigger>
@@ -165,7 +165,7 @@ export default function ManageUsersTable() {
           <Tooltip>
             <TooltipTrigger asChild>
               <Button variant="outline" size="sm" onClick={() => handleBulkBlockToggle(false)} disabled={table.getSelectedRowModel().rows.length === 0 || isUpdating}>
-                {isUpdating ? <Icons.spinner className="h-4 w-4 mr-2 animate-spin" /> : <Icons.unlock className="h-4 w-4 mr-2" />}
+                {isUpdating ? <Shell className="h-4 w-4 mr-2 animate-spin" /> : <LockKeyholeOpen className="h-4 w-4 mr-2" />}
                 {t("Unblock")}
               </Button>
             </TooltipTrigger>
@@ -175,7 +175,7 @@ export default function ManageUsersTable() {
           <Tooltip>
             <TooltipTrigger asChild>
               <Button variant="outline" size="sm" onClick={handleBulkDelete} disabled={table.getSelectedRowModel().rows.length === 0 || isUpdating}>
-                {isUpdating ? <Icons.spinner className="h-4 w-4 mr-2 animate-spin" /> : <Icons.trash className="h-4 w-4 mr-2" />}
+                {isUpdating ? <Shell className="h-4 w-4 mr-2 animate-spin" /> : <Trash2 className="h-4 w-4 mr-2" />}
                 {t("Delete")}
               </Button>
             </TooltipTrigger>

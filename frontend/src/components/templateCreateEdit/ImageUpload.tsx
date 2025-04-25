@@ -72,6 +72,13 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ imageUrl, setImageUrl }) => {
             <X className="h-4 w-4" />
           </Button>
         </Card>
+      ) : thumbnail ? (
+        <Card className="relative p-0 w-full h-60 overflow-hidden aspect-video">
+          <img src={URL.createObjectURL(thumbnail)} alt="Thumbnail Preview" className="object-cover w-full h-full" />
+          <Button variant="destructive" size="icon" className="absolute top-2 right-2 z-10 cursor-pointer" onClick={handleRemoveImage}>
+            <X className="h-4 w-4" />
+          </Button>
+        </Card>
       ) : (
         <IKContext publicKey="public_D3R2YXCqESRUwCNMgLufGCsa8GY=" urlEndpoint="https://ik.imagekit.io/odinbook" authenticator={ImageKitAuthenticator}>
           <label className="cursor-pointer block">

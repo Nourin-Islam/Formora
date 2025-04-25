@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
@@ -16,8 +16,10 @@ import { createAuthenticatedApi } from "@/lib/api";
 import { useAuth } from "@clerk/clerk-react";
 import SmallSkeleton from "@/components/global/SmallSkeleton";
 import { useEffect } from "react";
-import { Comments } from "@/components/Comments";
+import { Comments } from "@/components/formRelated/Comments";
 import { useTranslation } from "react-i18next";
+import MDEditor from "@uiw/react-md-editor";
+import { useThemeStore } from "@/store/themeStore";
 
 const FormFill = () => {
   const { id } = useParams();
@@ -52,10 +54,11 @@ const FormFill = () => {
 
   const template = templateData?.template;
   const existingForm = templateData?.existingForm;
+  const { theme } = useThemeStore();
 
   // Generate dynamic schema based on template questions
-  const formSchema = z.object(
-    template?.questions?.reduce((acc: Record<string, any>, question: any) => {
+  const formSchema: z.ZodObject<any> = z.object({
+    ...(template?.questions?.reduce((acc: Record<string, any>, question: any) => {
       switch (question.questionType) {
         case "STRING":
           acc[`question_${question.id}`] = z.string().min(1, "This field is required");
@@ -77,8 +80,20 @@ const FormFill = () => {
           break;
       }
       return acc;
-    }, {}) || {}
-  );
+    }, {}) || {}),
+    sendEmailCopy: z.boolean().optional().default(false),
+    userEmail: z
+      .string()
+      .refine(
+        (val) => {
+          // If sendEmailCopy is true, email must be valid
+          const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+          return !form.watch("sendEmailCopy") || emailRegex.test(val);
+        },
+        { message: "Please enter a valid email address" }
+      )
+      .optional(),
+  });
 
   type FormValues = z.infer<typeof formSchema>;
 
@@ -86,27 +101,11 @@ const FormFill = () => {
     resolver: zodResolver(formSchema),
   });
 
-  // Set form values when data is loaded
   useEffect(() => {
-    if (template?.questions && existingForm?.answers) {
-      const defaultValues = template.questions.reduce((values: Record<string, any>, question: any) => {
-        const answer = existingForm?.answers.find((a: { questionId: number; value: string }) => a.questionId === question.id);
-        if (answer) {
-          if (question.questionType === "CHECKBOX" && question.options?.length > 0) {
-            try {
-              values[`question_${question.id}`] = JSON.parse(answer.value);
-            } catch {
-              values[`question_${question.id}`] = [answer.value];
-            }
-          } else if (question.questionType === "INTEGER") {
-            values[`question_${question.id}`] = parseInt(answer.value);
-          } else if (question.questionType === "CHECKBOX") {
-            values[`question_${question.id}`] = answer.value === "true";
-          } else {
-            values[`question_${question.id}`] = answer.value;
-          }
-        } else {
-          // Set default empty values for questions without answers
+    if (template?.questions) {
+      const defaultValues = {
+        // Existing default values setup
+        ...template.questions.reduce((values: Record<string, any>, question: any) => {
           if (question.questionType === "CHECKBOX" && question.options?.length > 0) {
             values[`question_${question.id}`] = [];
           } else if (question.questionType === "CHECKBOX") {
@@ -114,23 +113,76 @@ const FormFill = () => {
           } else {
             values[`question_${question.id}`] = "";
           }
+          return values;
+        }, {}),
+        // Add default values for email fields
+        sendEmailCopy: false,
+        userEmail: "",
+      };
+
+      form.reset(defaultValues);
+    }
+  }, [template, existingForm, form]);
+
+  // Set form values when data is loaded
+  useEffect(() => {
+    if (template?.questions && existingForm?.answers) {
+      const defaultValues = template.questions.reduce(
+        (values: Record<string, any>, question: any) => {
+          const answer = existingForm?.answers.find((a: { questionId: number; value: string }) => a.questionId === question.id);
+          if (answer) {
+            if (question.questionType === "CHECKBOX" && question.options?.length > 0) {
+              try {
+                values[`question_${question.id}`] = JSON.parse(answer.value);
+              } catch {
+                values[`question_${question.id}`] = [answer.value];
+              }
+            } else if (question.questionType === "INTEGER") {
+              values[`question_${question.id}`] = parseInt(answer.value);
+            } else if (question.questionType === "CHECKBOX") {
+              values[`question_${question.id}`] = answer.value === "true";
+            } else {
+              values[`question_${question.id}`] = answer.value;
+            }
+          } else {
+            // Set default empty values for questions without answers
+            if (question.questionType === "CHECKBOX" && question.options?.length > 0) {
+              values[`question_${question.id}`] = [];
+            } else if (question.questionType === "CHECKBOX") {
+              values[`question_${question.id}`] = false;
+            } else {
+              values[`question_${question.id}`] = "";
+            }
+          }
+          return values;
+        },
+        {
+          // Add default values for email fields
+          sendEmailCopy: false,
+          userEmail: "",
         }
-        return values;
-      }, {});
+      );
 
       form.reset(defaultValues);
     } else if (template?.questions) {
       // Set empty defaults if no existing form
-      const defaultValues = template.questions.reduce((values: Record<string, any>, question: any) => {
-        if (question.questionType === "CHECKBOX" && question.options?.length > 0) {
-          values[`question_${question.id}`] = [];
-        } else if (question.questionType === "CHECKBOX") {
-          values[`question_${question.id}`] = false;
-        } else {
-          values[`question_${question.id}`] = "";
+      const defaultValues = template.questions.reduce(
+        (values: Record<string, any>, question: any) => {
+          if (question.questionType === "CHECKBOX" && question.options?.length > 0) {
+            values[`question_${question.id}`] = [];
+          } else if (question.questionType === "CHECKBOX") {
+            values[`question_${question.id}`] = false;
+          } else {
+            values[`question_${question.id}`] = "";
+          }
+          return values;
+        },
+        {
+          // Add default values for email fields
+          sendEmailCopy: false,
+          userEmail: "",
         }
-        return values;
-      }, {});
+      );
 
       form.reset(defaultValues);
     }
@@ -139,22 +191,28 @@ const FormFill = () => {
   const submitForm = useMutation({
     mutationFn: async (values: FormValues) => {
       const { authenticatedApi } = await createAuthenticatedApi(getToken);
-      const answers = Object.entries(values).map(([key, value]) => {
-        const questionId = key.replace("question_", "");
-        return {
-          questionId: parseInt(questionId),
-          value: Array.isArray(value) ? JSON.stringify(value) : value.toString(),
-        };
-      });
 
+      // Extract question answers
+      const answers = Object.entries(values)
+        .filter(([key]) => key.startsWith("question_")) // Only process question fields
+        .map(([key, value]) => {
+          const questionId = key.replace("question_", "");
+          return {
+            questionId: parseInt(questionId),
+            value: Array.isArray(value) ? JSON.stringify(value) : value.toString(),
+          };
+        });
+
+      // Create the payload with the email notification preferences
       const payload = {
         templateId: parseInt(id!),
         answers,
+        sendEmailCopy: values.sendEmailCopy || false,
+        userEmail: values.sendEmailCopy ? values.userEmail : null,
       };
 
       const response = await authenticatedApi.post("/forms/fill", payload);
       return response.data;
-      // }
     },
     onSuccess: (data) => {
       toast.success(existingForm ? t("Form updated successfully") : t("Form submitted successfully"));
@@ -220,7 +278,12 @@ const FormFill = () => {
               </Button>
             </div>
           )}
-          {template.description && <CardDescription className="whitespace-pre-line">{template.description}</CardDescription>}
+          {/* {template.description && <CardDescription className="whitespace-pre-line">{template.description}</CardDescription>} */}
+          {template.description && (
+            <div data-color-mode={theme} className="prose max-w-none">
+              <MDEditor.Markdown source={template.description} />
+            </div>
+          )}
         </CardHeader>
 
         <CardContent>
@@ -278,6 +341,42 @@ const FormFill = () => {
                 {form.formState.errors[`question_${question.id}`]?.message && <p className="text-sm text-destructive">{String(form.formState.errors[`question_${question.id}`]?.message)}</p>}
               </div>
             ))}
+            <div className="border-t mt-6 pt-6">
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="sendEmailCopy"
+                    checked={form.watch("sendEmailCopy") || false}
+                    onCheckedChange={(checked) => {
+                      form.setValue("sendEmailCopy", checked);
+                      if (!checked) {
+                        form.setValue("userEmail", "");
+                      }
+                    }}
+                  />
+                  <Label htmlFor="sendEmailCopy">{t("Send me a copy of my submission")}</Label>
+                </div>
+
+                {form.watch("sendEmailCopy") && (
+                  <div className="space-y-2">
+                    <Label htmlFor="userEmail">{t("Email address")}</Label>
+                    <Input
+                      id="userEmail"
+                      type="email"
+                      placeholder="your@email.com"
+                      {...form.register("userEmail", {
+                        required: form.watch("sendEmailCopy") ? "Email is required when requesting a copy" : false,
+                        pattern: {
+                          value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                          message: "Please enter a valid email address",
+                        },
+                      })}
+                    />
+                    {form.formState.errors.userEmail && <p className="text-sm text-destructive">{String(form.formState.errors.userEmail.message)}</p>}
+                  </div>
+                )}
+              </div>
+            </div>
           </form>
         </CardContent>
 

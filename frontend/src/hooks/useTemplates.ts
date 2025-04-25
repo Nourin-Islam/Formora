@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createAuthenticatedApi } from "@/lib/api";
+import { createAuthenticatedApi, publicApi } from "@/lib/api";
 import { Template, Question, TemplateFormData, TemplatesResponse, FilterOptions } from "@/types";
 import { useAuth } from "@clerk/clerk-react";
 // refetchInterval default value set to 300000 (5 minutes)
@@ -14,12 +14,25 @@ export const useTemplates = (filters?: FilterOptions) => {
         params: filters,
       });
       // console.log current time
-      console.log("Current time:", new Date().toLocaleString()); // Log the current time
-      console.log("Response from API:", response.data); // Log the response data
+      // console.log("Current time:", new Date().toLocaleString()); // Log the current time
+      // console.log("Response from API:", response.data); // Log the response data
       return response.data;
     },
     staleTime: 0,
     refetchInterval: false,
+  });
+};
+
+export const usePopularTemplates = () => {
+  return useQuery<TemplatesResponse, Error>({
+    queryKey: ["popular-templates"],
+    queryFn: async () => {
+      const response = await publicApi.get("/home/popular");
+      // console.log("Current time:", new Date().toLocaleString()); // Log the current time
+      // console.log("Response from API:", response.data); // Log the response data
+
+      return response.data;
+    },
   });
 };
 

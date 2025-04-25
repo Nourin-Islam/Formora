@@ -2,6 +2,7 @@
 import { useUser } from "@clerk/clerk-react";
 import { Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import TemplatesSkeleton from "@/components/global/TemplatesSkeleton";
 
 const AdminRoute = () => {
   const { user, isSignedIn, isLoaded } = useUser();
@@ -28,7 +29,7 @@ const AdminRoute = () => {
     }
   }, [isAdmin, isLoaded, isSignedIn, navigate]);
 
-  if (!isLoaded) return <div>Loading...</div>;
+  if (!isLoaded) return <TemplatesSkeleton />;
   if (!isSignedIn) return <Navigate to="/sign-in" state={{ from: location }} replace />;
 
   if (!isAdmin) {
