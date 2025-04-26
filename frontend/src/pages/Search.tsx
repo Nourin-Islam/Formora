@@ -71,8 +71,11 @@ export default function SearchPage() {
   }, [query, filters]);
 
   // Template mutations
-  const { mutate: addLike } = useLikeTemplate(filters);
-  const { mutate: removeLike } = useUnlikeTemplate(filters);
+  const likeMutation = useLikeTemplate([["templates", filters], ["popular-templates"]]);
+  const unlikeMutation = useUnlikeTemplate([["templates", filters], ["popular-templates"]]);
+
+  const addLike = (id: number) => likeMutation.mutate(id);
+  const removeLike = (id: number) => unlikeMutation.mutate(id);
   const { mutate: deleteTemplate, isPending: isDeleting } = useDeleteTemplate();
 
   const handlePageChange = (page: number) => {
@@ -106,18 +109,7 @@ export default function SearchPage() {
       })
     );
 
-    addLike(templateId, {
-      onSuccess: () => {
-        toast.success(t("Successfully added a like."));
-      },
-      onError: (error) => {
-        console.error("Error toggling like:", error);
-        toast.error(t("Failed to update like status"));
-        setTimeout(() => {
-          fetchSearchResults();
-        }, 1000);
-      },
-    });
+    addLike(templateId);
   };
 
   const handleUnLike = (templateId: number) => {
@@ -139,18 +131,7 @@ export default function SearchPage() {
       })
     );
 
-    removeLike(templateId, {
-      onSuccess: () => {
-        toast.success(t("Successfully removed a like."));
-      },
-      onError: (error) => {
-        console.error("Error toggling like:", error);
-        toast.error(t("Failed to update like status"));
-        setTimeout(() => {
-          fetchSearchResults();
-        }, 1000);
-      },
-    });
+    removeLike(templateId);
   };
 
   const handleEditTemplate = (id: number) => {

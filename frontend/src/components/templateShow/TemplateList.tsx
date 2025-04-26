@@ -2,10 +2,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Shell } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Pagination } from "@/components/ui/pagination";
-import { Shell } from "lucide-react";
+
 import TemplatesSkeleton from "@/components/global/TemplatesSkeleton";
 import TemplateCard from "./TemplateCard";
 import { TemplateFilterOptions, Template } from "@/types";

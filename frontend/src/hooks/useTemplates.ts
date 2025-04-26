@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createAuthenticatedApi, publicApi } from "@/lib/api";
-import { Template, Question, TemplateFormData, TemplatesResponse, FilterOptions } from "@/types";
+import { Template, Question, TemplateFormData, TemplatesResponse, FilterOptions, TagCloud, topicsResponse } from "@/types";
 import { useAuth } from "@clerk/clerk-react";
+
 // refetchInterval default value set to 300000 (5 minutes)
 export const useTemplates = (filters?: FilterOptions) => {
   const { getToken } = useAuth();
@@ -29,7 +30,46 @@ export const usePopularTemplates = () => {
     queryFn: async () => {
       const response = await publicApi.get("/home/popular");
       // console.log("Current time:", new Date().toLocaleString()); // Log the current time
+      // console.log("Popular Templates:", response.data); // Log the response data
+
+      return response.data;
+    },
+  });
+};
+
+export const useLatestTemplates = () => {
+  return useQuery<TemplatesResponse, Error>({
+    queryKey: ["latest-templates"],
+    queryFn: async () => {
+      const response = await publicApi.get("/home/latest");
+      // console.log("Current time:", new Date().toLocaleString()); // Log the current time
       // console.log("Response from API:", response.data); // Log the response data
+
+      return response.data;
+    },
+  });
+};
+
+export const useTagCloud = () => {
+  return useQuery<TagCloud, Error>({
+    queryKey: ["tag-cloud"],
+    queryFn: async () => {
+      const response = await publicApi.get("/home/tags");
+      // console.log("Current time:", new Date().toLocaleString()); // Log the current time
+      // console.log("Tag data:", response.data); // Log the response data
+
+      return response.data;
+    },
+  });
+};
+
+export const useTopicsData = () => {
+  return useQuery<topicsResponse[], Error>({
+    queryKey: ["topics-data"],
+    queryFn: async () => {
+      const response = await publicApi.get("/home/topics");
+      console.log("Current time:", new Date().toLocaleString()); // Log the current time
+      console.log("Topics Data:", response.data); // Log the response data
 
       return response.data;
     },
@@ -91,7 +131,7 @@ export const useDeleteTemplate = () => {
       await authenticatedApi.delete(`/templates/${id}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["templates"] });
+      queryClient.invalidateQueries({ queryKey: [["templates"], ["popular-templates"]] });
     },
   });
 };

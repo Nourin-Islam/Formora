@@ -137,6 +137,7 @@ export interface Template {
   questionCount: number;
   commentCount: number;
   peopleLiked: string[]; // Array of clerkIds
+  submissionCount: number;
 }
 
 export interface TemplateFormData {
@@ -244,4 +245,16 @@ export interface TemplateFilterOptions {
   isPublished?: boolean;
   isPublic?: boolean;
   [key: string]: any;
+}
+
+export interface TagCloud {
+  tagId: number;
+  tagName: string;
+  templateIds: number[];
+}
+
+export interface topicsResponse {
+  topicId: number;
+  topicName: string;
+  templateCount: number;
 }

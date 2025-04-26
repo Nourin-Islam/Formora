@@ -12,6 +12,8 @@ import { Template } from "@/types";
 import { useTranslation } from "react-i18next";
 import MDEditor from "@uiw/react-md-editor";
 import { useThemeStore } from "@/store/themeStore";
+import { motion } from "framer-motion";
+import { cardVariants } from "@/lib/framerHelper";
 
 interface TemplateCardProps {
   template: Template;
@@ -94,114 +96,116 @@ export default function TemplateCard({ template, userId, onDelete, onLike, onUnl
   };
 
   return (
-    <Card className="flex flex-col h-full hover:shadow-md transition-shadow">
-      <CardHeader className="pb-2">
-        <div className="flex justify-between items-start">
-          <div>
-            <CardTitle className="text-xl mb-1 line-clamp-2">{template.title}</CardTitle>
-            <CardDescription className="text-sm">
-              {t("by")} {template.user.name} • {format(new Date(template.createdAt), "MMM d, yyyy")}
-            </CardDescription>
+    <motion.div custom={0} initial="hidden" animate="visible" variants={cardVariants}>
+      <Card className="flex flex-col h-full hover:shadow-md transition-shadow">
+        <CardHeader className="pb-2">
+          <div className="flex justify-between items-start">
+            <div>
+              <CardTitle className="text-xl mb-1 line-clamp-2">{template.title}</CardTitle>
+              <CardDescription className="text-sm">
+                {t("by")} {template.user.name} • {format(new Date(template.createdAt), "MMM d, yyyy")}
+              </CardDescription>
+            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 w-8 p-0">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={handleViewTemplate}>
+                  <Edit className="mr-2 h-4 w-4" />
+                  {t("Fill")}
+                </DropdownMenuItem>
+                {userId === template.user.clerkId && (
+                  <>
+                    <DropdownMenuItem onClick={handleEditTemplate}>
+                      <Eye className="mr-2 h-4 w-4" />
+                      {t("Manage")}
+                    </DropdownMenuItem>
+                    {onDelete && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() => {
+                            // onDelete(template);
+                            handleDelete(template);
+                            setIsDialogOpen(true);
+                          }}
+                          className="text-red-600"
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          {t("Delete")}
+                        </DropdownMenuItem>
+                      </>
+                    )}
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={handleViewTemplate}>
-                <Edit className="mr-2 h-4 w-4" />
-                {t("Fill")}
-              </DropdownMenuItem>
-              {userId === template.user.clerkId && (
-                <>
-                  <DropdownMenuItem onClick={handleEditTemplate}>
-                    <Eye className="mr-2 h-4 w-4" />
-                    {t("Manage")}
-                  </DropdownMenuItem>
-                  {onDelete && (
-                    <>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onClick={() => {
-                          // onDelete(template);
-                          handleDelete(template);
-                          setIsDialogOpen(true);
-                        }}
-                        className="text-red-600"
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        {t("Delete")}
-                      </DropdownMenuItem>
-                    </>
-                  )}
-                </>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-        <div className="flex flex-wrap gap-1 mt-2">
-          <Badge variant="secondary" className="bg-blue-100 text-blue-800 hover:bg-blue-200">
-            {template.topic.name}
-          </Badge>
-          {template.isPublic ? (
-            <Badge variant="secondary" className="bg-green-100 text-green-800 hover:bg-green-200">
-              {t("Public")}
+          <div className="flex flex-wrap gap-1 mt-2">
+            <Badge variant="secondary" className="bg-blue-100 text-blue-800 hover:bg-blue-200">
+              {template.topic.name}
             </Badge>
-          ) : (
-            <Badge variant="secondary" className="bg-amber-100 text-amber-800 hover:bg-amber-200">
-              {t("Private")}
-            </Badge>
+            {template.isPublic ? (
+              <Badge variant="secondary" className="bg-green-100 text-green-800 hover:bg-green-200">
+                {t("Public")}
+              </Badge>
+            ) : (
+              <Badge variant="secondary" className="bg-amber-100 text-amber-800 hover:bg-amber-200">
+                {t("Private")}
+              </Badge>
+            )}
+            {template.isPublished ? (
+              <Badge variant="secondary" className="bg-indigo-100 text-indigo-800 hover:bg-indigo-200">
+                {t("Published")}
+              </Badge>
+            ) : (
+              <Badge variant="secondary" className="bg-gray-100 text-gray-800 hover:bg-gray-200">
+                {t("Draft")}
+              </Badge>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent className="flex-grow">
+          {template.description && (
+            <div data-color-mode={theme} className="prose max-w-none line-clamp-3">
+              <MDEditor.Markdown source={template.description} />
+            </div>
           )}
-          {template.isPublished ? (
-            <Badge variant="secondary" className="bg-indigo-100 text-indigo-800 hover:bg-indigo-200">
-              {t("Published")}
-            </Badge>
-          ) : (
-            <Badge variant="secondary" className="bg-gray-100 text-gray-800 hover:bg-gray-200">
-              {t("Draft")}
-            </Badge>
-          )}
-        </div>
-      </CardHeader>
-      <CardContent className="flex-grow">
-        {template.description && (
-          <p data-color-mode={theme} className="prose max-w-none line-clamp-3">
-            <MDEditor.Markdown source={template.description} />
-          </p>
-        )}
-        {/* <p className="text-gray-600 line-clamp-3">
+          {/* <p className="text-gray-600 line-clamp-3">
           <MDEditor.Markdown data-color-mode={theme === "dark" ? "dark" : "light"} source={template.description} />
         </p> */}
-        <div className="mt-4 flex flex-wrap gap-1">
-          {template.tags.slice(0, 3).map((tag) => (
-            <Badge key={tag.id} variant="outline" className="mr-1">
-              {tag.name}
-            </Badge>
-          ))}
-          {template.tags.length > 3 && (
+          <div className="mt-4 flex flex-wrap gap-1">
+            {template.tags.slice(0, 3).map((tag) => (
+              <Badge key={tag.id} variant="outline" className="mr-1">
+                {tag.name}
+              </Badge>
+            ))}
+            {template.tags.length > 3 && (
+              <Badge variant="outline">
+                +{template.tags.length - 3} {t("more")}
+              </Badge>
+            )}
+          </div>
+          <div className="mt-3">
             <Badge variant="outline">
-              +{template.tags.length - 3} {t("more")}
+              <Check className="mr-1 h-3 w-3" /> {template.questionCount} {t("questions")}
             </Badge>
-          )}
-        </div>
-        <div className="mt-3">
-          <Badge variant="outline">
-            <Check className="mr-1 h-3 w-3" /> {template.questionCount} {t("questions")}
-          </Badge>
-        </div>
-      </CardContent>
-      <CardFooter className="pt-2 flex justify-between border-t">
-        <Button variant="ghost" size="sm" onClick={handleLikeToggle} className={userId && template.peopleLiked.includes(userId) ? "text-red-500" : ""}>
-          <Heart className={`mr-1 h-4 w-4 ${userId && template.peopleLiked.includes(userId) ? "fill-current" : ""}`} />
-          {template.likesCount}
-        </Button>
-        <Button variant="ghost" size="sm" onClick={handleViewTemplate}>
-          <MessageSquare className="mr-1 h-4 w-4" />
-          {template.commentCount}
-        </Button>
-      </CardFooter>
-    </Card>
+          </div>
+        </CardContent>
+        <CardFooter className="pt-2 flex justify-between border-t">
+          <Button variant="ghost" size="sm" onClick={handleLikeToggle} className={userId && template.peopleLiked.includes(userId) ? "text-red-500" : ""}>
+            <Heart className={`mr-1 h-4 w-4 ${userId && template.peopleLiked.includes(userId) ? "fill-current" : ""}`} />
+            {template.likesCount}
+          </Button>
+          <Button variant="ghost" size="sm" onClick={handleViewTemplate}>
+            <MessageSquare className="mr-1 h-4 w-4" />
+            {template.commentCount}
+          </Button>
+        </CardFooter>
+      </Card>
+    </motion.div>
   );
 }

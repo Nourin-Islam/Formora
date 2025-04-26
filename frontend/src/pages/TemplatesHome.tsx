@@ -40,8 +40,14 @@ export default function TemplatesHome() {
   const totalPages = templatesData?.totalPages || 1;
 
   // Template mutations
-  const { mutate: addLike } = useLikeTemplate(filters);
-  const { mutate: removeLike } = useUnlikeTemplate(filters);
+  // const { mutate: addLike } = useLikeTemplate(filters);
+  // const { mutate: removeLike } = useUnlikeTemplate(filters);
+  const likeMutation = useLikeTemplate([["templates", filters], ["popular-templates"]]);
+  const unlikeMutation = useUnlikeTemplate([["templates", filters], ["popular-templates"]]);
+
+  const addLike = (id: number) => likeMutation.mutate(id);
+  const removeLike = (id: number) => unlikeMutation.mutate(id);
+
   const { mutate: deleteTemplate, isPending: isDeleting } = useDeleteTemplate();
 
   const handlePageChange = (page: number) => {
@@ -62,18 +68,7 @@ export default function TemplatesHome() {
       return;
     }
 
-    addLike(templateId, {
-      onSuccess: () => {
-        toast.success(t("Successfully added a like."));
-        // setTimeout(() => {
-        //   refetch();
-        // }, 1000);
-      },
-      onError: (error) => {
-        console.error("Error toggling like:", error);
-        toast.error(t("Failed to update like status"));
-      },
-    });
+    addLike(templateId);
   };
 
   const handleUnLike = (templateId: number) => {
@@ -82,18 +77,7 @@ export default function TemplatesHome() {
       return;
     }
 
-    removeLike(templateId, {
-      onSuccess: () => {
-        toast.success(t("Successfully removed a like."));
-        // setTimeout(() => {
-        //   refetch();
-        // }, 1000);
-      },
-      onError: (error) => {
-        console.error("Error toggling like:", error);
-        toast.error(t("Failed to update like status"));
-      },
-    });
+    removeLike(templateId);
   };
 
   const handleEditTemplate = (id: number) => {

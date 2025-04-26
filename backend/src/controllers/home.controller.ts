@@ -16,8 +16,15 @@ export const getLatestTemplates = async (_req: Request, res: Response) => {
     `);
 
     const response = results.map(formatTemplate);
-    cache.set(cacheKey, response);
-    res.json(response);
+
+    const responseData = {
+      templates: response,
+      totalCount: results.length,
+      currentPage: 1,
+      totalPages: 1,
+    };
+    cache.set(cacheKey, responseData);
+    res.json(responseData);
   } catch (err) {
     console.error("Failed to fetch latest templates", err);
     res.status(500).json({ error: "Error loading latest templates" });
@@ -33,12 +40,22 @@ export const getPopularTemplates = async (_req: Request, res: Response) => {
   try {
     const results = await prisma.$queryRawUnsafe<any[]>(`
       SELECT * FROM popular_templates_view
-      LIMIT 4
+      WHERE "isPublic" = true
+      AND "isPublished" = true
+      ORDER BY "submissionCount" DESC
+      LIMIT 5
+      
     `);
 
     const response = results.map(formatTemplate);
-    cache.set(cacheKey, response);
-    res.json(response);
+
+    const responseData = {
+      templates: response,
+      totalCount: results.length,
+    };
+    cache.set(cacheKey, responseData);
+    // console.log("Popular templates", responseData);
+    res.json(responseData);
   } catch (err) {
     console.error("Failed to fetch popular templates", err);
     res.status(500).json({ error: "Error loading popular templates" });
@@ -88,8 +105,14 @@ export const getTopTopics = async (_req: Request, res: Response) => {
       ORDER BY COUNT(t.id) DESC
     `);
 
-    cache.set(cacheKey, results);
-    res.json(results);
+    // 👉 Convert BigInt values to Numbers
+    const parsedResults = results.map((row) => ({
+      ...row,
+      templateCount: typeof row.templateCount === "bigint" ? Number(row.templateCount) : row.templateCount,
+    }));
+
+    cache.set(cacheKey, parsedResults);
+    res.json(parsedResults);
   } catch (err) {
     console.error("Failed to fetch top topics", err);
     res.status(500).json({ error: "Error loading top topics" });
@@ -123,6 +146,7 @@ const formatTemplate = (t: any) => ({
   commentCount: Number(t.commentsCount),
   likesCount: Number(t.likesCount),
   peopleLiked: t.peopleLiked || [],
+  submissionCount: Number(t.submissionCount),
 });
 
 // Cache invalidation strategy: every 5 minutes
