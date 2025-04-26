@@ -45,7 +45,7 @@ export default function TopicsPieChartSection() {
 
       <Card className="my-8">
         <CardContent className="p-1">
-          <div className="h-[500px]">
+          <div className="h-[380px]">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie data={chartData} cx="50%" cy="50%" labelLine={false} outerRadius={150} fill="#8884d8" dataKey="value" label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}>

@@ -170,7 +170,7 @@ export default function TemplateCard({ template, userId, onDelete, onLike, onUnl
         </CardHeader>
         <CardContent className="flex-grow">
           {template.description && (
-            <div data-color-mode={theme} className="prose max-w-none line-clamp-3">
+            <div data-color-mode={theme} className="prose max-w-none line-clamp-3 mb-10">
               <MDEditor.Markdown source={template.description} />
             </div>
           )}

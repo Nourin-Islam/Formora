@@ -12,11 +12,15 @@ export const getAllTags = async (req: Request, res: Response) => {
 
     const tags = await prisma.tag.findMany({
       where: nameFilter ? { name: { contains: nameFilter, mode: "insensitive" } } : undefined,
+      // orderBy ID ascending by default
+      // orderBy: { id: sortOrder === "asc" ? "asc" : "desc" },
       orderBy: { [sortBy]: sortOrder },
+      // orderBy: { id: sortOrder },
       skip: (page - 1) * limit,
       take: limit,
     });
 
+    // console.log("Tags fetched:", tags);
     const totalCount = await prisma.tag.count({
       where: nameFilter ? { name: { contains: nameFilter, mode: "insensitive" } } : undefined,
     });

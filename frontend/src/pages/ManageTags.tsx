@@ -8,7 +8,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { Checkbox } from "@/components/ui/checkbox";
 import { Pagination, PaginationContent, PaginationItem } from "@/components/ui/pagination";
 
-import { FilePenIcon, Plus, Shell, Trash2 } from "lucide-react";
+import { FilePenIcon, Plus, Shell, Trash2, ArrowUpDown } from "lucide-react"; // Added ArrowUpDown icon
 
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useForm } from "react-hook-form";
@@ -20,20 +20,21 @@ import { useTags, useCreateTag, useUpdateTag, useDeleteTag, useBulkDeleteTags } 
 import SmallSkeleton from "@/components/global/SmallSkeleton";
 import { useTranslation } from "react-i18next";
 import { useMemo } from "react";
+import { camelToPascal } from "@/lib/utils";
 
 export default function ManageTagsTable() {
   const { t } = useTranslation();
   const [nameFilter, setNameFilter] = useState("");
   const [debouncedNameFilter] = useDebounce(nameFilter, 700);
-  const [sorting, setSorting] = useState([{ id: "name", desc: false }]);
+  const [sorting, setSorting] = useState([{ id: "id", desc: false }]); // Changed default sorting from "name" to "id"
   const [pagination, setPagination] = useState({
     pageIndex: 0,
-    pageSize: 5,
+    pageSize: 10,
   });
   const [rowSelection, setRowSelection] = useState({});
   const [currentTag, setCurrentTag] = useState<Tag | null>(null);
 
-  // Dialog states - replace Zustand actions
+  // Dialog states -
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -47,19 +48,19 @@ export default function ManageTagsTable() {
     name: debouncedNameFilter || undefined,
   });
 
-  // Replace Zustand actions with React Query mutations
+  // console.log("Tags data:", data); // Log the tags data
   const createTag = useCreateTag();
   const updateTag = useUpdateTag();
   const deleteTag = useDeleteTag();
   const bulkDeleteTags = useBulkDeleteTags();
 
-  // Replace Zustand's isUpdating with individual mutation states
+  //   individual mutation states
   const isUpdating = createTag.isPending || updateTag.isPending || deleteTag.isPending || bulkDeleteTags.isPending;
 
-  // Replace Zustand's totalPages with data from query
+  //   data from query
   const totalPages = data?.totalPages || 1;
 
-  // Replace Zustand dialog actions with local state setters
+  //   local state setters
   const openCreateDialog = () => {
     setCurrentTag(null);
     setIsCreateDialogOpen(true);
@@ -81,6 +82,7 @@ export default function ManageTagsTable() {
     setIsDeleteDialogOpen(true);
   };
 
+  // Close all dialogs
   const closeAllDialogs = () => {
     setIsCreateDialogOpen(false);
     setIsEditDialogOpen(false);
@@ -97,17 +99,26 @@ export default function ManageTagsTable() {
       },
       {
         accessorKey: "id",
-        header: t("ID"),
+        header: ({ column }) => (
+          <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="hover:bg-transparent">
+            {t("ID")}
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        ),
       },
       {
         accessorKey: "name",
-        header: t("Name"),
-        cell: ({ row }) => <div className="font-medium">{row.getValue("name")}</div>,
+        header: ({ column }) => (
+          <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="hover:bg-transparent">
+            {t("Name")}
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        ),
+        cell: ({ row }) => <div className="font-medium">{camelToPascal(row.getValue("name"))}</div>,
       },
     ],
     [t]
   );
-  // New ends
 
   const form = useForm({
     resolver: zodResolver(tagFormSchema),
@@ -399,7 +410,7 @@ export default function ManageTagsTable() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Confirm Deletion</DialogTitle>
-            <DialogDescription>{currentTag ? `Are you sure you want to delete the tag "${currentTag.name}"?` : `Are you sure you want to delete ${table.getSelectedRowModel().rows.length} selected tags?`}</DialogDescription>
+            <DialogDescription>{currentTag ? `Are you sure you want to delete the tag "${camelToPascal(currentTag.name)}"?` : `Are you sure you want to delete ${table.getSelectedRowModel().rows.length} selected tags?`}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={closeAllDialogs}>

@@ -267,6 +267,7 @@ export const updateTemplate = async (req: Request, res: Response) => {
     const userId = req.user.id;
     const { title, description, topicId, isPublic, isPublished, imageUrl, tags = [], accessUsers = [], questions = [] } = req.body;
 
+    // console.log("Updating template by: ", req.user, " with data: ", req.body);
     // Verify template exists and user has permission
     const existingTemplate = await prisma.template.findUnique({
       where: { id: templateId },

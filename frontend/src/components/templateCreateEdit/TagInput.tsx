@@ -9,6 +9,7 @@ import { useSearchTags } from "@/hooks/useTags";
 import { useCreateTag } from "@/hooks/useTags";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { camelToPascal } from "@/lib/utils";
 
 interface TagInputProps {
   value?: string[];
@@ -30,11 +31,28 @@ export function TagInput({ value = [], onChange }: TagInputProps) {
   const filteredTags = availableTags.filter((tag) => !value.includes(tag.name));
 
   const handleAddTag = async (tag: string) => {
-    if (!value.includes(tag)) {
+    // new tag should be added only if it doesn't exist in the current value
+    // Need to check by changing the tag name to lowercase
+    const tagLower = tag.toLowerCase();
+    const tagExists = value.some((existingTag) => existingTag.toLowerCase() === tagLower);
+    if (tagExists) {
+      // alert("Tag already exists");
+      toast.error(t("Tag already exists"));
+      return;
+    }
+    if (!tagExists) {
+      await createTag({ name: inputValue.trim() });
       onChange([...value, tag]);
       setInputValue("");
       inputRef.current?.focus();
     }
+
+    // if (!value.includes(tag)) {
+    //   await createTag({ name: inputValue.trim() });
+    //   onChange([...value, tag]);
+    //   setInputValue("");
+    //   inputRef.current?.focus();
+    // }
   };
 
   const handleRemoveTag = (tagToRemove: string) => {
@@ -63,7 +81,7 @@ export function TagInput({ value = [], onChange }: TagInputProps) {
 
       try {
         // Create new tag if it doesn't exist
-        await createTag({ name: inputValue.trim() });
+
         handleAddTag(inputValue.trim());
       } catch (error) {
         console.error("Failed to create tag:", error);
@@ -77,7 +95,7 @@ export function TagInput({ value = [], onChange }: TagInputProps) {
       <div className="flex flex-wrap gap-2">
         {value.map((tag) => (
           <Badge key={tag} variant="secondary" className="text-sm">
-            {tag}
+            {camelToPascal(tag)}
             <button type="button" className="ml-2 rounded-full outline-none focus:ring-2 focus:ring-ring" onClick={() => handleRemoveTag(tag)}>
               <X className="h-3 w-3" />
               <span className="sr-only">

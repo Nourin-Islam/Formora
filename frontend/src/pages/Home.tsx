@@ -12,7 +12,7 @@ export default function Home() {
       <h2 className="text-2xl font-bold mb-4 text-center border-red-500">{t("Welcome to Formora!")}</h2>
       <h3 className="text-xl text-center  mb-2 ">{t("Create, Explore, and Share Templates Effortlessly!")}</h3>
       <p className="text-center mb-8 ">{t("Our platform lets you build customizable forms, quizzes, and surveys in minutes. Discover trending templates, search by tags, explore topics, and stay updated with the latest creations — all in one intuitive, multilingual experience.")}</p>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8  items-stretch">
         <div className="col-start-1 col-end-4 lg:col-end-3">
           <LatestTemplatesSection />
         </div>

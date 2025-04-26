@@ -24,9 +24,10 @@ export const useTags = (params: TagQueryParams) => {
     queryKey: ["tags", params],
     queryFn: async () => {
       const response = await publicApi.get("/tags", { params });
+      console.log("Response from API:", response.data); // Log the response data
       return response.data;
     },
-    staleTime: 300000, // Adjust the stale time as needed
+    staleTime: 0, // Adjust the stale time as needed
   });
 };
 
