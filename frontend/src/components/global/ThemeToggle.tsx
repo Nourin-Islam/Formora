@@ -10,6 +10,7 @@ export function ThemeToggle() {
   const { user } = useUser();
   const { resolvedTheme, setTheme, language, setLanguage } = useThemeStore();
   const { i18n } = useTranslation();
+  const { t } = useTranslation("common");
 
   const toggleTheme = async () => {
     const newTheme = resolvedTheme === "dark" ? "light" : "dark";
@@ -46,8 +47,12 @@ export function ThemeToggle() {
         <span className="sr-only">Toggle theme</span>
       </Button>
       <ToggleGroup type="single" value={language} onValueChange={changeLanguage}>
-        <ToggleGroupItem value="en">EN</ToggleGroupItem>
-        <ToggleGroupItem value="ru">RU</ToggleGroupItem>
+        <ToggleGroupItem className={language !== "en" ? "opacity-60" : ""} value="en">
+          EN
+        </ToggleGroupItem>
+        <ToggleGroupItem className={language !== "ru" ? "opacity-60" : ""} value="ru">
+          RU
+        </ToggleGroupItem>
       </ToggleGroup>
     </div>
   );

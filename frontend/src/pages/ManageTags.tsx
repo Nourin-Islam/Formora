@@ -23,7 +23,7 @@ import { useMemo } from "react";
 import { camelToPascal } from "@/lib/utils";
 
 export default function ManageTagsTable() {
-  const { t } = useTranslation();
+  const { t } = useTranslation("common");
   const [nameFilter, setNameFilter] = useState("");
   const [debouncedNameFilter] = useDebounce(nameFilter, 700);
   const [sorting, setSorting] = useState([{ id: "id", desc: false }]); // Changed default sorting from "name" to "id"
@@ -101,7 +101,7 @@ export default function ManageTagsTable() {
         accessorKey: "id",
         header: ({ column }) => (
           <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="hover:bg-transparent">
-            {t("ID")}
+            {t("common.tags.ID")}
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         ),
@@ -110,7 +110,7 @@ export default function ManageTagsTable() {
         accessorKey: "name",
         header: ({ column }) => (
           <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="hover:bg-transparent">
-            {t("Name")}
+            {t("common.tags.Name")}
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         ),
@@ -156,11 +156,11 @@ export default function ManageTagsTable() {
   const handleCreateTag = async (values: { name: string }) => {
     try {
       await createTag.mutateAsync(values);
-      toast.success(t("Tag created successfully"));
+      toast.success(t("common.tags.Tag created successfully"));
       form.reset();
       setIsCreateDialogOpen(false);
     } catch (error) {
-      toast.error(t("Failed to create tag"));
+      toast.error(t("common.tags.Failed to create tag"));
     }
   };
 
@@ -176,11 +176,11 @@ export default function ManageTagsTable() {
 
     try {
       await updateTag.mutateAsync({ id: currentTag.id, values });
-      toast.success(t("Tag updated successfully"));
+      toast.success(t("common.tags.Tag updated successfully"));
       form.reset();
       setIsEditDialogOpen(false);
     } catch (error) {
-      toast.error(t("Failed to update tag"));
+      toast.error(t("common.tags.Failed to update tag"));
     }
   };
 
@@ -189,10 +189,10 @@ export default function ManageTagsTable() {
 
     try {
       await deleteTag.mutateAsync(currentTag.id);
-      toast.success(t("Tag deleted successfully"));
+      toast.success(t("common.tags.Tag deleted successfully"));
       setIsDeleteDialogOpen(false);
     } catch (error) {
-      toast.error(t("Failed to delete tag"));
+      toast.error(t("common.tags.Failed to delete tag"));
     }
   };
 
@@ -214,11 +214,11 @@ export default function ManageTagsTable() {
 
     try {
       await bulkDeleteTags.mutateAsync(selectedTagIds);
-      toast.success(`${selectedTagIds.length} ${t("Tags deleted successfully")}`);
+      toast.success(`${selectedTagIds.length} ${t("common.tags.Tags deleted successfully")}`);
       setIsDeleteDialogOpen(false);
       setRowSelection({});
     } catch (error) {
-      toast.error(t("Failed to delete some tags"));
+      toast.error(t("common.tags.Failed to delete some tags"));
     }
   };
 
@@ -227,9 +227,9 @@ export default function ManageTagsTable() {
   if (isError) {
     return (
       <div className="text-red-500">
-        Error loading tags: {error?.message}
+        {t("common.tags.Error loading tags:")} {error?.message}
         <Button variant="outline" onClick={() => window.location.reload()}>
-          {t("Retry")}
+          {t("common.tags.Retry")}
         </Button>
       </div>
     );
@@ -244,10 +244,10 @@ export default function ManageTagsTable() {
             <TooltipTrigger asChild>
               <Button variant="outline" size="sm" onClick={openCreateDialog}>
                 <Plus className="h-4 w-4 mr-2" />
-                {t("Create Tag")}
+                {t("common.tags.Create Tag")}
               </Button>
             </TooltipTrigger>
-            <TooltipContent>{t("Create a new tag")}</TooltipContent>
+            <TooltipContent>{t("common.tags.Create a new tag")}</TooltipContent>
           </Tooltip>
 
           {/* Edit Selected Button */}
@@ -255,10 +255,10 @@ export default function ManageTagsTable() {
             <TooltipTrigger asChild>
               <Button variant="outline" size="sm" onClick={handleEditClick} disabled={table.getSelectedRowModel().rows.length !== 1}>
                 <FilePenIcon className="h-4 w-4 mr-2" />
-                {t("Edit")}
+                {t("common.tags.Edit")}
               </Button>
             </TooltipTrigger>
-            <TooltipContent>{t("Edit selected tag")}</TooltipContent>
+            <TooltipContent>{t("common.tags.Edit selected tag")}</TooltipContent>
           </Tooltip>
 
           {/* Delete Selected Button */}
@@ -266,14 +266,14 @@ export default function ManageTagsTable() {
             <TooltipTrigger asChild>
               <Button variant="outline" size="sm" onClick={handleDeleteClick} disabled={table.getSelectedRowModel().rows.length === 0}>
                 {isUpdating ? <Shell className="h-4 w-4 mr-2 animate-spin" /> : <Trash2 className="h-4 w-4 mr-2" />}
-                {t("Delete")}
+                {t("common.tags.Delete")}
               </Button>
             </TooltipTrigger>
-            <TooltipContent>{t("Delete selected tags")}</TooltipContent>
+            <TooltipContent>{t("common.tags.Delete selected tags")}</TooltipContent>
           </Tooltip>
         </div>
 
-        <Input placeholder="Filter tags..." value={nameFilter} onChange={(e) => setNameFilter(e.target.value)} className="max-w-sm" />
+        <Input placeholder={t("common.tags.Filter tags...")} value={nameFilter} onChange={(e) => setNameFilter(e.target.value)} className="max-w-sm" />
       </div>
 
       <div className="rounded-md border">
@@ -299,7 +299,7 @@ export default function ManageTagsTable() {
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-24 text-center">
-                  No results.
+                  {t("common.tags.No results")}.
                 </TableCell>
               </TableRow>
             )}
@@ -311,17 +311,17 @@ export default function ManageTagsTable() {
         <PaginationContent>
           <PaginationItem>
             <Button variant="outline" size="sm" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>
-              {t("Previous")}
+              {t("common.tags.Previous")}
             </Button>
           </PaginationItem>
           <PaginationItem>
             <span className="text-sm">
-              {t("Page")} {pagination.pageIndex + 1} {t("of")} {totalPages}
+              {t("common.tags.Page")} {pagination.pageIndex + 1} {t("common.tags.of")} {totalPages}
             </span>
           </PaginationItem>
           <PaginationItem>
             <Button variant="outline" size="sm" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
-              {t("Next")}
+              {t("common.tags.Next")}
             </Button>
           </PaginationItem>
         </PaginationContent>
@@ -337,8 +337,8 @@ export default function ManageTagsTable() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create New Tag</DialogTitle>
-            <DialogDescription>Add a new tag to the system.</DialogDescription>
+            <DialogTitle>{t("common.tags.Create New Tag")}</DialogTitle>
+            <DialogDescription>{t("common.tags.Add a new tag to the system.")}</DialogDescription>
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleCreateTag)} className="space-y-4">
@@ -347,9 +347,9 @@ export default function ManageTagsTable() {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Tag Name</FormLabel>
+                    <FormLabel>{t("common.tags.Tag Name")}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter tag name" {...field} />
+                      <Input placeholder={t("common.tags.Enter tag name")} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -357,11 +357,11 @@ export default function ManageTagsTable() {
               />
               <DialogFooter>
                 <Button type="button" variant="outline" onClick={closeAllDialogs}>
-                  Cancel
+                  {t("common.tags.Cancel")}
                 </Button>
                 <Button type="submit" disabled={isUpdating}>
                   {isUpdating && <Shell className="h-4 w-4 mr-2 animate-spin" />}
-                  Create Tag
+                  {t("common.tags.Create Tag")}
                 </Button>
               </DialogFooter>
             </form>
@@ -373,8 +373,8 @@ export default function ManageTagsTable() {
       <Dialog open={isEditDialogOpen} onOpenChange={closeAllDialogs}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit Tag</DialogTitle>
-            <DialogDescription>Make changes to the tag.</DialogDescription>
+            <DialogTitle>{t("common.tags.Edit Tag")}</DialogTitle>
+            <DialogDescription>{t("common.tags.Make changes to the tag.")}</DialogDescription>
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleUpdateTag)} className="space-y-4">
@@ -383,9 +383,9 @@ export default function ManageTagsTable() {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Tag Name</FormLabel>
+                    <FormLabel>{t("common.tags.Tag Name")}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter tag name" {...field} />
+                      <Input placeholder={t("common.tags.Enter tag name")} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -393,11 +393,11 @@ export default function ManageTagsTable() {
               />
               <DialogFooter>
                 <Button type="button" variant="outline" onClick={closeAllDialogs}>
-                  Cancel
+                  {t("common.tags.Cancel")}
                 </Button>
                 <Button type="submit" disabled={isUpdating}>
                   {isUpdating && <Shell className="h-4 w-4 mr-2 animate-spin" />}
-                  Save Changes
+                  {t("common.tags.Save Changes")}
                 </Button>
               </DialogFooter>
             </form>
@@ -409,12 +409,12 @@ export default function ManageTagsTable() {
       <Dialog open={isDeleteDialogOpen} onOpenChange={closeAllDialogs}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Confirm Deletion</DialogTitle>
-            <DialogDescription>{currentTag ? `Are you sure you want to delete the tag "${camelToPascal(currentTag.name)}"?` : `Are you sure you want to delete ${table.getSelectedRowModel().rows.length} selected tags?`}</DialogDescription>
+            <DialogTitle>{t("common.tags.Confirm Deletion")}</DialogTitle>
+            <DialogDescription>{currentTag ? `${t("common.tags.Are you sure you want to delete the tag")} "${camelToPascal(currentTag.name)}"?` : `${t("common.tags.Are you sure you want to delete")} ${table.getSelectedRowModel().rows.length} ${t("selected tags?")}`}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={closeAllDialogs}>
-              Cancel
+              {t("common.tags.Cancel")}
             </Button>
             <Button
               variant="destructive"
@@ -428,7 +428,7 @@ export default function ManageTagsTable() {
               disabled={isUpdating}
             >
               {isUpdating && <Shell className="h-4 w-4 mr-2 animate-spin" />}
-              Delete
+              {t("common.tags.Delete")}
             </Button>
           </DialogFooter>
         </DialogContent>

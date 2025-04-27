@@ -8,6 +8,9 @@ import SignUpPage from "@/pages/auth/SignUpPage";
 import ManageUsers from "@/pages/auth/ManageUsers";
 import { VerifyEmailPage } from "@/pages/auth/VerifyEmail";
 import { ErrorPage } from "@/pages/auth/ErrorPage";
+import Privacy from "@/pages/Privacy";
+import About from "@/pages/About";
+import Contact from "@/pages/Contact";
 
 import PublicRoute from "@/routes/PublicRoute";
 import PrivateRoute from "@/routes/PrivateRoute";
@@ -36,6 +39,9 @@ const router = createBrowserRouter([
           { path: "sign-up", element: <SignUpPage /> },
           { path: "sign-up/*", element: <SignUpPage /> },
           { path: "search", element: <SearchPage /> },
+          { path: "privacy", element: <Privacy /> },
+          { path: "about", element: <About /> },
+          { path: "contact", element: <Contact /> },
         ],
       },
       {

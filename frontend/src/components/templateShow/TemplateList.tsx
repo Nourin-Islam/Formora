@@ -33,7 +33,7 @@ interface TemplateListProps {
 
 export default function TemplateList({ templates = [], isLoading = false, isError = false, userId, filters, totalPages = 1, onPageChange, onRefetch, onLike, onUnlike, onView, onEdit, onDelete, isDeleting = false, emptyStateMessage = "No templates found", createButtonText = "Create Template" }: TemplateListProps) {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t } = useTranslation("common");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false);
   const [templateToDelete, setTemplateToDelete] = useState<Template | null>(null);
 
@@ -64,9 +64,9 @@ export default function TemplateList({ templates = [], isLoading = false, isErro
   if (isError) {
     return (
       <div className="container mx-auto py-8 text-center">
-        <p className="text-red-500">{t("Failed to load templates. Please try again.")}</p>
+        <p className="text-red-500">{t("common.tList.Failed to load templates. Please try again.")}</p>
         <Button onClick={onRefetch} className="mt-4">
-          {t("Retry")}
+          {t("common.tList.Retry")}
         </Button>
       </div>
     );
@@ -93,13 +93,13 @@ export default function TemplateList({ templates = [], isLoading = false, isErro
         <div className="mt-8 flex justify-center">
           <Pagination>
             <Button variant="outline" onClick={() => onPageChange(filters.page - 1)} disabled={filters.page === 1}>
-              {t("Previous")}
+              {t("common.tList.Previous")}
             </Button>
             <div className="flex items-center mx-4">
-              {t("Page")} {filters.page} {t("of")} {totalPages}
+              {t("common.tList.Page")} {filters.page} {t("common.tList.of")} {totalPages}
             </div>
             <Button variant="outline" onClick={() => onPageChange(filters.page + 1)} disabled={filters.page === totalPages}>
-              {t("Next")}
+              {t("common.tList.Next")}
             </Button>
           </Pagination>
         </div>
@@ -108,19 +108,19 @@ export default function TemplateList({ templates = [], isLoading = false, isErro
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t("Confirm Deletion")}</DialogTitle>
+            <DialogTitle>{t("common.tList.Confirm Deletion")}</DialogTitle>
             <DialogDescription>
-              {t("Are you sure you want to delete the template")}
+              {t("common.tList.Are you sure you want to delete the template")}
               {templateToDelete?.title}"?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
-              {t("Cancel")}
+              {t("common.tList.Cancel")}
             </Button>
             <Button variant="destructive" onClick={confirmDeleteTemplate} disabled={isDeleting}>
               {isDeleting && <Shell className="h-4 w-4 mr-2 animate-spin" />}
-              {t("Delete")}
+              {t("common.tList.Delete")}
             </Button>
           </DialogFooter>
         </DialogContent>

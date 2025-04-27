@@ -15,13 +15,13 @@ import { useLikeTemplate, useUnlikeTemplate } from "@/hooks/useTemplateInteracti
 import type { Template } from "@/types";
 
 export default function LatestTemplatesSection() {
-  const { t } = useTranslation();
+  const { t } = useTranslation("common");
   const { userId } = useAuth();
   const navigate = useNavigate();
 
-  // State
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [templateToDelete, setTemplateToDelete] = useState<Template | null>(null);
+
   const filters = {
     page: 1,
     limit: 6,
@@ -29,11 +29,7 @@ export default function LatestTemplatesSection() {
     sortOrder: "desc",
   };
 
-  // Data fetching
   const { data: templatesData, isLoading, isError, refetch } = useLatestTemplates();
-  console.log("templatesData", templatesData);
-
-  // Mutations
   const { mutate: deleteTemplate, isPending: isDeleting } = useDeleteTemplate();
   const likeMutation = useLikeTemplate([["templates", filters], ["popular-templates"], ["latest-templates"]]);
   const unlikeMutation = useUnlikeTemplate([["templates", filters], ["popular-templates"], ["latest-templates"]]);
@@ -41,10 +37,9 @@ export default function LatestTemplatesSection() {
   const addLike = (id: number) => likeMutation.mutate(id);
   const removeLike = (id: number) => unlikeMutation.mutate(id);
 
-  // Handlers
   const handleLike = (templateId: number) => {
     if (!userId) {
-      toast.info(t("Please sign in to like templates"));
+      toast.info(t("common.home.latest.please_sign_in_like"));
       return;
     }
     addLike(templateId);
@@ -52,7 +47,7 @@ export default function LatestTemplatesSection() {
 
   const handleUnlike = (templateId: number) => {
     if (!userId) {
-      toast.info(t("Please sign in to unlike templates"));
+      toast.info(t("common.home.latest.please_sign_in_unlike"));
       return;
     }
     removeLike(templateId);
@@ -72,27 +67,26 @@ export default function LatestTemplatesSection() {
 
     deleteTemplate(templateToDelete.id, {
       onSuccess: () => {
-        toast.success(t("Template deleted successfully"));
+        toast.success(t("common.home.latest.template_deleted_success"));
         setIsDeleteDialogOpen(false);
         setTemplateToDelete(null);
         refetch();
       },
       onError: (error) => {
         console.error("Error deleting template:", error);
-        toast.error(t("Failed to delete template"));
+        toast.error(t("common.home.latest.template_delete_failed"));
       },
     });
   };
 
-  // Loading and error states
   if (isLoading) return <FourTemplatesSkeleton />;
 
   if (isError) {
     return (
       <div className="container mx-auto py-8 text-center">
-        <p className="text-red-500">{t("Failed to load templates. Please try again.")}</p>
+        <p className="text-red-500">{t("common.home.latest.load_templates_failed")}</p>
         <Button onClick={() => refetch()} className="mt-4">
-          {t("Retry")}
+          {t("common.home.latest.retry")}
         </Button>
       </div>
     );
@@ -100,13 +94,13 @@ export default function LatestTemplatesSection() {
 
   return (
     <section className="container mx-auto py-8">
-      <h1 className="text-2xl font-bold mb-6 text-center">{t("Latest Creations")}</h1>
+      <h1 className="text-2xl font-bold mb-6 text-center">{t("common.home.latest.latest_creations")}</h1>
 
       {templatesData?.templates?.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-lg text-gray-500">{t("No templates found")}</p>
+          <p className="text-lg text-gray-500">{t("no_templates_found")}</p>
           <Button variant="secondary" onClick={handleCreateTemplate} className="mt-4">
-            <Plus className="mr-2 h-4 w-4" /> {t("Create Template")}
+            <Plus className="mr-2 h-4 w-4" /> {t("create_template")}
           </Button>
         </div>
       ) : (
@@ -121,18 +115,18 @@ export default function LatestTemplatesSection() {
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t("Confirm Deletion")}</DialogTitle>
+            <DialogTitle>{t("confirm_deletion")}</DialogTitle>
             <DialogDescription>
-              {t("Are you sure you want to delete the template")} "{templateToDelete?.title}"?
+              {t("confirm_deletion_text")} "{templateToDelete?.title}"?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
-              {t("Cancel")}
+              {t("cancel")}
             </Button>
             <Button variant="destructive" onClick={confirmDelete} disabled={isDeleting}>
               {isDeleting && <Shell className="h-4 w-4 mr-2 animate-spin" />}
-              {t("Delete")}
+              {t("delete")}
             </Button>
           </DialogFooter>
         </DialogContent>

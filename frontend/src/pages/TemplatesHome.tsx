@@ -18,7 +18,7 @@ import { useTranslation } from "react-i18next";
 import UserAllResponses from "@/components/UserAllResponses";
 
 export default function TemplatesHome() {
-  const { t } = useTranslation();
+  const { t } = useTranslation("common");
   const { userId } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("templates");
@@ -64,7 +64,7 @@ export default function TemplatesHome() {
 
   const handleLike = (templateId: number) => {
     if (!userId) {
-      toast.info(t("Please sign in to like templates"));
+      toast.info(t("common.thome.Please sign in to like templates"));
       return;
     }
 
@@ -73,7 +73,7 @@ export default function TemplatesHome() {
 
   const handleUnLike = (templateId: number) => {
     if (!userId) {
-      toast.info(t("Please sign in to unlike templates"));
+      toast.info(t("common.thome.Please sign in to unlike templates"));
       return;
     }
 
@@ -91,13 +91,13 @@ export default function TemplatesHome() {
   const handleDeleteTemplate = (templateId: number, options?: { onSuccess?: () => void }) => {
     deleteTemplate(templateId, {
       onSuccess: () => {
-        toast.success(t("Template deleted successfully"));
+        toast.success(t("common.thome.Template deleted successfully"));
         if (options?.onSuccess) options.onSuccess();
         refetch();
       },
       onError: (error) => {
         console.error("Error deleting template:", error);
-        toast.error(t("Failed to delete template"));
+        toast.error(t("common.thome.Failed to delete template"));
       },
     });
   };
@@ -111,11 +111,11 @@ export default function TemplatesHome() {
       <Tabs defaultValue="general" value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="mb-4">
           <TabsTrigger value="templates">
-            <h1 className="text-xl font-bold">{t("My Templatess")}</h1>
+            <h1 className="text-xl font-bold">{t("common.thome.My Templates")}</h1>
           </TabsTrigger>
 
           <TabsTrigger value="submissions">
-            <h1 className="text-xl font-bold">{t("My Submissions")}</h1>
+            <h1 className="text-xl font-bold">{t("common.thome.My Submissions")}</h1>
           </TabsTrigger>
         </TabsList>
 
@@ -124,17 +124,17 @@ export default function TemplatesHome() {
             <div className="flex gap-2 ml-auto">
               <Button variant="outline" onClick={() => setShowFilters(!showFilters)}>
                 <Filter className="h-4 w-4 mr-2" />
-                {t("Filters")}
+                {t("common.thome.Filters")}
               </Button>
               <Button onClick={createNewTemplate}>
-                <Plus className="mr-2 h-4 w-4" /> {t("Create Template")}
+                <Plus className="mr-2 h-4 w-4" /> {t("common.thome.Create Template")}
               </Button>
             </div>
           </div>
 
           {showFilters && <TemplateFilters filters={filters} onFilterChange={handleFilterChange} topics={topics} />}
 
-          <TemplateList templates={templates} isLoading={isLoading} isError={isError} userId={userId ?? null} filters={filters} totalPages={totalPages} onPageChange={handlePageChange} onRefetch={refetch} onLike={handleLike} onUnlike={handleUnLike} onView={handleViewTemplate} onEdit={handleEditTemplate} onDelete={handleDeleteTemplate} isDeleting={isDeleting} emptyStateMessage={t("No templates found")} createButtonText={t("Create your first template")} />
+          <TemplateList templates={templates} isLoading={isLoading} isError={isError} userId={userId ?? null} filters={filters} totalPages={totalPages} onPageChange={handlePageChange} onRefetch={refetch} onLike={handleLike} onUnlike={handleUnLike} onView={handleViewTemplate} onEdit={handleEditTemplate} onDelete={handleDeleteTemplate} isDeleting={isDeleting} emptyStateMessage={t("common.thome.No templates found")} createButtonText={t("common.thome.Create your first template")} />
         </TabsContent>
         <TabsContent value="submissions" className="space-y-4">
           <UserAllResponses />

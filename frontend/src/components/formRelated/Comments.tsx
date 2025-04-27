@@ -40,7 +40,7 @@ type CommentsProps = {
 export function Comments({ templateId }: CommentsProps) {
   const { getToken, userId } = useAuth();
   const { comments, isConnected, requestingUser } = useCommentsWebSocket(templateId);
-  const { t } = useTranslation();
+  const { t } = useTranslation("common");
   // const [requestingUser, setRequestingUser] = useState<RequestingUser | null>(null);
   const queryClient = useQueryClient();
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
@@ -48,7 +48,7 @@ export function Comments({ templateId }: CommentsProps) {
 
   // Form validation schema
   const commentFormSchema = z.object({
-    content: z.string().min(1, t("Comment cannot be empty")).max(1000, t("Comment too long")),
+    content: z.string().min(1, t("common.comments.Comment cannot be empty")).max(1000, t("common.comments.Comment too long")),
   });
 
   // Cleanup function for pointer-events
@@ -99,10 +99,10 @@ export function Comments({ templateId }: CommentsProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["comments", templateId] });
       createForm.reset();
-      toast.success(t("Comment added successfully"));
+      toast.success(t("common.comments.Comment added successfully"));
     },
     onError: () => {
-      toast.error(t("Failed to add comment"));
+      toast.error(t("common.comments.Failed to add comment"));
     },
   });
 
@@ -118,10 +118,10 @@ export function Comments({ templateId }: CommentsProps) {
       queryClient.invalidateQueries({ queryKey: ["comments", templateId] });
       setEditingCommentId(null);
       setIsDialogOpen(false);
-      toast.success(t("Comment updated successfully"));
+      toast.success(t("common.comments.Comment updated successfully"));
     },
     onError: () => {
-      toast.error(t("Failed to update comment"));
+      toast.error(t("common.comments.Failed to update comment"));
     },
   });
 
@@ -133,10 +133,10 @@ export function Comments({ templateId }: CommentsProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["comments", templateId] });
-      toast.success(t("Comment deleted successfully"));
+      toast.success(t("common.comments.Comment deleted successfully"));
     },
     onError: () => {
-      toast.error(t("Failed to delete comment"));
+      toast.error(t("common.comments.Failed to delete comment"));
     },
   });
 
@@ -162,14 +162,14 @@ export function Comments({ templateId }: CommentsProps) {
   };
 
   if (!isConnected) {
-    return <div>{t("Connecting to live comments...")}</div>;
+    return <div>{t("common.comments.Connecting to live comments...")}</div>;
   }
 
   return (
     <Card className="mt-6" id="comments">
       <CardHeader>
         <CardTitle>
-          {t("Comments")} ({comments?.length || 0})
+          {t("common.comments.Comments")} ({comments?.length || 0})
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -183,14 +183,14 @@ export function Comments({ templateId }: CommentsProps) {
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <Textarea placeholder={t("Add a comment...")} className="min-h-[100px]" {...field} />
+                      <Textarea placeholder={t("common.comments.Add a comment...")} className="min-h-[100px]" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
               <Button className="cursor-pointer" type="submit" disabled={createComment.isPending}>
-                {createComment.isPending ? t("Posting...") : t("Post Comment")}
+                {createComment.isPending ? t("common.comments.Posting...") : t("common.comments.Post Comment")}
               </Button>
             </form>
           </Form>
@@ -205,7 +205,7 @@ export function Comments({ templateId }: CommentsProps) {
                   <AvatarImage src="" alt={comment.user.name} />
                   <AvatarFallback>
                     {comment.user.name
-                      .split(" ")
+                      .split("common.comments. ")
                       .map((n: any) => n[0])
                       .join("")}
                   </AvatarFallback>
@@ -228,11 +228,11 @@ export function Comments({ templateId }: CommentsProps) {
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => handleEditClick(comment)}>
                             <Edit className="mr-2 h-4 w-4" />
-                            <span>{t("Edit")}</span>
+                            <span>{t("common.comments.Edit")}</span>
                           </DropdownMenuItem>
                           <DropdownMenuItem className="text-destructive" onClick={() => deleteComment.mutate(comment.id)}>
                             <Trash2 className="mr-2 h-4 w-4" />
-                            <span>{t("Delete")}</span>
+                            <span>{t("common.comments.Delete")}</span>
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -245,15 +245,15 @@ export function Comments({ templateId }: CommentsProps) {
             ))}
           </div>
         ) : (
-          <p className="text-muted-foreground">{t("No comments yet. Be the first to comment!")}</p>
+          <p className="text-muted-foreground">{t("common.comments.No comments yet. Be the first to comment!")}</p>
         )}
 
         {/* Edit comment dialog */}
         <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>{t("Edit Comment")}</DialogTitle>
-              <DialogDescription>{t("Make changes to your comment here. Click save when you're done.")}</DialogDescription>
+              <DialogTitle>{t("common.comments.Edit Comment")}</DialogTitle>
+              <DialogDescription>{t("common.comments.Make changes to your comment here. Click save when you're done.")}</DialogDescription>
             </DialogHeader>
             <Form {...editForm}>
               <form onSubmit={editForm.handleSubmit((values) => updateComment.mutate(values))} className="space-y-4">
@@ -263,7 +263,7 @@ export function Comments({ templateId }: CommentsProps) {
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <Textarea placeholder={t("Edit your comment...")} className="min-h-[100px]" aria-label="Comment content" {...field} />
+                        <Textarea placeholder={t("common.comments.Edit your comment...")} className="min-h-[100px]" aria-label="Comment content" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -271,10 +271,10 @@ export function Comments({ templateId }: CommentsProps) {
                 />
                 <div className="flex justify-end gap-2">
                   <Button variant="outline" type="button" onClick={() => handleDialogOpenChange(false)}>
-                    {t("Cancel")}
+                    {t("common.comments.Cancel")}
                   </Button>
                   <Button type="submit" disabled={updateComment.isPending}>
-                    {updateComment.isPending ? t("Updating...") : t("Update Comment")}
+                    {updateComment.isPending ? t("common.comments.Updating...") : t("common.comments.Update Comment")}
                   </Button>
                 </div>
               </form>

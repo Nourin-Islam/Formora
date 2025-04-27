@@ -14,8 +14,8 @@ import SmallSkeleton from "@/components/global/SmallSkeleton";
 
 type SortField = "title" | "createdAt" | "topic" | "likesCount" | "questionCount" | "submissionCount" | "user";
 
-export default function PopularTemplatesSection() {
-  const { t } = useTranslation();
+export default function TrendingTemplatesSection() {
+  const { t } = useTranslation("common");
   const [sortConfig, setSortConfig] = useState<{
     field: SortField;
     direction: "asc" | "desc";
@@ -73,9 +73,9 @@ export default function PopularTemplatesSection() {
   if (isError) {
     return (
       <div className="container mx-auto py-8 text-center">
-        <p className="text-red-500">{t("Failed to load templates. Please try again.")}</p>
+        <p className="text-red-500">{t("common.home.trending.error.loadTemplates")}</p>
         <Button onClick={() => refetch()} className="mt-4">
-          {t("Retry")}
+          {t("common.home.trending.action.retry")}
         </Button>
       </div>
     );
@@ -83,7 +83,7 @@ export default function PopularTemplatesSection() {
 
   return (
     <div className="">
-      <h1 className="text-2xl font-bold mb-6 text-center  ">🔥 {t("Trending Templates")}</h1>
+      <h1 className="text-2xl font-bold mb-6 text-center">🔥 {t("common.home.trending.title.trendingTemplates")}</h1>
 
       <Card>
         <CardContent>
@@ -92,43 +92,43 @@ export default function PopularTemplatesSection() {
               <TableRow>
                 <TableHead>
                   <Button variant="ghost" onClick={() => requestSort("title")} className="p-0 hover:bg-transparent">
-                    {t("Title")}
+                    {t("common.home.trending.column.title")}
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                   </Button>
                 </TableHead>
                 <TableHead>
                   <Button variant="ghost" onClick={() => requestSort("createdAt")} className="p-0 hover:bg-transparent">
-                    {t("Created")}
+                    {t("common.home.trending.column.created")}
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                   </Button>
                 </TableHead>
                 <TableHead>
                   <Button variant="ghost" onClick={() => requestSort("topic")} className="p-0 hover:bg-transparent">
-                    {t("Topic")}
+                    {t("common.home.trending.column.topic")}
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                   </Button>
                 </TableHead>
                 <TableHead>
                   <Button variant="ghost" onClick={() => requestSort("likesCount")} className="p-0 hover:bg-transparent">
-                    {t("Likes")}
+                    {t("common.home.trending.column.likes")}
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                   </Button>
                 </TableHead>
                 <TableHead>
                   <Button variant="ghost" onClick={() => requestSort("questionCount")} className="p-0 hover:bg-transparent">
-                    {t("Questions")}
+                    {t("common.home.trending.column.questions")}
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                   </Button>
                 </TableHead>
                 <TableHead>
                   <Button variant="ghost" onClick={() => requestSort("submissionCount")} className="p-0 hover:bg-transparent">
-                    {t("Submissions")}
+                    {t("common.home.trending.column.submissions")}
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                   </Button>
                 </TableHead>
                 <TableHead>
                   <Button variant="ghost" onClick={() => requestSort("user")} className="p-0 hover:bg-transparent">
-                    {t("Creator")}
+                    {t("common.home.trending.column.creator")}
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                   </Button>
                 </TableHead>
@@ -139,16 +139,16 @@ export default function PopularTemplatesSection() {
                 <TableRow key={template.id}>
                   <TableCell>
                     <Link to={`/check-form/${template.id}`} className="text-primary hover:underline flex items-center group">
-                      {template.title.length > 30 ? template.title.slice(0, 30) + "..." : template.title}
+                      {template.title.length > 30 ? `${template.title.slice(0, 30)}...` : template.title}
                       <Eye className="ml-2 h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
                     </Link>
                   </TableCell>
                   <TableCell>{format(new Date(template.createdAt), "MMM dd, yyyy HH:mm")}</TableCell>
-                  <TableCell>{template.topic?.name || "—"}</TableCell>
+                  <TableCell>{template.topic?.name || t("common.home.trending.common.empty")}</TableCell>
                   <TableCell>{template.likesCount}</TableCell>
                   <TableCell>{template.questionCount}</TableCell>
                   <TableCell>{(template as any).submissionCount || 0}</TableCell>
-                  <TableCell>{template.user?.name || "—"}</TableCell>
+                  <TableCell>{template.user?.name || t("common.home.trending.common.empty")}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

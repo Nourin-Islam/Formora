@@ -13,12 +13,12 @@ interface TemplateFiltersProps {
 }
 
 export default function TemplateFilters({ filters, onFilterChange, topics = [], showTopicFilter = true, showStatusFilter = true, showVisibilityFilter = true }: TemplateFiltersProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation("common");
   return (
     <div className="mt-4 p-4 border rounded-md grid grid-cols-1 md:grid-cols-3 gap-4">
       {showTopicFilter && (
         <div>
-          <label className="text-sm font-medium">{t("Topic")}</label>
+          <label className="text-sm font-medium">{t("common.tFilters.Topic")}</label>
           <Select
             value={filters.topicId?.toString() || ""}
             onValueChange={(value) => {
@@ -26,10 +26,10 @@ export default function TemplateFilters({ filters, onFilterChange, topics = [], 
             }}
           >
             <SelectTrigger>
-              <SelectValue placeholder={t("All topics")} />
+              <SelectValue placeholder={t("common.tFilters.All topics")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">{t("All topics")}</SelectItem>
+              <SelectItem value="all">{t("common.tFilters.All topics")}</SelectItem>
               {topics.map((topic) => (
                 <SelectItem key={topic.id} value={topic.id.toString()}>
                   {topic.name}
@@ -42,7 +42,7 @@ export default function TemplateFilters({ filters, onFilterChange, topics = [], 
 
       {showStatusFilter && (
         <div>
-          <label className="text-sm font-medium">{t("Status")}</label>
+          <label className="text-sm font-medium">{t("common.tFilters.Status")}</label>
           <Select
             value={filters.isPublished?.toString() || ""}
             onValueChange={(value) => {
@@ -50,12 +50,12 @@ export default function TemplateFilters({ filters, onFilterChange, topics = [], 
             }}
           >
             <SelectTrigger>
-              <SelectValue placeholder={t("All statuses")} />
+              <SelectValue placeholder={t("common.tFilters.All statuses")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">{t("All statuses")}</SelectItem>
-              <SelectItem value="true">{t("Published")}</SelectItem>
-              <SelectItem value="false">{t("Draft")}</SelectItem>
+              <SelectItem value="all">{t("common.tFilters.All statuses")}</SelectItem>
+              <SelectItem value="true">{t("common.tFilters.Published")}</SelectItem>
+              <SelectItem value="false">{t("common.tFilters.Draft")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -63,7 +63,7 @@ export default function TemplateFilters({ filters, onFilterChange, topics = [], 
 
       {showVisibilityFilter && (
         <div>
-          <label className="text-sm font-medium">{t("Visibility")}</label>
+          <label className="text-sm font-medium">{t("common.tFilters.Visibility")}</label>
           <Select
             value={filters.isPublic?.toString() || ""}
             onValueChange={(value) => {
@@ -71,12 +71,12 @@ export default function TemplateFilters({ filters, onFilterChange, topics = [], 
             }}
           >
             <SelectTrigger>
-              <SelectValue placeholder={t("All visibility")} />
+              <SelectValue placeholder={t("common.tFilters.All visibility")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">{t("All visibility")}</SelectItem>
-              <SelectItem value="true">{t("Public")}</SelectItem>
-              <SelectItem value="false">{t("Private")}</SelectItem>
+              <SelectItem value="all">{t("common.tFilters.All visibility")}</SelectItem>
+              <SelectItem value="true">{t("common.tFilters.Public")}</SelectItem>
+              <SelectItem value="false">{t("common.tFilters.Private")}</SelectItem>
             </SelectContent>
           </Select>
         </div>

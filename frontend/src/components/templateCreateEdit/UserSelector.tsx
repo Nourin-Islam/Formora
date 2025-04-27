@@ -21,7 +21,7 @@ export function UserSelector({ selectedUsers = [], onChange, excludeUsers = [] }
   const [sortBy, setSortBy] = useState<"name" | "email">("name");
   const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
 
-  const { t } = useTranslation();
+  const { t } = useTranslation("common");
 
   // Use the useUsers hook with search parameters
   const {
@@ -61,9 +61,9 @@ export function UserSelector({ selectedUsers = [], onChange, excludeUsers = [] }
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between mb-2">
-        <h4 className="text-sm font-medium">{t("Selected Users")}</h4>
+        <h4 className="text-sm font-medium">{t("common.userSelector.Selected Users")}</h4>
         <div className="flex items-center space-x-2">
-          <span className="text-xs text-gray-500">{t("Sort by:")}</span>
+          <span className="text-xs text-gray-500">{t("common.userSelector.Sort by:")}</span>
           <Button
             variant={sortBy === "name" ? "default" : "outline"}
             size="sm"
@@ -72,7 +72,7 @@ export function UserSelector({ selectedUsers = [], onChange, excludeUsers = [] }
               setSortBy("name");
             }}
           >
-            {t("Name")}
+            {t("common.userSelector.Name")}
           </Button>
           <Button
             variant={sortBy === "email" ? "default" : "outline"}
@@ -82,14 +82,14 @@ export function UserSelector({ selectedUsers = [], onChange, excludeUsers = [] }
               setSortBy("email");
             }}
           >
-            {t("Email")}
+            {t("common.userSelector.Email")}
           </Button>
         </div>
       </div>
 
       <div className="flex flex-wrap gap-2 mb-4">
         {sortedSelectedUsers.length === 0 ? (
-          <p className="text-sm text-gray-500">{t("No users selected")}</p>
+          <p className="text-sm text-gray-500">{t("common.userSelector.No users selected")}</p>
         ) : (
           sortedSelectedUsers.map((user) => (
             <Badge key={user.id} variant="secondary" className="text-sm flex items-center">
@@ -97,7 +97,7 @@ export function UserSelector({ selectedUsers = [], onChange, excludeUsers = [] }
               <Button variant="ghost" size="sm" className="h-auto w-auto p-0 ml-2" onClick={() => handleRemoveUser(user.id)}>
                 <X className="h-3 w-3" />
                 <span className="sr-only">
-                  {t("Remove")} {user.name}
+                  {t("common.userSelector.Remove")} {user.name}
                 </span>
               </Button>
             </Badge>
@@ -107,9 +107,9 @@ export function UserSelector({ selectedUsers = [], onChange, excludeUsers = [] }
 
       {isError && (
         <div className="text-sm text-red-500">
-          {t("Error loading users")}: {error?.message}
+          {t("common.userSelector.Error loading users")}: {error?.message}
           <button onClick={() => window.location.reload()} className="ml-2 text-sm underline">
-            {t("Retry")}
+            {t("common.userSelector.Retry")}
           </button>
         </div>
       )}
@@ -117,18 +117,18 @@ export function UserSelector({ selectedUsers = [], onChange, excludeUsers = [] }
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button variant="outline" role="combobox" aria-expanded={open} className="w-full justify-between" disabled={isLoading}>
-            {isLoading ? t("Loading...") : searchTerm || t("Search users...")}
+            {isLoading ? t("common.userSelector.Loading...") : searchTerm || t("common.userSelector.Search users...")}
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="p-0 w-full">
           <Command shouldFilter={false}>
-            <CommandInput placeholder={t("Search by name or email...")} value={searchTerm} onValueChange={setSearchTerm} />
+            <CommandInput placeholder={t("common.userSelector.Search by name or email...")} value={searchTerm} onValueChange={setSearchTerm} />
             {isLoading ? (
-              <div className="py-6 text-center text-sm">{t("Searching users...")}</div>
+              <div className="py-6 text-center text-sm">{t("common.userSelector.Searching users...")}</div>
             ) : (
               <>
-                <CommandEmpty>{searchTerm ? t("No users found") : t("Start typing to search users")}</CommandEmpty>
+                <CommandEmpty>{searchTerm ? t("common.userSelector.No users found") : t("common.userSelector.Start typing to search users")}</CommandEmpty>
                 <CommandGroup>
                   {filteredSearchResults.map((user) => (
                     <CommandItem key={user.id} value={user.id.toString()} onSelect={() => handleSelectUser(user)}>

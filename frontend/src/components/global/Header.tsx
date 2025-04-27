@@ -18,7 +18,7 @@ function Header() {
   const { setUser } = useAuthStore();
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm] = useDebounce(searchTerm, 700);
-  const { t } = useTranslation();
+  const { t } = useTranslation("common");
 
   useEffect(() => {
     if (isLoaded && user) {
@@ -34,7 +34,7 @@ function Header() {
   }, [debouncedSearchTerm, navigate]);
 
   return (
-    <header className="bg-white dark:bg-black shadow dark:shadow-neutral-800">
+    <header className="bg-gray-100 dark:bg-black shadow dark:shadow-neutral-800">
       <div className="mx-auto max-w-7xl px-4 py-3 md:py-6 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center  justify-center md:justify-between   md:items-center">
         <Link className="flex justify-center gap-2 items-center" to="/">
           <House className=" mt-1 inline " />
@@ -47,7 +47,7 @@ function Header() {
             {/* First item - always spans full width on mobile, medium+ gets A position */}
             <div className="col-start-1 col-end-2 row-start-2 row-end-3 lg:col-start-1 lg:col-end-2  lg:row-start-1 lg:row-end-2 relative ">
               <Search className="absolute left-2 md:left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground   dark:text-gray-500 " />
-              <Input placeholder={t("Search templates...")} className="pl-7 md:pl-10 bg-white dark:bg-neutral-900 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-neutral-800 w-[120px] sm:w-auto" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+              <Input placeholder={t("common.header.Search templates...")} className="pl-7 md:pl-10 bg-white dark:bg-neutral-900 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-neutral-800 w-[120px] sm:w-auto" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
             </div>
 
             {/* Second item - appears first on mobile, then moves to B position on medium+ */}
@@ -56,16 +56,16 @@ function Header() {
                 <>
                   <nav className="flex space-x-4 items-center">
                     <Link to="/templates" className="text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400">
-                      {t("Templates")}
+                      {t("common.header.Templates")}
                     </Link>
 
                     {Boolean(user?.publicMetadata?.isAdmin) && (
                       <>
                         <Link to="/manage-tags" className="text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400">
-                          {t("Tags")}
+                          {t("common.header.Tags")}
                         </Link>
                         <Link to="/manage-users" className="text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400">
-                          {t("Users")}
+                          {t("common.header.Users")}
                         </Link>
                       </>
                     )}
@@ -76,10 +76,10 @@ function Header() {
               ) : (
                 <div className="flex gap-4">
                   <Link to="/sign-in" className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
-                    {t("Sign In")}
+                    {t("common.header.Sign In")}
                   </Link>
                   <Link to="/sign-up" className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
-                    {t("Sign Up")}
+                    {t("common.header.Sign Up")}
                   </Link>
                 </div>
               )}

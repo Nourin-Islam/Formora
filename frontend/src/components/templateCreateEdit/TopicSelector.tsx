@@ -21,27 +21,27 @@ export const TopicSelector = ({ value, onChange, className }: TopicSelectorProps
     sortBy: "name",
     sortOrder: "asc",
   });
-  const { t } = useTranslation();
+  const { t } = useTranslation("common");
   return (
     <div className={`space-y-2 ${className}`}>
-      <Label htmlFor="topic">{t("Topic *")}</Label>
+      <Label htmlFor="topic">{t("common.topicSelector.Topic *")}</Label>
       {isLoading ? (
         <Select disabled>
           <SelectTrigger id="topic" className="w-full">
-            <SelectValue placeholder={t("Loading topics...")} />
+            <SelectValue placeholder={t("common.topicSelector.Loading topics...")} />
           </SelectTrigger>
         </Select>
       ) : isError ? (
         <div className="text-sm text-red-500">
-          {error?.message || t("Error loading topics")}
+          {error?.message || t("common.topicSelector.Error loading topics")}
           <button onClick={() => window.location.reload()} className="ml-2 text-sm underline">
-            {t("Retry")}
+            {t("common.topicSelector.Retry")}
           </button>
         </div>
       ) : (
         <Select value={value?.toString() || ""} onValueChange={(val) => onChange(parseInt(val))}>
           <SelectTrigger id="topic" className="w-full">
-            <SelectValue placeholder={t("Select a topic")} />
+            <SelectValue placeholder={t("common.topicSelector.Select a topic")} />
           </SelectTrigger>
           <SelectContent>
             {topicsData?.topics?.map((topic) => (

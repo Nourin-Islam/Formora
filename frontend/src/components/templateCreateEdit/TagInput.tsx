@@ -17,7 +17,7 @@ interface TagInputProps {
 }
 
 export function TagInput({ value = [], onChange }: TagInputProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation("common");
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -36,8 +36,8 @@ export function TagInput({ value = [], onChange }: TagInputProps) {
     const tagLower = tag.toLowerCase();
     const tagExists = value.some((existingTag) => existingTag.toLowerCase() === tagLower);
     if (tagExists) {
-      // alert("Tag already exists");
-      toast.error(t("Tag already exists"));
+      // alert("common.tagSelector.Tag already exists");
+      toast.error(t("common.tagSelector.Tag already exists"));
       return;
     }
     if (!tagExists) {
@@ -66,16 +66,16 @@ export function TagInput({ value = [], onChange }: TagInputProps) {
       // .max(20, "Tag name cannot exceed 20 characters")
       // .regex(/^[a-zA-Z0-9 ]*$/, "Tag name can only contain letters, numbers, and spaces"),
       if (inputValue.length < 2) {
-        // alert("Tag name must be at least 2 characters long");
-        toast.error(t("Tag name must be at least 2 characters long"));
+        // alert("common.tagSelector.Tag name must be at least 2 characters long");
+        toast.error(t("common.tagSelector.Tag name must be at least 2 characters long"));
         return;
       } else if (inputValue.length > 20) {
-        // alert("Tag name cannot exceed 20 characters");
-        toast.error(t("Tag name cannot exceed 20 characters"));
+        // alert("common.tagSelector.Tag name cannot exceed 20 characters");
+        toast.error(t("common.tagSelector.Tag name cannot exceed 20 characters"));
         return;
       } else if (!/^[a-zA-Z0-9 ]*$/.test(inputValue)) {
-        // alert("Tag name can only contain letters, numbers, and spaces");
-        toast.error(t("Tag name can only contain letters, numbers, and spaces"));
+        // alert("common.tagSelector.Tag name can only contain letters, numbers, and spaces");
+        toast.error(t("common.tagSelector.Tag name can only contain letters, numbers, and spaces"));
         return;
       }
 
@@ -99,7 +99,7 @@ export function TagInput({ value = [], onChange }: TagInputProps) {
             <button type="button" className="ml-2 rounded-full outline-none focus:ring-2 focus:ring-ring" onClick={() => handleRemoveTag(tag)}>
               <X className="h-3 w-3" />
               <span className="sr-only">
-                {t("Remove")} {tag}
+                {t("common.tagSelector.Remove")} {tag}
               </span>
             </button>
           </Badge>
@@ -109,26 +109,26 @@ export function TagInput({ value = [], onChange }: TagInputProps) {
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button variant="outline" role="combobox" aria-expanded={open} className="w-full justify-between">
-            {inputValue || t("Add tags...")}
+            {inputValue || t("common.tagSelector.Add_tags")}
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-full p-0">
           <Command shouldFilter={false}>
-            <CommandInput placeholder={t("Search tags...")} value={inputValue} onValueChange={setInputValue} ref={inputRef} onKeyDown={handleKeyDown} />
+            <CommandInput placeholder={t("common.tagSelector.Search tags...")} value={inputValue} onValueChange={setInputValue} ref={inputRef} onKeyDown={handleKeyDown} />
             {isLoading ? (
               <div className="flex items-center justify-center p-4">
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {t("Searching...")}
+                {t("common.tagSelector.Searching...")}
               </div>
             ) : isError ? (
-              <div className="p-2 text-sm text-red-500">{t("Failed to load tags")}</div>
+              <div className="p-2 text-sm text-red-500">{t("common.tagSelector.Failed to load tags")}</div>
             ) : (
               <>
                 <CommandEmpty>
                   {inputValue && (
                     <div className="p-2 text-sm">
-                      {t("No tags found. Press Enter to create ")}
+                      {t("common.tagSelector.No tags found. Press Enter to create ")}
                       {inputValue}"
                     </div>
                   )}

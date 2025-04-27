@@ -22,7 +22,7 @@ interface FormResponse {
 }
 
 function UserAllResponses() {
-  const { t } = useTranslation();
+  const { t } = useTranslation("common");
   const { getToken } = useAuth();
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
@@ -55,9 +55,9 @@ function UserAllResponses() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>{t("My Form Responses")}</CardTitle>
+          <CardTitle>{t("common.uAllResponses.My Form Responses")}</CardTitle>
         </CardHeader>
-        <CardContent className="text-center py-8 text-red-500">{t("Failed to load responses")}</CardContent>
+        <CardContent className="text-center py-8 text-red-500">{t("common.uAllResponses.Failed to load responses")}</CardContent>
       </Card>
     );
   }
@@ -66,9 +66,9 @@ function UserAllResponses() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>{t("My Form Responses")}</CardTitle>
+          <CardTitle>{t("common.uAllResponses.My Form Responses")}</CardTitle>
         </CardHeader>
-        <CardContent className="text-center py-8 text-gray-500">{t("No responses yet")}</CardContent>
+        <CardContent className="text-center py-8 text-gray-500">{t("common.uAllResponses.No responses yet")}</CardContent>
       </Card>
     );
   }
@@ -76,7 +76,7 @@ function UserAllResponses() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t("My Form Responses")}</CardTitle>
+        <CardTitle>{t("common.uAllResponses.My Form Responses")}</CardTitle>
       </CardHeader>
       <CardContent>
         <Table>
@@ -84,14 +84,14 @@ function UserAllResponses() {
             <TableRow>
               <TableHead>
                 <Button variant="ghost" onClick={() => setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"))} className="p-0 hover:bg-transparent">
-                  {t("Submitted")}
+                  {t("common.uAllResponses.Submitted")}
                   <ArrowUpDown className="ml-2 h-4 w-4" />
                 </Button>
               </TableHead>
-              <TableHead>{t("Template")}</TableHead>
-              <TableHead>{t("Creator")}</TableHead>
-              <TableHead>{t("Questions")}</TableHead>
-              <TableHead>{t("Total Submissions")}</TableHead>
+              <TableHead>{t("common.uAllResponses.Template")}</TableHead>
+              <TableHead>{t("common.uAllResponses.Creator")}</TableHead>
+              <TableHead>{t("common.uAllResponses.Questions")}</TableHead>
+              <TableHead>{t("common.uAllResponses.Total Submissions")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

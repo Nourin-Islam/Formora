@@ -12,7 +12,7 @@ type TagWithCount = TagCloud & { count: number };
 const TOP_TAGS_LIMIT = 20; // Show top 20 tags by default
 
 export default function TagCloudSection() {
-  const { t } = useTranslation();
+  const { t } = useTranslation("common");
   const { data: tags, isLoading, isError, refetch } = useTagCloud();
   const [showAllTags, setShowAllTags] = useState(false);
 
@@ -52,7 +52,7 @@ export default function TagCloudSection() {
 
   return (
     <div className="container mx-auto">
-      <h1 className="text-2xl font-bold my-7 text-center">{t("Explore by Tags")}</h1>
+      <h1 className="text-2xl font-bold my-7 text-center">{t("common.home.Explore_by_Tags")}</h1>
 
       <Card className="my-8">
         <CardContent className="p-4">

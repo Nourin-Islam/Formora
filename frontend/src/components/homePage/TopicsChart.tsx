@@ -13,7 +13,7 @@ type Topic = {
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#A28DFF", "#FF6B6B", "#4FD1C5", "#F687B3"];
 
 export default function TopicsPieChartSection() {
-  const { t } = useTranslation();
+  const { t } = useTranslation("common");
   const { data: topicsData, isLoading, isError, refetch } = useTopicsData();
 
   if (isLoading) return <SmallSkeleton />;
@@ -41,7 +41,7 @@ export default function TopicsPieChartSection() {
 
   return (
     <div className="container mx-auto">
-      <h1 className="text-2xl font-bold my-7 text-center">{t("Templates by Topic")}</h1>
+      <h1 className="text-2xl font-bold my-7 text-center">{t("common.home.Templates_by_Topic")}</h1>
 
       <Card className="my-8">
         <CardContent className="p-1">

@@ -90,7 +90,7 @@ const FormFill = () => {
           const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
           return !form.watch("sendEmailCopy") || emailRegex.test(val);
         },
-        { message: "Please enter a valid email address" }
+        { message: `${t("Please enter a valid email address")}` }
       )
       .optional(),
   });

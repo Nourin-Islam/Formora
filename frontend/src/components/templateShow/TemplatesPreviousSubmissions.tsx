@@ -26,7 +26,7 @@ interface SubmissionRow {
 }
 
 function TemplatesPreviousSubmissions({ id }: { id: string }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation("common");
   const { getToken } = useAuth();
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
@@ -55,7 +55,7 @@ function TemplatesPreviousSubmissions({ id }: { id: string }) {
       }
     }
     if (type === "INTEGER") {
-      return isNaN(Number(answer)) ? t("Invalid") : answer;
+      return isNaN(Number(answer)) ? t("common.subPrevious.Invalid") : answer;
     }
     return answer;
   }
@@ -117,9 +117,9 @@ function TemplatesPreviousSubmissions({ id }: { id: string }) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>{t("Previous Submissions")}</CardTitle>
+          <CardTitle>{t("common.subPrevious.Previous Submissions")}</CardTitle>
         </CardHeader>
-        <CardContent className="text-center py-8 text-red-500">{t("Failed to load submissions")}</CardContent>
+        <CardContent className="text-center py-8 text-red-500">{t("common.subPrevious.Failed to load submissions")}</CardContent>
       </Card>
     );
   }
@@ -128,9 +128,9 @@ function TemplatesPreviousSubmissions({ id }: { id: string }) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>{t("Previous Submissions")}</CardTitle>
+          <CardTitle>{t("common.subPrevious.Previous Submissions")}</CardTitle>
         </CardHeader>
-        <CardContent className="text-center py-8 text-gray-500">{t("No submissions yet")}</CardContent>
+        <CardContent className="text-center py-8 text-gray-500">{t("common.subPrevious.No submissions yet")}</CardContent>
       </Card>
     );
   }
@@ -138,7 +138,7 @@ function TemplatesPreviousSubmissions({ id }: { id: string }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t("Previous Submissions")}</CardTitle>
+        <CardTitle>{t("common.subPrevious.Previous Submissions")}</CardTitle>
       </CardHeader>
       <CardContent>
         <Table>
@@ -146,11 +146,11 @@ function TemplatesPreviousSubmissions({ id }: { id: string }) {
             <TableRow>
               <TableHead>
                 <Button variant="ghost" onClick={() => setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"))} className="p-0 hover:bg-transparent">
-                  {t("Created")}
+                  {t("common.subPrevious.Created")}
                   <ArrowUpDown className="ml-2 h-4 w-4" />
                 </Button>
               </TableHead>
-              <TableHead>{t("User")}</TableHead>
+              <TableHead>{t("common.subPrevious.User")}</TableHead>
               {questionTitles.map((title) => (
                 <TableHead key={title}>{title}</TableHead>
               ))}

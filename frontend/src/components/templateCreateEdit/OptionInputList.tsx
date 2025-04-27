@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 
 export function OptionInputList({ options, onChange, selectedAnswers = [], onAnswerChange, error }: { options: string[]; onChange: (options: string[]) => void; selectedAnswers?: string[]; onAnswerChange?: (answers: string[]) => void; error?: string }) {
   const [newOption, setNewOption] = useState("");
-  const { t } = useTranslation();
+  const { t } = useTranslation("common");
   const addOption = () => {
     if (!newOption.trim()) return;
     if (options.includes(newOption.trim())) return;
@@ -38,11 +38,11 @@ export function OptionInputList({ options, onChange, selectedAnswers = [], onAns
 
   return (
     <div className="space-y-2">
-      <Label>{t("Options *")}</Label>
+      <Label>{t("common.optionInput.Options *")}</Label>
       <div className="flex space-x-2">
-        <Input value={newOption} onChange={(e) => setNewOption(e.target.value)} onKeyDown={handleKeyDown} placeholder={t("Add option")} />
+        <Input value={newOption} onChange={(e) => setNewOption(e.target.value)} onKeyDown={handleKeyDown} placeholder={t("common.optionInput.Add option")} />
         <Button type="button" onClick={addOption}>
-          {t("Add")}
+          {t("common.optionInput.Add")}
         </Button>
       </div>
 
