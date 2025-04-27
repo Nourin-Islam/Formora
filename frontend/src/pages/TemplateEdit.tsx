@@ -63,7 +63,7 @@ export default function TemplateEdit() {
 
     return false;
   }, [title, description, topicId, isPublic, imageUrl, selectedTags, questions, selectedUsers, template]);
-  console.log("Received template:", template);
+  // console.log("Received template:", template);
   const handleSubmit = async (publish: boolean) => {
     if (!title.trim()) {
       toast.error(t("common.tedit.Title is required"));

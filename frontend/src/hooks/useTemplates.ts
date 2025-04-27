@@ -68,8 +68,8 @@ export const useTopicsData = () => {
     queryKey: ["topics-data"],
     queryFn: async () => {
       const response = await publicApi.get("/home/topics");
-      console.log("Current time:", new Date().toLocaleString()); // Log the current time
-      console.log("Topics Data:", response.data); // Log the response data
+      // console.log("Current time:", new Date().toLocaleString()); // Log the current time
+      // console.log("Topics Data:", response.data); // Log the response data
 
       return response.data;
     },

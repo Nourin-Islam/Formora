@@ -38,17 +38,17 @@ const FormView = () => {
     retry: false,
   });
 
-  console.log("Form data", form);
+  // console.log("Form data", form);
 
   const handleDelete = async () => {
     const { authenticatedApi } = await createAuthenticatedApi(getToken);
     await authenticatedApi.delete(`/forms/delete/${id}`);
-    toast.success(t("Form deleted successfully"));
+    toast.success(t("common.fView.Form deleted successfully"));
     navigate("/templates");
   };
 
   if (success) {
-    toast.success(t("Form submitted successfully"));
+    toast.success(t("common.fView.Form submitted successfully"));
   }
 
   if (isLoading) {
@@ -60,7 +60,7 @@ const FormView = () => {
       <div className="container max-w-4xl py-8">
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{(error as any)?.response?.data?.error || t("Failed to load form")}</AlertDescription>
+          <AlertDescription>{(error as any)?.response?.data?.error || t("common.fView.Failed to load form")}</AlertDescription>
         </Alert>
       </div>
     );
@@ -71,7 +71,7 @@ const FormView = () => {
       <div className="container max-w-4xl py-8">
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{t("Form not found")}</AlertDescription>
+          <AlertDescription>{t("common.fView.Form not found")}</AlertDescription>
         </Alert>
       </div>
     );
@@ -85,7 +85,7 @@ const FormView = () => {
             <div>
               <CardTitle>{form.template.title}</CardTitle>
               <CardDescription className="mt-2">
-                {t("Filled by")} {form.user.name} {t("on")} {format(new Date(form.createdAt), "PPPpp")}
+                {t("common.fView.Filled by")} {form.user.name} {t("common.fView.on")} {format(new Date(form.createdAt), "PPPpp")}
               </CardDescription>
             </div>
 
@@ -93,30 +93,30 @@ const FormView = () => {
               <TooltipTrigger asChild>
                 <Button variant="outline" className="ml-auto cursor-pointer" onClick={() => navigate(`/check-form/${form.template.id}`)}>
                   <Eye className="h-4 w-4" />
-                  <span className="sr-only">{t("View Template")}</span>
+                  <span className="sr-only">{t("common.fView.View Template")}</span>
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>{t("View Template")}</TooltipContent>
+              <TooltipContent>{t("common.fView.View Template")}</TooltipContent>
             </Tooltip>
 
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button variant="outline" className="mx-3 cursor-pointer" onClick={() => navigate(`/check-form/${form.template.id}`)}>
                   <FilePenIcon className="h-4 w-4" />
-                  <span className="sr-only">{t("Edit Answers")}</span>
+                  <span className="sr-only">{t("common.fView.Edit Answers")}</span>
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>{t("Edit Answers")}</TooltipContent>
+              <TooltipContent>{t("common.fView.Edit Answers")}</TooltipContent>
             </Tooltip>
 
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button variant="destructive" className="cursor-pointer" onClick={handleDelete}>
                   <Trash2 className="h-4 w-4" />
-                  <span className="sr-only">{t("Delete Answers")}</span>
+                  <span className="sr-only">{t("common.fView.Delete Answers")}</span>
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>{t("Delete Answers")}</TooltipContent>
+              <TooltipContent>{t("common.fView.Delete Answers")}</TooltipContent>
             </Tooltip>
           </div>
         </CardHeader>

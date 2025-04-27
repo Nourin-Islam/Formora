@@ -22,14 +22,14 @@ export function useCommentsWebSocket(templateId: number) {
   useEffect(() => {
     if (!templateId) return;
 
-    console.log("Attempting WebSocket connection for templateId:", templateId);
+    // console.log("Attempting WebSocket connection for templateId:", templateId);
 
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     // const host = window.location.host;
     const host = "localhost:3000"; // Replace with your server's host and port
     let wsUrl = `${protocol}//${host}/comments?templateId=${templateId}`;
 
-    console.log("WebSocket URL:", wsUrl);
+    // console.log("WebSocket URL:", wsUrl);
 
     if (userId) {
       getToken().then((token) => {
@@ -44,7 +44,7 @@ export function useCommentsWebSocket(templateId: number) {
       const socket = new WebSocket(url);
 
       socket.onopen = () => {
-        console.log("WebSocket connection established");
+        // console.log("WebSocket connection established");
         setIsConnected(true);
       };
 
@@ -67,7 +67,7 @@ export function useCommentsWebSocket(templateId: number) {
 
         setTimeout(() => {
           window.location.reload();
-          console.log("Reconnecting WebSocket...");
+          // console.log("Reconnecting WebSocket...");
           connectWebSocket(url);
         }, 100); // Reconnect after 1 mili second
       };

@@ -30,9 +30,9 @@ export default function TagCloudSection() {
   if (isError) {
     return (
       <div className="container mx-auto py-8 text-center">
-        <p className="text-red-500">{t("Failed to load tags. Please try again.")}</p>
+        <p className="text-red-500">{t("common.tCloud.Failed to load tags. Please try again.")}</p>
         <button onClick={() => refetch()} className="mt-4 px-4 py-2 bg-primary text-white rounded hover:bg-primary-dark">
-          {t("Retry")}
+          {t("common.tCloud.Retry")}
         </button>
       </div>
     );
@@ -52,7 +52,7 @@ export default function TagCloudSection() {
 
   return (
     <div className="container mx-auto">
-      <h1 className="text-2xl font-bold my-7 text-center">{t("common.home.Explore_by_Tags")}</h1>
+      <h1 className="text-2xl font-bold my-7 text-center">{t("common.tCloud.Explore_by_Tags")}</h1>
 
       <Card className="my-8">
         <CardContent className="p-4">
@@ -77,7 +77,7 @@ export default function TagCloudSection() {
           {processedTags.length > TOP_TAGS_LIMIT && (
             <div className="mt-6 text-center">
               <button onClick={() => setShowAllTags(!showAllTags)} className="px-4 py-2 text-sm font-medium text-primary hover:text-primary-dark">
-                {showAllTags ? t("Show Less") : t(`Show All (${processedTags.length})`)}
+                {showAllTags ? t("common.tCloud.Show Less") : t(`Show All (${processedTags.length})`)}
               </button>
             </div>
           )}

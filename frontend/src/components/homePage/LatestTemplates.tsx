@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@clerk/clerk-react";
@@ -18,6 +18,7 @@ export default function LatestTemplatesSection() {
   const { t } = useTranslation("common");
   const { userId } = useAuth();
   const navigate = useNavigate();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [templateToDelete, setTemplateToDelete] = useState<Template | null>(null);
@@ -79,6 +80,37 @@ export default function LatestTemplatesSection() {
     });
   };
 
+  // Cleanup function for pointer-events
+  useEffect(() => {
+    // When dialog is closed, ensure body is interactive
+    if (!isDialogOpen) {
+      const cleanup = () => {
+        document.body.style.removeProperty("pointer-events");
+        // Additional cleanup for any other styles that might be interfering
+        document.body.style.removeProperty("overflow");
+        document.body.style.removeProperty("padding-right");
+
+        // Remove any other dialog-related classes that might be added
+        const dialogBackdrops = document.querySelectorAll("[data-dialog-backdrop]");
+        dialogBackdrops.forEach((el) => el.remove());
+      };
+
+      // Run cleanup after a short delay to ensure dialog closing animations complete
+      setTimeout(cleanup, 100);
+    }
+    return () => {
+      // Cleanup when component unmounts
+      document.body.style.removeProperty("pointer-events");
+    };
+  }, [isDialogOpen]);
+
+  // Handle dialog close
+  const handleDialogOpenChange = (open: boolean) => {
+    setIsDialogOpen(open);
+
+    setIsDeleteDialogOpen(open);
+  };
+
   if (isLoading) return <FourTemplatesSkeleton />;
 
   if (isError) {
@@ -98,9 +130,9 @@ export default function LatestTemplatesSection() {
 
       {templatesData?.templates?.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-lg text-gray-500">{t("no_templates_found")}</p>
+          <p className="text-lg text-gray-500">{t("common.home.latest.no_templates_found")}</p>
           <Button variant="secondary" onClick={handleCreateTemplate} className="mt-4">
-            <Plus className="mr-2 h-4 w-4" /> {t("create_template")}
+            <Plus className="mr-2 h-4 w-4" /> {t("common.home.latest.create_template")}
           </Button>
         </div>
       ) : (
@@ -112,21 +144,21 @@ export default function LatestTemplatesSection() {
       )}
 
       {/* Delete Confirmation Dialog */}
-      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+      <Dialog open={isDeleteDialogOpen} onOpenChange={() => handleDialogOpenChange(true)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t("confirm_deletion")}</DialogTitle>
+            <DialogTitle>{t("common.home.latest.confirm_deletion")}</DialogTitle>
             <DialogDescription>
-              {t("confirm_deletion_text")} "{templateToDelete?.title}"?
+              {t("common.home.latest.confirm_deletion_text")} "{templateToDelete?.title}"?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
-              {t("cancel")}
+            <Button variant="outline" onClick={() => handleDialogOpenChange(false)}>
+              {t("common.home.latest.cancel")}
             </Button>
             <Button variant="destructive" onClick={confirmDelete} disabled={isDeleting}>
               {isDeleting && <Shell className="h-4 w-4 mr-2 animate-spin" />}
-              {t("delete")}
+              {t("common.home.latest.delete")}
             </Button>
           </DialogFooter>
         </DialogContent>

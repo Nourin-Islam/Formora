@@ -21,7 +21,7 @@ import { useThemeStore } from "@/store/themeStore";
 import SEO from "@/components/global/SEO";
 
 export default function TemplateCreationForm() {
-  const { t } = useTranslation();
+  const { t } = useTranslation("common");
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -39,37 +39,37 @@ export default function TemplateCreationForm() {
 
   const onSubmit = async (publish: boolean) => {
     if (!title.trim()) {
-      toast.error(t("Title is required"));
+      toast.error(t("common.tCreate.Title is required"));
       setActiveTab("general");
       return;
     }
     // if title is too long, show error
     if (title.length > 200) {
-      toast.error(t("Title is too long"));
+      toast.error(t("common.tCreate.Title is too long"));
       setActiveTab("general");
       return;
     }
 
     if (!description.trim()) {
-      toast.error(t("Description is required"));
+      toast.error(t("common.tCreate.Description is required"));
       setActiveTab("general");
       return;
     }
     // if description is too long, show error
     if (description.length > 500) {
-      toast.error(t("Description is too long"));
+      toast.error(t("common.tCreate.Description is too long"));
       setActiveTab("general");
       return;
     }
 
     if (!topicId) {
-      toast.error(t("Topic is required"));
+      toast.error(t("common.tCreate.Topic is required"));
       setActiveTab("general");
       return;
     }
 
     if (questions.length === 0) {
-      toast.error(t("Please add at least one question"));
+      toast.error(t("common.tCreate.Please add at least one question"));
       setActiveTab("questions");
       return;
     }
@@ -92,10 +92,10 @@ export default function TemplateCreationForm() {
       };
 
       await createTemplate.mutateAsync(templateData);
-      toast.success(`${t("Template")} ${publish ? t("published") : t("saved")} ${t("successfully")}`);
+      toast.success(`${t("common.tCreate.Template")} ${publish ? t("common.tCreate.published") : t("common.tCreate.saved")} ${t("common.tCreate.successfully")}`);
       navigate(`/templates`);
     } catch (error) {
-      toast.error(t("Failed to create template"));
+      toast.error(t("common.tCreate.Failed to create template"));
       console.error("Template creation error:", error);
     }
   };
@@ -106,28 +106,28 @@ export default function TemplateCreationForm() {
       <div className="space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle>{t("Create New Template")}</CardTitle>
-            <CardDescription>{t("Design your form template with custom questions")}</CardDescription>
+            <CardTitle>{t("common.tCreate.Create New Template")}</CardTitle>
+            <CardDescription>{t("common.tCreate.Design your form template with custom questions")}</CardDescription>
           </CardHeader>
 
           <CardContent>
             <Tabs defaultValue="general" value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="mb-4">
-                <TabsTrigger value="general">{t("General Settings")}</TabsTrigger>
+                <TabsTrigger value="general">{t("common.tCreate.General Settings")}</TabsTrigger>
                 <TabsTrigger value="questions">
-                  {t("Questions")} ({questions.length})
+                  {t("common.tCreate.Questions")} ({questions.length})
                 </TabsTrigger>
-                <TabsTrigger value="access">{t("Access Settings")}</TabsTrigger>
+                <TabsTrigger value="access">{t("common.tCreate.Access Settings")}</TabsTrigger>
               </TabsList>
 
               <TabsContent value="general" className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="title">{t("Title *")}</Label>
-                  <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("Enter template title")} />
+                  <Label htmlFor="title">{t("common.tCreate.Title *")}</Label>
+                  <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("common.tCreate.Enter template title")} />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="description">{t("Description *")}</Label>
+                  <Label htmlFor="description">{t("common.tCreate.Description *")}</Label>
 
                   <MDEditor data-color-mode={theme === "dark" ? "dark" : "light"} value={description} onChange={(val) => setDescription(val || "")} preview="edit" height={200} />
                 </div>
@@ -137,12 +137,12 @@ export default function TemplateCreationForm() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>{t("Tags")}</Label>
+                  <Label>{t("common.tCreate.Tags")}</Label>
                   <TagInput value={selectedTags} onChange={setSelectedTags} />
                 </div>
 
                 <div className="space-y-2">
-                  <Label>{t("Image (Optional)")}</Label>
+                  <Label>{t("common.tCreate.Image (Optional)")}</Label>
                   <ImageUpload imageUrl={imageUrl} setImageUrl={setImageUrl} />
                 </div>
               </TabsContent>
@@ -154,12 +154,12 @@ export default function TemplateCreationForm() {
               <TabsContent value="access" className="space-y-4">
                 <div className="flex items-center space-x-2">
                   <Switch id="isPublic" checked={isPublic} onCheckedChange={setIsPublic} />
-                  <Label htmlFor="isPublic">{t("Public template (accessible to all authenticated users)")}</Label>
+                  <Label htmlFor="isPublic">{t("common.tCreate.Public template (accessible to all authenticated users)")}</Label>
                 </div>
 
                 {!isPublic && (
                   <div className="space-y-2">
-                    <Label>{t("Select users who can access this template")}</Label>
+                    <Label>{t("common.tCreate.Select users who can access this template")}</Label>
                     <UserSelector selectedUsers={selectedUsers} onChange={setSelectedUsers} />
                   </div>
                 )}
@@ -169,15 +169,15 @@ export default function TemplateCreationForm() {
 
           <CardFooter className="flex justify-between">
             <Button variant="outline" onClick={() => navigate(-1)}>
-              {t("Cancel")}
+              {t("common.tCreate.Cancel")}
             </Button>
             <div className="flex gap-2">
               <Button variant={"outline"} className="cursor-pointer" disabled={isSubmitting} onClick={() => onSubmit(false)}>
                 {isSubmitting && <Shell className="h-4 w-4 mr-2 animate-spin" />}
-                {t("Save as Draft")}
+                {t("common.tCreate.Save as Draft")}
               </Button>
               <Button variant={"outline"} className="cursor-pointer" disabled={isSubmitting} onClick={() => onSubmit(true)}>
-                {isSubmitting && <Shell className="h-4 w-4 mr-2 animate-spin" />} {t("Publish Template")}
+                {isSubmitting && <Shell className="h-4 w-4 mr-2 animate-spin" />} {t("common.tCreate.Publish Template")}
               </Button>
             </div>
           </CardFooter>

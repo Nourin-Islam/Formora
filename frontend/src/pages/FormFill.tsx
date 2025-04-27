@@ -25,7 +25,7 @@ const FormFill = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { getToken, userId } = useAuth();
-  const { t } = useTranslation();
+  const { t } = useTranslation("common");
 
   // Fetch template data and check if user has already submitted
   const {
@@ -40,8 +40,8 @@ const FormFill = () => {
         const response = await authenticatedApi.get(`/forms/fill/${id}`);
         return response.data;
       } catch (err: any) {
-        console.log("Error fetching template data:", err);
-        toast.error(err || t("Failed to load form"));
+        // console.log("Error fetching template data:", err);
+        toast.error(err || t("common.fFill.Failed to load form"));
         // if (err.response?.data?.error) {
         //   // Throw the error with the server message
         //   throw new Error(err.response.data.error.message);
@@ -90,7 +90,7 @@ const FormFill = () => {
           const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
           return !form.watch("sendEmailCopy") || emailRegex.test(val);
         },
-        { message: `${t("Please enter a valid email address")}` }
+        { message: `${t("common.fFill.Please enter a valid email address")}` }
       )
       .optional(),
   });
@@ -211,16 +211,16 @@ const FormFill = () => {
         userEmail: values.sendEmailCopy ? values.userEmail : null,
       };
 
-      const response = await authenticatedApi.post("/forms/fill", payload);
+      const response = await authenticatedApi.post("common.fFill./forms/fill", payload);
       return response.data;
     },
     onSuccess: (data) => {
-      toast.success(existingForm ? t("Form updated successfully") : t("Form submitted successfully"));
+      toast.success(existingForm ? t("common.fFill.Form updated successfully") : t("common.fFill.Form submitted successfully"));
       // navigate("/forms");
       navigate(`/forms/${data.formId}`, { state: { success: true } });
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.error || t("Failed to submit form"));
+      toast.error(error.response?.data?.error || t("common.fFill.Failed to submit form"));
     },
   });
 
@@ -231,11 +231,11 @@ const FormFill = () => {
       await authenticatedApi.delete(`/forms/delete/${existingForm?.id}`);
     },
     onSuccess: () => {
-      toast.success(t("Form deleted successfully"));
+      toast.success(t("common.fFill.Form deleted successfully"));
       navigate("/templates");
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.error || t("Failed to delete form"));
+      toast.error(error.response?.data?.error || t("common.fFill.Failed to delete form"));
     },
   });
 
@@ -248,7 +248,7 @@ const FormFill = () => {
       <div className="container max-w-4xl py-8">
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{(error as any)?.response?.data?.error || t("Failed to load form")}</AlertDescription>
+          <AlertDescription>{(error as any)?.response?.data?.error || t("common.fFill.Failed to load form")}</AlertDescription>
         </Alert>
       </div>
     );
@@ -259,7 +259,7 @@ const FormFill = () => {
       <div className="container max-w-4xl py-8">
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{t("Form template not found")}</AlertDescription>
+          <AlertDescription>{t("common.fFill.Form template not found")}</AlertDescription>
         </Alert>
       </div>
     );
@@ -272,9 +272,9 @@ const FormFill = () => {
           <CardTitle>{template.title}</CardTitle>
           {existingForm && (
             <div className="text-sm text-muted-foreground">
-              {t("You submitted this form on")} {new Date(existingForm.createdAt).toLocaleDateString()}{" "}
+              {t("common.fFill.You submitted this form on")} {new Date(existingForm.createdAt).toLocaleDateString()}{" "}
               <Button variant={"link"} className="ml-3 text-red-500" onClick={() => handleDelete.mutate()}>
-                {t("Delete your Submission?")}
+                {t("common.fFill.Delete your Submission?")}
               </Button>
             </div>
           )}
@@ -329,7 +329,7 @@ const FormFill = () => {
                           return (
                             <div className="flex items-center space-x-2">
                               <Checkbox id={`question_${question.id}`} checked={field.value} onCheckedChange={field.onChange} />
-                              <Label htmlFor={`question_${question.id}`}>{t("Yes")}</Label>
+                              <Label htmlFor={`question_${question.id}`}>{t("common.fFill.Yes")}</Label>
                             </div>
                           );
                         }
@@ -354,12 +354,12 @@ const FormFill = () => {
                       }
                     }}
                   />
-                  <Label htmlFor="sendEmailCopy">{t("Send me a copy of my submission")}</Label>
+                  <Label htmlFor="sendEmailCopy">{t("common.fFill.Send me a copy of my submission")}</Label>
                 </div>
 
                 {form.watch("sendEmailCopy") && (
                   <div className="space-y-2">
-                    <Label htmlFor="userEmail">{t("Email address")}</Label>
+                    <Label htmlFor="userEmail">{t("common.fFill.Email address")}</Label>
                     <Input
                       id="userEmail"
                       type="email"
@@ -385,12 +385,12 @@ const FormFill = () => {
             {submitForm.isPending ? (
               <>
                 <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-t-transparent border-white"></span>
-                {existingForm ? t("Updating...") : t("Submitting...")}
+                {existingForm ? t("common.fFill.Updating...") : t("common.fFill.Submitting...")}
               </>
             ) : existingForm ? (
-              t("Update Form")
+              t("common.fFill.Update Form")
             ) : (
-              t("Submit Form")
+              t("common.fFill.Submit Form")
             )}
           </Button>
         </CardFooter>

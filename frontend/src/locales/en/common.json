@@ -352,6 +352,84 @@
       "Create a new template": "Create a new template",
       "Please enter a search term to find related templates": "Please enter a search term to find related templates"
     },
+    "verification": {
+      "Verification Error": "Verification Error",
+      "Something went wrong during verification": "Something went wrong during verification",
+      "Try Again": "Try Again",
+      "Verifying your account": "Verifying your account",
+      "Verifying": "Verifying",
+      "Completing authentication...": "Completing authentication...",
+      "Debug Info": "Debug Info"
+    },
+    "errorPage": {
+      "Oops!": "Oops!",
+      "Sorry, an unexpected error has occurred.": "Sorry, an unexpected error has occurred.",
+      "Refresh Page": "Refresh Page",
+      "Go to Home": "Go to Home"
+    },
+    "tCreate": {
+      "Create New Template": "Create New Template",
+      "Design your form template with custom questions": "Design your form template with custom questions",
+      "General Settings": "General Settings",
+      "Questions": "Questions",
+      "Access Settings": "Access Settings",
+      "Title *": "Title *",
+      "Enter template title": "Enter template title",
+      "Title is required": "Title is required",
+      "Title is too long": "Title is too long",
+      "Description *": "Description *",
+      "Description is required": "Description is required",
+      "Description is too long": "Description is too long",
+      "Topic is required": "Topic is required",
+      "Please add at least one question": "Please add at least one question",
+      "Template": "Template",
+      "published": "published",
+      "saved": "saved",
+      "successfully": "successfully",
+      "Failed to create template": "Failed to create template",
+      "Tags": "Tags",
+      "Image (Optional)": "Image (Optional)",
+      "Public template (accessible to all authenticated users)": "Public template (accessible to all authenticated users)",
+      "Select users who can access this template": "Select users who can access this template",
+      "Cancel": "Cancel",
+      "Save as Draft": "Save as Draft",
+      "Publish Template": "Publish Template"
+    },
+    "fView": {
+      "Form deleted successfully": "Form deleted successfully",
+      "Form submitted successfully": "Form submitted successfully",
+      "Failed to load form": "Failed to load form",
+      "Form not found": "Form not found",
+      "Filled by": "Filled by",
+      "on": "on",
+      "View Template": "View Template",
+      "Edit Answers": "Edit Answers",
+      "Delete Answers": "Delete Answers"
+    },
+    "fFill": {
+      "Failed to load form": "Failed to load form",
+      "Please enter a valid email address": "Please enter a valid email address",
+      "Form updated successfully": "Form updated successfully",
+      "Form submitted successfully": "Form submitted successfully",
+      "Form template not found": "Form template not found",
+      "You submitted this form on": "You submitted this form on",
+      "Delete your Submission?": "Delete your Submission?",
+      "Yes": "Yes",
+      "Send me a copy of my submission": "Send me a copy of my submission",
+      "Email address": "Email address",
+      "Updating...": "Updating...",
+      "Submitting...": "Submitting...",
+      "Update Form": "Update Form",
+      "Submit Form": "Submit Form",
+      "Form deleted successfully": "Form deleted successfully",
+      "Failed to delete form": "Failed to delete form"
+    },
+    "tCloud": {
+      "Failed to load tags. Please try again.": "Failed to load tags. Please try again.",
+      "Retry": "Retry",
+      "Explore_by_Tags": "Explore by Tags",
+      "Show Less": "Show Less"
+    },
     "Create New Template": "Create New Template"
   }
 }

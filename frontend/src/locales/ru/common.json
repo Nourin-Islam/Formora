@@ -348,6 +348,86 @@
       "Create a new template": "Создать новый шаблон",
       "Please enter a search term to find related templates": "Введите поисковый запрос, чтобы найти шаблоны"
     },
+    "common": {
+      "verification": {
+        "Verification Error": "Ошибка верификации",
+        "Something went wrong during verification": "Что-то пошло не так во время верификации",
+        "Try Again": "Попробовать снова",
+        "Verifying your account": "Верифицируем ваш аккаунт",
+        "Verifying": "Верифицируем",
+        "Completing authentication...": "Завершаем аутентификацию...",
+        "Debug Info": "Отладочная информация"
+      }
+    },
+    "errorPage": {
+      "Oops!": "Ой!",
+      "Sorry, an unexpected error has occurred.": "Извините, произошла непредвиденная ошибка.",
+      "Refresh Page": "Обновить страницу",
+      "Go to Home": "На главную"
+    },
+    "tCreate": {
+      "Create New Template": "Создать новый шаблон",
+      "Design your form template with custom questions": "Разработайте шаблон формы с пользовательскими вопросами",
+      "General Settings": "Основные настройки",
+      "Questions": "Вопросы",
+      "Access Settings": "Настройки доступа",
+      "Title *": "Название *",
+      "Enter template title": "Введите название шаблона",
+      "Title is required": "Название обязательно",
+      "Title is too long": "Название слишком длинное",
+      "Description *": "Описание *",
+      "Description is required": "Описание обязательно",
+      "Description is too long": "Описание слишком длинное",
+      "Topic is required": "Тема обязательна",
+      "Please add at least one question": "Пожалуйста, добавьте хотя бы один вопрос",
+      "Template": "Шаблон",
+      "published": "опубликован",
+      "saved": "сохранен",
+      "successfully": "успешно",
+      "Failed to create template": "Не удалось создать шаблон",
+      "Tags": "Теги",
+      "Image (Optional)": "Изображение (необязательно)",
+      "Public template (accessible to all authenticated users)": "Публичный шаблон (доступен всем аутенентифицированным пользователям)",
+      "Select users who can access this template": "Выберите пользователей, которые могут получить доступ к этому шаблону",
+      "Cancel": "Отмена",
+      "Save as Draft": "Сохранить как черновик",
+      "Publish Template": "Опубликовать шаблон"
+    },
+    "fView": {
+      "Form deleted successfully": "Форма успешно удалена",
+      "Form submitted successfully": "Форма успешно отправлена",
+      "Failed to load form": "Не удалось загрузить форму",
+      "Form not found": "Форма не найдена",
+      "Filled by": "Заполнено",
+      "on": "в",
+      "View Template": "Просмотреть шаблон",
+      "Edit Answers": "Редактировать ответы",
+      "Delete Answers": "Удалить ответы"
+    },
+    "fFill": {
+      "Failed to load form": "Не удалось загрузить форму",
+      "Please enter a valid email address": "Пожалуйста, введите действительный адрес электронной почты",
+      "Form updated successfully": "Форма успешно обновлена",
+      "Form submitted successfully": "Форма успешно отправлена",
+      "Form template not found": "Шаблон формы не найден",
+      "You submitted this form on": "Вы отправили эту форму",
+      "Delete your Submission?": "Удалить вашу отправку?",
+      "Yes": "Да",
+      "Send me a copy of my submission": "Отправить мне копию моей отправки",
+      "Email address": "Адрес электронной почты",
+      "Updating...": "Обновление...",
+      "Submitting...": "Отправка...",
+      "Update Form": "Обновить форму",
+      "Submit Form": "Отправить форму",
+      "Form deleted successfully": "Форма успешно удалена",
+      "Failed to delete form": "Не удалось удалить форму"
+    },
+    "tCloud": {
+      "Failed to load tags. Please try again.": "Не удалось загрузить теги. Пожалуйста, попробуйте снова.",
+      "Retry": "Повторить",
+      "Explore_by_Tags": "Поиск по тегам",
+      "Show Less": "Показать меньше"
+    },
     "Create New Template": "Создать новый шаблон"
   }
 }
