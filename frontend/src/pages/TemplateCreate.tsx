@@ -18,6 +18,7 @@ import { Shell } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import MDEditor from "@uiw/react-md-editor";
 import { useThemeStore } from "@/store/themeStore";
+import SEO from "@/components/global/SEO";
 
 export default function TemplateCreationForm() {
   const { t } = useTranslation();
@@ -100,85 +101,88 @@ export default function TemplateCreationForm() {
   };
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("Create New Template")}</CardTitle>
-          <CardDescription>{t("Design your form template with custom questions")}</CardDescription>
-        </CardHeader>
+    <>
+      <SEO title="Formora: Create Template" description="Build powerful forms effortlessly with Formora. Create surveys, quizzes, registrations, and more — all in just a few clicks." />
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("Create New Template")}</CardTitle>
+            <CardDescription>{t("Design your form template with custom questions")}</CardDescription>
+          </CardHeader>
 
-        <CardContent>
-          <Tabs defaultValue="general" value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="mb-4">
-              <TabsTrigger value="general">{t("General Settings")}</TabsTrigger>
-              <TabsTrigger value="questions">
-                {t("Questions")} ({questions.length})
-              </TabsTrigger>
-              <TabsTrigger value="access">{t("Access Settings")}</TabsTrigger>
-            </TabsList>
+          <CardContent>
+            <Tabs defaultValue="general" value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="mb-4">
+                <TabsTrigger value="general">{t("General Settings")}</TabsTrigger>
+                <TabsTrigger value="questions">
+                  {t("Questions")} ({questions.length})
+                </TabsTrigger>
+                <TabsTrigger value="access">{t("Access Settings")}</TabsTrigger>
+              </TabsList>
 
-            <TabsContent value="general" className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="title">{t("Title *")}</Label>
-                <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("Enter template title")} />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="description">{t("Description *")}</Label>
-
-                <MDEditor data-color-mode={theme === "dark" ? "dark" : "light"} value={description} onChange={(val) => setDescription(val || "")} preview="edit" height={200} />
-              </div>
-
-              <div className="space-y-2">
-                <TopicSelector value={topicId.toString()} onChange={(id) => setTopicId(id)} />
-              </div>
-
-              <div className="space-y-2">
-                <Label>{t("Tags")}</Label>
-                <TagInput value={selectedTags} onChange={setSelectedTags} />
-              </div>
-
-              <div className="space-y-2">
-                <Label>{t("Image (Optional)")}</Label>
-                <ImageUpload imageUrl={imageUrl} setImageUrl={setImageUrl} />
-              </div>
-            </TabsContent>
-
-            <TabsContent value="questions">
-              <QuestionManagement questions={questions} setQuestions={setQuestions} />
-            </TabsContent>
-
-            <TabsContent value="access" className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <Switch id="isPublic" checked={isPublic} onCheckedChange={setIsPublic} />
-                <Label htmlFor="isPublic">{t("Public template (accessible to all authenticated users)")}</Label>
-              </div>
-
-              {!isPublic && (
+              <TabsContent value="general" className="space-y-4">
                 <div className="space-y-2">
-                  <Label>{t("Select users who can access this template")}</Label>
-                  <UserSelector selectedUsers={selectedUsers} onChange={setSelectedUsers} />
+                  <Label htmlFor="title">{t("Title *")}</Label>
+                  <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("Enter template title")} />
                 </div>
-              )}
-            </TabsContent>
-          </Tabs>
-        </CardContent>
 
-        <CardFooter className="flex justify-between">
-          <Button variant="outline" onClick={() => navigate(-1)}>
-            {t("Cancel")}
-          </Button>
-          <div className="flex gap-2">
-            <Button variant={"outline"} className="cursor-pointer" disabled={isSubmitting} onClick={() => onSubmit(false)}>
-              {isSubmitting && <Shell className="h-4 w-4 mr-2 animate-spin" />}
-              {t("Save as Draft")}
+                <div className="space-y-2">
+                  <Label htmlFor="description">{t("Description *")}</Label>
+
+                  <MDEditor data-color-mode={theme === "dark" ? "dark" : "light"} value={description} onChange={(val) => setDescription(val || "")} preview="edit" height={200} />
+                </div>
+
+                <div className="space-y-2">
+                  <TopicSelector value={topicId.toString()} onChange={(id) => setTopicId(id)} />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>{t("Tags")}</Label>
+                  <TagInput value={selectedTags} onChange={setSelectedTags} />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>{t("Image (Optional)")}</Label>
+                  <ImageUpload imageUrl={imageUrl} setImageUrl={setImageUrl} />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="questions">
+                <QuestionManagement questions={questions} setQuestions={setQuestions} />
+              </TabsContent>
+
+              <TabsContent value="access" className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <Switch id="isPublic" checked={isPublic} onCheckedChange={setIsPublic} />
+                  <Label htmlFor="isPublic">{t("Public template (accessible to all authenticated users)")}</Label>
+                </div>
+
+                {!isPublic && (
+                  <div className="space-y-2">
+                    <Label>{t("Select users who can access this template")}</Label>
+                    <UserSelector selectedUsers={selectedUsers} onChange={setSelectedUsers} />
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+
+          <CardFooter className="flex justify-between">
+            <Button variant="outline" onClick={() => navigate(-1)}>
+              {t("Cancel")}
             </Button>
-            <Button variant={"outline"} className="cursor-pointer" disabled={isSubmitting} onClick={() => onSubmit(true)}>
-              {isSubmitting && <Shell className="h-4 w-4 mr-2 animate-spin" />} {t("Publish Template")}
-            </Button>
-          </div>
-        </CardFooter>
-      </Card>
-    </div>
+            <div className="flex gap-2">
+              <Button variant={"outline"} className="cursor-pointer" disabled={isSubmitting} onClick={() => onSubmit(false)}>
+                {isSubmitting && <Shell className="h-4 w-4 mr-2 animate-spin" />}
+                {t("Save as Draft")}
+              </Button>
+              <Button variant={"outline"} className="cursor-pointer" disabled={isSubmitting} onClick={() => onSubmit(true)}>
+                {isSubmitting && <Shell className="h-4 w-4 mr-2 animate-spin" />} {t("Publish Template")}
+              </Button>
+            </div>
+          </CardFooter>
+        </Card>
+      </div>
+    </>
   );
 }

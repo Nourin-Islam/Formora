@@ -17,8 +17,11 @@ import TemplateList from "@/components/templateShow/TemplateList";
 import TemplateFilters from "@/components/templateShow/TemplateFilters";
 import { useTranslation } from "react-i18next";
 
+import InputSearch from "@/components/global/InputSearch";
+
+import SEO from "@/components/global/SEO";
 export default function SearchPage() {
-  const { t } = useTranslation();
+  const { t } = useTranslation("common");
   const { userId } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -44,7 +47,7 @@ export default function SearchPage() {
 
   // Fetch search results when query or filters change
   const fetchSearchResults = async () => {
-    if (!query) return;
+    if (!query || query.length < 1) return;
 
     setIsLoading(true);
     setError(null);
@@ -92,7 +95,7 @@ export default function SearchPage() {
 
   const handleLike = (templateId: number) => {
     if (!userId) {
-      toast.info(t("Please sign in to like templates"));
+      toast.info(t("common.search.Please sign in to like templates"));
       return;
     }
 
@@ -114,7 +117,7 @@ export default function SearchPage() {
 
   const handleUnLike = (templateId: number) => {
     if (!userId) {
-      toast.info(t("Please sign in to unlike templates"));
+      toast.info(t("common.search.Please sign in to unlike templates"));
       return;
     }
 
@@ -145,13 +148,13 @@ export default function SearchPage() {
   const handleDeleteTemplate = (templateId: number, options?: { onSuccess?: () => void }) => {
     deleteTemplate(templateId, {
       onSuccess: () => {
-        toast.success(t("Template deleted successfully"));
+        toast.success(t("common.search.Template deleted successfully"));
         if (options?.onSuccess) options.onSuccess();
         fetchSearchResults(); // Refresh the list
       },
       onError: (error) => {
         console.error("Error deleting template:", error);
-        toast.error(t("Failed to delete template"));
+        toast.error(t("common.search.Failed to delete template"));
       },
     });
   };
@@ -161,25 +164,38 @@ export default function SearchPage() {
   };
 
   return (
-    <div className="container mx-auto py-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">
-          {t("Search Results for")} "{query}"
-        </h1>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setShowFilters(!showFilters)}>
-            <Filter className="h-4 w-4 mr-2" />
-            {t("Filters")}
-          </Button>
-          <Button onClick={createNewTemplate}>
-            <Plus className="mr-2 h-4 w-4" /> {t("Create Template")}
-          </Button>
+    <>
+      <SEO title="Formora: Search" description="Build powerful forms effortlessly with Formora. Create surveys, quizzes, registrations, and more — all in just a few clicks." />
+      {query.length > 0 ? (
+        <div className="container mx-auto py-8">
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-3xl font-bold">
+              {t("common.search.Search Results for")} "{query}"
+            </h1>
+
+            <div className="flex gap-2 ml-auto">
+              <Button variant="outline" onClick={() => setShowFilters(!showFilters)}>
+                <Filter className="h-4 w-4 mr-2" />
+                {t("common.search.Filters")}
+              </Button>
+              <Button onClick={createNewTemplate}>
+                <Plus className="mr-2 h-4 w-4" /> {t("common.search.Create Template")}
+              </Button>
+            </div>
+          </div>
+
+          {showFilters && <TemplateFilters filters={filters} onFilterChange={handleFilterChange} topics={topics} />}
+
+          <TemplateList templates={templates} isLoading={isLoading} isError={!!error} userId={userId ?? null} filters={filters} totalPages={totalPages} onPageChange={handlePageChange} onRefetch={fetchSearchResults} onLike={handleLike} onUnlike={handleUnLike} onView={handleViewTemplate} onEdit={handleEditTemplate} onDelete={handleDeleteTemplate} isDeleting={isDeleting} emptyStateMessage={`${t("common.search.No templates found matching")} "${query}"`} createButtonText={t("common.search.Create a new template")} />
         </div>
-      </div>
-
-      {showFilters && <TemplateFilters filters={filters} onFilterChange={handleFilterChange} topics={topics} />}
-
-      <TemplateList templates={templates} isLoading={isLoading} isError={!!error} userId={userId ?? null} filters={filters} totalPages={totalPages} onPageChange={handlePageChange} onRefetch={fetchSearchResults} onLike={handleLike} onUnlike={handleUnLike} onView={handleViewTemplate} onEdit={handleEditTemplate} onDelete={handleDeleteTemplate} isDeleting={isDeleting} emptyStateMessage={`${t("No templates found matching")} "${query}"`} createButtonText={t("Create a new template")} />
-    </div>
+      ) : (
+        <div className="  container mx-auto py-8 flex flex-col items-center justify-center min-h-[calc(100vh-400px)]">
+          <div className="relative">
+            <InputSearch />
+          </div>
+          <p className="mt-6">{t("common.search.Please enter a search term to find related templates")}</p>
+        </div>
+      )}
+    </>
   );
 }

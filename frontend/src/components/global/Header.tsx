@@ -1,5 +1,4 @@
-import { Input } from "@/components/ui/input";
-import { House, Search } from "lucide-react";
+import { House } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { ThemeToggle } from "@/components/global/ThemeToggle";
 import { UserButton } from "@clerk/clerk-react";
@@ -10,6 +9,7 @@ import { useUser } from "@clerk/clerk-react";
 import { useAuthStore } from "@/store/authStore";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslation } from "react-i18next";
+import InputSearch from "@/components/global/InputSearch";
 
 function Header() {
   const navigate = useNavigate();
@@ -46,8 +46,7 @@ function Header() {
           <div className="grid grid-cols-[auto_auto]   lg:grid-cols-[auto_auto_auto] gap-y-4 lg:gap-y-0 lg:gap-x-4 items-center  ">
             {/* First item - always spans full width on mobile, medium+ gets A position */}
             <div className="col-start-1 col-end-2 row-start-2 row-end-3 lg:col-start-1 lg:col-end-2  lg:row-start-1 lg:row-end-2 relative ">
-              <Search className="absolute left-2 md:left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground   dark:text-gray-500 " />
-              <Input placeholder={t("common.header.Search templates...")} className="pl-7 md:pl-10 bg-white dark:bg-neutral-900 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-neutral-800 w-[120px] sm:w-auto" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+              <InputSearch />
             </div>
 
             {/* Second item - appears first on mobile, then moves to B position on medium+ */}

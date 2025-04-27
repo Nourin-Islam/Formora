@@ -20,6 +20,7 @@ import { Comments } from "@/components/formRelated/Comments";
 import { useTranslation } from "react-i18next";
 import { useThemeStore } from "@/store/themeStore";
 import TemplatesPreviousSubmissions from "@/components/templateShow/TemplatesPreviousSubmissions";
+import SEO from "@/components/global/SEO";
 
 export default function TemplateEdit() {
   const { id } = useParams<{ id: string }>();
@@ -146,6 +147,7 @@ export default function TemplateEdit() {
 
   return (
     <>
+      <SEO title="Formora: Edit Template" description="Build powerful forms effortlessly with Formora. Create surveys, quizzes, registrations, and more — all in just a few clicks." />
       <form className="space-y-6">
         <Card>
           <CardHeader>

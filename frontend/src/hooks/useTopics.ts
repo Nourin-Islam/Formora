@@ -35,18 +35,6 @@ export const useTopics = (params: TopicQueryParams) => {
   });
 };
 
-// Search topics for autocomplete (public)
-export const useSearchTopics = (query: string) => {
-  return useQuery<Topic[], Error>({
-    queryKey: ["topics", "search", query],
-    queryFn: async () => {
-      const response = await publicApi.get("/topics/search", { params: { q: query } });
-      return response.data;
-    },
-    enabled: !!query,
-  });
-};
-
 // Create a new topic (authenticated)
 export const useCreateTopic = () => {
   const queryClient = useQueryClient();

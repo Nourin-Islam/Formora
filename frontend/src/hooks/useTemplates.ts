@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createAuthenticatedApi, publicApi } from "@/lib/api";
-import { Template, Question, TemplateFormData, TemplatesResponse, FilterOptions, TagCloud, topicsResponse } from "@/types";
+import { Template, TemplateFormData, TemplatesResponse, FilterOptions, TagCloud, topicsResponse } from "@/types";
 import { useAuth } from "@clerk/clerk-react";
 
 // refetchInterval default value set to 300000 (5 minutes)
@@ -132,75 +132,6 @@ export const useDeleteTemplate = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [["templates"], ["popular-templates"]] });
-    },
-  });
-};
-
-// Question-specific hooks
-export const useCreateQuestion = () => {
-  const queryClient = useQueryClient();
-  const { getToken } = useAuth();
-
-  return useMutation({
-    mutationFn: async ({ templateId, questionData }: { templateId: string; questionData: Omit<Question, "id"> }) => {
-      const { authenticatedApi } = await createAuthenticatedApi(getToken);
-      const response = await authenticatedApi.post("/questions", {
-        ...questionData,
-        templateId,
-      });
-      return response.data;
-    },
-    onSuccess: (_, { templateId }) => {
-      queryClient.invalidateQueries({ queryKey: ["templates", templateId] });
-    },
-  });
-};
-
-export const useUpdateQuestion = () => {
-  const queryClient = useQueryClient();
-  const { getToken } = useAuth();
-
-  return useMutation({
-    mutationFn: async ({ questionId, questionData }: { questionId: string; questionData: Partial<Question> }) => {
-      const { authenticatedApi } = await createAuthenticatedApi(getToken);
-      const response = await authenticatedApi.put(`/questions/${questionId}`, questionData);
-      return response.data;
-    },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["templates", data.templateId] });
-    },
-  });
-};
-
-export const useDeleteQuestion = () => {
-  const queryClient = useQueryClient();
-  const { getToken } = useAuth();
-
-  return useMutation({
-    mutationFn: async (questionId: string) => {
-      const { authenticatedApi } = await createAuthenticatedApi(getToken);
-      await authenticatedApi.delete(`/questions/${questionId}`);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["templates"] });
-    },
-  });
-};
-
-export const useReorderQuestions = () => {
-  const queryClient = useQueryClient();
-  const { getToken } = useAuth();
-
-  return useMutation({
-    mutationFn: async ({ templateId, questionOrder }: { templateId: string; questionOrder: string[] }) => {
-      const { authenticatedApi } = await createAuthenticatedApi(getToken);
-      await authenticatedApi.post("/questions/reorder", {
-        templateId,
-        questionOrder,
-      });
-    },
-    onSuccess: (_, { templateId }) => {
-      queryClient.invalidateQueries({ queryKey: ["templates", templateId] });
     },
   });
 };

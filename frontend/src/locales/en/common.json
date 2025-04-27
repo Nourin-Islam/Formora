@@ -338,6 +338,20 @@
       "Creator": "Creator",
       "Questions": "Questions",
       "Total Submissions": "Total Submissions"
-    }
+    },
+    "search": {
+      "query": "query",
+      "Please sign in to like templates": "Please sign in to like templates",
+      "Please sign in to unlike templates": "Please sign in to unlike templates",
+      "Template deleted successfully": "Template deleted successfully",
+      "Failed to delete template": "Failed to delete template",
+      "Search Results for": "Search Results for",
+      "Filters": "Filters",
+      "Create Template": "Create Template",
+      "No templates found matching": "No templates found matching",
+      "Create a new template": "Create a new template",
+      "Please enter a search term to find related templates": "Please enter a search term to find related templates"
+    },
+    "Create New Template": "Create New Template"
   }
 }

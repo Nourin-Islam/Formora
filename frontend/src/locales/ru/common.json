@@ -334,6 +334,20 @@
       "Creator": "Создатель",
       "Questions": "Вопросы",
       "Total Submissions": "Всего отправок"
-    }
+    },
+    "search": {
+      "query": "запрос",
+      "Please sign in to like templates": "Войдите, чтобы оценить шаблоны",
+      "Please sign in to unlike templates": "Войдите, чтобы убрать оценку",
+      "Template deleted successfully": "Шаблон успешно удалён",
+      "Failed to delete template": "Не удалось удалить шаблон",
+      "Search Results for": "Результаты поиска для",
+      "Filters": "Фильтры",
+      "Create Template": "Создать шаблон",
+      "No templates found matching": "Не найдено шаблонов по запросу",
+      "Create a new template": "Создать новый шаблон",
+      "Please enter a search term to find related templates": "Введите поисковый запрос, чтобы найти шаблоны"
+    },
+    "Create New Template": "Создать новый шаблон"
   }
 }

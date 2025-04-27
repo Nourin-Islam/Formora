@@ -16,6 +16,7 @@ import TemplateList from "@/components/templateShow/TemplateList";
 import TemplateFilters from "@/components/templateShow/TemplateFilters";
 import { useTranslation } from "react-i18next";
 import UserAllResponses from "@/components/UserAllResponses";
+import SEO from "@/components/global/SEO";
 
 export default function TemplatesHome() {
   const { t } = useTranslation("common");
@@ -107,39 +108,42 @@ export default function TemplatesHome() {
   };
 
   return (
-    <div className="container mx-auto py-8">
-      <Tabs defaultValue="general" value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="mb-4">
-          <TabsTrigger value="templates">
-            <h1 className="text-xl font-bold">{t("common.thome.My Templates")}</h1>
-          </TabsTrigger>
+    <>
+      <SEO title="Formora: Create Template" description="Build powerful forms effortlessly with Formora. Create surveys, quizzes, registrations, and more — all in just a few clicks." />
+      <div className="container mx-auto py-8">
+        <Tabs defaultValue="general" value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="mb-4">
+            <TabsTrigger value="templates">
+              <h1 className="text-xl font-bold">{t("common.thome.My Templates")}</h1>
+            </TabsTrigger>
 
-          <TabsTrigger value="submissions">
-            <h1 className="text-xl font-bold">{t("common.thome.My Submissions")}</h1>
-          </TabsTrigger>
-        </TabsList>
+            <TabsTrigger value="submissions">
+              <h1 className="text-xl font-bold">{t("common.thome.My Submissions")}</h1>
+            </TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="templates" className="space-y-4">
-          <div className="flex justify-between items-center mb-6">
-            <div className="flex gap-2 ml-auto">
-              <Button variant="outline" onClick={() => setShowFilters(!showFilters)}>
-                <Filter className="h-4 w-4 mr-2" />
-                {t("common.thome.Filters")}
-              </Button>
-              <Button onClick={createNewTemplate}>
-                <Plus className="mr-2 h-4 w-4" /> {t("common.thome.Create Template")}
-              </Button>
+          <TabsContent value="templates" className="space-y-4">
+            <div className="flex justify-between items-center mb-6">
+              <div className="flex gap-2 ml-auto">
+                <Button variant="outline" onClick={() => setShowFilters(!showFilters)}>
+                  <Filter className="h-4 w-4 mr-2" />
+                  {t("common.thome.Filters")}
+                </Button>
+                <Button onClick={createNewTemplate}>
+                  <Plus className="mr-2 h-4 w-4" /> {t("common.thome.Create Template")}
+                </Button>
+              </div>
             </div>
-          </div>
 
-          {showFilters && <TemplateFilters filters={filters} onFilterChange={handleFilterChange} topics={topics} />}
+            {showFilters && <TemplateFilters filters={filters} onFilterChange={handleFilterChange} topics={topics} />}
 
-          <TemplateList templates={templates} isLoading={isLoading} isError={isError} userId={userId ?? null} filters={filters} totalPages={totalPages} onPageChange={handlePageChange} onRefetch={refetch} onLike={handleLike} onUnlike={handleUnLike} onView={handleViewTemplate} onEdit={handleEditTemplate} onDelete={handleDeleteTemplate} isDeleting={isDeleting} emptyStateMessage={t("common.thome.No templates found")} createButtonText={t("common.thome.Create your first template")} />
-        </TabsContent>
-        <TabsContent value="submissions" className="space-y-4">
-          <UserAllResponses />
-        </TabsContent>
-      </Tabs>
-    </div>
+            <TemplateList templates={templates} isLoading={isLoading} isError={isError} userId={userId ?? null} filters={filters} totalPages={totalPages} onPageChange={handlePageChange} onRefetch={refetch} onLike={handleLike} onUnlike={handleUnLike} onView={handleViewTemplate} onEdit={handleEditTemplate} onDelete={handleDeleteTemplate} isDeleting={isDeleting} emptyStateMessage={t("common.thome.No templates found")} createButtonText={t("common.thome.Create your first template")} />
+          </TabsContent>
+          <TabsContent value="submissions" className="space-y-4">
+            <UserAllResponses />
+          </TabsContent>
+        </Tabs>
+      </div>
+    </>
   );
 }
