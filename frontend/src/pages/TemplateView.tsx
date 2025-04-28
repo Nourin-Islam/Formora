@@ -42,7 +42,7 @@ const TemplateView = () => {
 
   // Function to prompt login
   const promptLogin = () => {
-    toast.info(t("common.fFill.Please sign in to fill this form"));
+    toast.warning(t("common.fFill.Please sign in to fill this form"));
   };
 
   // Fetch template data
@@ -145,7 +145,7 @@ const TemplateView = () => {
     <div className="container max-w-4xl py-8">
       <Card>
         <CardHeader>
-          {template.imageUrl && <img src={`https://ik.imagekit.io/odinbook/${template.imageUrl}`} alt={template.title} className="w-full h-40 object-cover rounded-t-md mb-4" style={{ height: "150px" }} />}
+          {template.imageUrl && <img src={`https://ik.imagekit.io/odinbook/${template.imageUrl}`} alt={template.title} className="w-auto mx-auto h-full max-h-[150px] object-cover rounded-md mb-4" />}
           <CardTitle>{template.title}</CardTitle>
           {template.description && (
             <div data-color-mode={theme} className="prose max-w-none">

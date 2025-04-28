@@ -1,4 +1,3 @@
-import { House } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { ThemeToggle } from "@/components/global/ThemeToggle";
 import { UserButton } from "@clerk/clerk-react";
@@ -35,9 +34,8 @@ function Header() {
 
   return (
     <header className="bg-gray-100 dark:bg-black shadow dark:shadow-neutral-800">
-      <div className="mx-auto max-w-7xl px-4 py-3 md:py-6 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center  justify-center md:justify-between   md:items-center">
+      <div className="mx-auto max-w-7xl px-4 py-2 md:py-6 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center  justify-center md:justify-between   md:items-center">
         <Link className="flex justify-center gap-2 items-center" to="/">
-          <House className=" mt-1 inline " />
           <h1 className="   text-3xl md:text-3xl font-bold text-gray-900 dark:text-white">Formora</h1>
         </Link>
         {!isLoaded ? (
@@ -50,7 +48,10 @@ function Header() {
             </div>
 
             {/* Second item - appears first on mobile, then moves to B position on medium+ */}
-            <div className="col-start-1 col-end-3 row-start-1 row-end-2  lg:col-start-2 lg:col-end-3 lg:row-start-1 lg:row-end-2 ml-auto lg:ml-0 ">
+            <div
+              className="col-start-1 col-end-3 row-start-1 row-end-2  lg:col-start-2 lg:col-end-3 lg:row-start-1 lg:row-end-2 flex mt-2 md:mt-0  
+             justify-center md:ml-auto  lg:ml-0 "
+            >
               {isSignedIn ? (
                 <>
                   <nav className="flex space-x-4 items-center">
