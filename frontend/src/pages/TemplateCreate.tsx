@@ -18,9 +18,14 @@ import { Shell } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import MDEditor from "@uiw/react-md-editor";
 import { useThemeStore } from "@/store/themeStore";
-import SEO from "@/components/global/SEO";
+import useSEO from "@/hooks/useSEO";
 
 export default function TemplateCreationForm() {
+  useSEO({
+    title: "Formora: Create Template",
+    description: "Create your own template with Formora.",
+    keywords: "privacy, data protection, Formora",
+  });
   const { t } = useTranslation("common");
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
@@ -101,88 +106,85 @@ export default function TemplateCreationForm() {
   };
 
   return (
-    <>
-      <SEO title="Formora: Create Template" description="Build powerful forms effortlessly with Formora. Create surveys, quizzes, registrations, and more — all in just a few clicks." />
-      <div className="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("common.tCreate.Create New Template")}</CardTitle>
-            <CardDescription>{t("common.tCreate.Design your form template with custom questions")}</CardDescription>
-          </CardHeader>
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("common.tCreate.Create New Template")}</CardTitle>
+          <CardDescription>{t("common.tCreate.Design your form template with custom questions")}</CardDescription>
+        </CardHeader>
 
-          <CardContent>
-            <Tabs defaultValue="general" value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="mb-4">
-                <TabsTrigger value="general">{t("common.tCreate.General Settings")}</TabsTrigger>
-                <TabsTrigger value="questions">
-                  {t("common.tCreate.Questions")} ({questions.length})
-                </TabsTrigger>
-                <TabsTrigger value="access">{t("common.tCreate.Access Settings")}</TabsTrigger>
-              </TabsList>
+        <CardContent>
+          <Tabs defaultValue="general" value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="mb-4">
+              <TabsTrigger value="general">{t("common.tCreate.General Settings")}</TabsTrigger>
+              <TabsTrigger value="questions">
+                {t("common.tCreate.Questions")} ({questions.length})
+              </TabsTrigger>
+              <TabsTrigger value="access">{t("common.tCreate.Access Settings")}</TabsTrigger>
+            </TabsList>
 
-              <TabsContent value="general" className="space-y-4">
+            <TabsContent value="general" className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="title">{t("common.tCreate.Title *")}</Label>
+                <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("common.tCreate.Enter template title")} />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="description">{t("common.tCreate.Description *")}</Label>
+
+                <MDEditor data-color-mode={theme === "dark" ? "dark" : "light"} value={description} onChange={(val) => setDescription(val || "")} preview="edit" height={200} />
+              </div>
+
+              <div className="space-y-2">
+                <TopicSelector value={topicId.toString()} onChange={(id) => setTopicId(id)} />
+              </div>
+
+              <div className="space-y-2">
+                <Label>{t("common.tCreate.Tags")}</Label>
+                <TagInput value={selectedTags} onChange={setSelectedTags} />
+              </div>
+
+              <div className="space-y-2">
+                <Label>{t("common.tCreate.Image (Optional)")}</Label>
+                <ImageUpload imageUrl={imageUrl} setImageUrl={setImageUrl} />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="questions">
+              <QuestionManagement questions={questions} setQuestions={setQuestions} />
+            </TabsContent>
+
+            <TabsContent value="access" className="space-y-4">
+              <div className="flex items-center space-x-2">
+                <Switch id="isPublic" checked={isPublic} onCheckedChange={setIsPublic} />
+                <Label htmlFor="isPublic">{t("common.tCreate.Public template (accessible to all authenticated users)")}</Label>
+              </div>
+
+              {!isPublic && (
                 <div className="space-y-2">
-                  <Label htmlFor="title">{t("common.tCreate.Title *")}</Label>
-                  <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("common.tCreate.Enter template title")} />
+                  <Label>{t("common.tCreate.Select users who can access this template")}</Label>
+                  <UserSelector selectedUsers={selectedUsers} onChange={setSelectedUsers} />
                 </div>
+              )}
+            </TabsContent>
+          </Tabs>
+        </CardContent>
 
-                <div className="space-y-2">
-                  <Label htmlFor="description">{t("common.tCreate.Description *")}</Label>
-
-                  <MDEditor data-color-mode={theme === "dark" ? "dark" : "light"} value={description} onChange={(val) => setDescription(val || "")} preview="edit" height={200} />
-                </div>
-
-                <div className="space-y-2">
-                  <TopicSelector value={topicId.toString()} onChange={(id) => setTopicId(id)} />
-                </div>
-
-                <div className="space-y-2">
-                  <Label>{t("common.tCreate.Tags")}</Label>
-                  <TagInput value={selectedTags} onChange={setSelectedTags} />
-                </div>
-
-                <div className="space-y-2">
-                  <Label>{t("common.tCreate.Image (Optional)")}</Label>
-                  <ImageUpload imageUrl={imageUrl} setImageUrl={setImageUrl} />
-                </div>
-              </TabsContent>
-
-              <TabsContent value="questions">
-                <QuestionManagement questions={questions} setQuestions={setQuestions} />
-              </TabsContent>
-
-              <TabsContent value="access" className="space-y-4">
-                <div className="flex items-center space-x-2">
-                  <Switch id="isPublic" checked={isPublic} onCheckedChange={setIsPublic} />
-                  <Label htmlFor="isPublic">{t("common.tCreate.Public template (accessible to all authenticated users)")}</Label>
-                </div>
-
-                {!isPublic && (
-                  <div className="space-y-2">
-                    <Label>{t("common.tCreate.Select users who can access this template")}</Label>
-                    <UserSelector selectedUsers={selectedUsers} onChange={setSelectedUsers} />
-                  </div>
-                )}
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-
-          <CardFooter className="flex justify-between">
-            <Button variant="outline" onClick={() => navigate(-1)}>
-              {t("common.tCreate.Cancel")}
+        <CardFooter className="flex justify-between">
+          <Button variant="outline" onClick={() => navigate(-1)}>
+            {t("common.tCreate.Cancel")}
+          </Button>
+          <div className="flex gap-2">
+            <Button variant={"outline"} className="cursor-pointer" disabled={isSubmitting} onClick={() => onSubmit(false)}>
+              {isSubmitting && <Shell className="h-4 w-4 mr-2 animate-spin" />}
+              {t("common.tCreate.Save as Draft")}
             </Button>
-            <div className="flex gap-2">
-              <Button variant={"outline"} className="cursor-pointer" disabled={isSubmitting} onClick={() => onSubmit(false)}>
-                {isSubmitting && <Shell className="h-4 w-4 mr-2 animate-spin" />}
-                {t("common.tCreate.Save as Draft")}
-              </Button>
-              <Button variant={"outline"} className="cursor-pointer" disabled={isSubmitting} onClick={() => onSubmit(true)}>
-                {isSubmitting && <Shell className="h-4 w-4 mr-2 animate-spin" />} {t("common.tCreate.Publish Template")}
-              </Button>
-            </div>
-          </CardFooter>
-        </Card>
-      </div>
-    </>
+            <Button variant={"outline"} className="cursor-pointer" disabled={isSubmitting} onClick={() => onSubmit(true)}>
+              {isSubmitting && <Shell className="h-4 w-4 mr-2 animate-spin" />} {t("common.tCreate.Publish Template")}
+            </Button>
+          </div>
+        </CardFooter>
+      </Card>
+    </div>
   );
 }

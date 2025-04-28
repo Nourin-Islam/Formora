@@ -1,7 +1,13 @@
 import { useTranslation } from "react-i18next";
+import useSEO from "@/hooks/useSEO";
 
 export default function About() {
   const { t } = useTranslation("about");
+  useSEO({
+    title: "Formora: About Us",
+    description: "Learn about Formora's mission, values, and the team behind the platform.",
+    keywords: "about, Formora, mission, values, team",
+  });
 
   return (
     <div className="container mx-auto py-10 px-4">

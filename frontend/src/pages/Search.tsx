@@ -19,8 +19,13 @@ import { useTranslation } from "react-i18next";
 
 import InputSearch from "@/components/global/InputSearch";
 
-import SEO from "@/components/global/SEO";
+import useSEO from "@/hooks/useSEO";
 export default function SearchPage() {
+  useSEO({
+    title: "Formora: Search",
+    description: "Search for templates and forms.",
+    keywords: "privacy, data protection, Formora",
+  });
   const { t } = useTranslation("common");
   const { userId } = useAuth();
   const navigate = useNavigate();
@@ -165,7 +170,6 @@ export default function SearchPage() {
 
   return (
     <>
-      <SEO title="Formora: Search" description="Build powerful forms effortlessly with Formora. Create surveys, quizzes, registrations, and more — all in just a few clicks." />
       {query.length > 0 ? (
         <div className="container mx-auto py-8">
           <div className="flex justify-between items-center mb-6">

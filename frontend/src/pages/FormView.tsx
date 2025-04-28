@@ -15,8 +15,15 @@ import { createAuthenticatedApi } from "@/lib/api";
 import { useAuth } from "@clerk/clerk-react";
 import { Eye, FilePenIcon, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import useSEO from "@/hooks/useSEO";
 
 const FormView = () => {
+  useSEO({
+    title: "Formora: Form View",
+    description: "View the details of your submitted form.",
+    keywords: "privacy, data protection, Formora",
+  });
+
   const { id } = useParams();
   const location = useLocation();
   const { getToken } = useAuth();

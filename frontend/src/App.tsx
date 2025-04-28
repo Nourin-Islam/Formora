@@ -8,9 +8,9 @@ function App() {
     <>
       <div className="min-h-screen bg-white dark:bg-black">
         <Header />
-        <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 text-gray-900 dark:text-white min-h-[calc(100vh-350px)]">
+        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 text-gray-900 dark:text-white min-h-[calc(100vh-350px)]">
           <Outlet />
-        </main>
+        </div>
         <Footer />
       </div>
       <Toaster />

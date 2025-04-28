@@ -20,8 +20,15 @@ import { Comments } from "@/components/formRelated/Comments";
 import { useTranslation } from "react-i18next";
 import MDEditor from "@uiw/react-md-editor";
 import { useThemeStore } from "@/store/themeStore";
+import useSEO from "@/hooks/useSEO";
 
 const FormFill = () => {
+  useSEO({
+    title: "Formora: Fill Form",
+    description: "Fill out the template with your information.",
+    keywords: "privacy, data protection, Formora",
+  });
+
   const { id } = useParams();
   const navigate = useNavigate();
   const { getToken, userId } = useAuth();
@@ -269,6 +276,7 @@ const FormFill = () => {
     <div className="container max-w-4xl py-8">
       <Card>
         <CardHeader>
+          {template.imageUrl && <img src={`https://ik.imagekit.io/odinbook/${template.imageUrl}`} alt={template.title} className="w-full h-40 object-cover rounded-t-md mb-4" style={{ height: "150px" }} />}
           <CardTitle>{template.title}</CardTitle>
           {existingForm && (
             <div className="text-sm text-muted-foreground">

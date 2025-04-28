@@ -18,6 +18,7 @@ import { topicFormSchema } from "@/types";
 import { Topic } from "@/hooks/useTopics";
 import { useTopics, useCreateTopic, useUpdateTopic, useDeleteTopic, useBulkDeleteTopics } from "@/hooks/useTopics";
 import { useTranslation } from "react-i18next";
+import useSEO from "@/hooks/useSEO";
 
 export const columns: ColumnDef<Topic, any>[] = [
   {
@@ -40,6 +41,11 @@ export const columns: ColumnDef<Topic, any>[] = [
 ];
 
 export default function ManageTopics() {
+  useSEO({
+    title: "Formora: Manage Topics",
+    description: "Manage your topics effectively with Formora.",
+    keywords: "topics, management, Formora",
+  });
   const { t } = useTranslation();
   // State for table controls
   const [nameFilter, setNameFilter] = useState("");

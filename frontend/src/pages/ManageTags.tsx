@@ -21,8 +21,14 @@ import SmallSkeleton from "@/components/global/SmallSkeleton";
 import { useTranslation } from "react-i18next";
 import { useMemo } from "react";
 import { camelToPascal } from "@/lib/utils";
+import useSEO from "@/hooks/useSEO";
 
 export default function ManageTagsTable() {
+  useSEO({
+    title: "Formora: Manage Tags",
+    description: "Manage your tags efficiently with Formora.",
+    keywords: "manage tags, Formora, tag management",
+  });
   const { t } = useTranslation("common");
   const [nameFilter, setNameFilter] = useState("");
   const [debouncedNameFilter] = useDebounce(nameFilter, 700);

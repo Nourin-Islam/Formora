@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useAuth } from "@clerk/clerk-react";
 
 import { Eye, ArrowUpDown } from "lucide-react";
 import { format } from "date-fns";
@@ -16,6 +17,7 @@ type SortField = "title" | "createdAt" | "topic" | "likesCount" | "questionCount
 
 export default function TrendingTemplatesSection() {
   const { t } = useTranslation("common");
+  const { userId } = useAuth();
   const [sortConfig, setSortConfig] = useState<{
     field: SortField;
     direction: "asc" | "desc";
@@ -138,7 +140,7 @@ export default function TrendingTemplatesSection() {
               {sortedTemplates.map((template) => (
                 <TableRow key={template.id}>
                   <TableCell>
-                    <Link to={`/check-form/${template.id}`} className="text-primary hover:underline flex items-center group">
+                    <Link to={userId ? `/check-form/${template.id}` : `/view-template/${template.id}`} className="text-primary hover:underline flex items-center group">
                       {template.title.length > 30 ? `${template.title.slice(0, 30)}...` : template.title}
                       <Eye className="ml-2 h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
                     </Link>

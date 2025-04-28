@@ -1,7 +1,13 @@
 import { useTranslation } from "react-i18next";
+import useSEO from "@/hooks/useSEO";
 
 export default function Privacy() {
   const { t } = useTranslation("privacy");
+  useSEO({
+    title: "Formora: Privacy Policy",
+    description: "Learn how Formora protects your data and privacy.",
+    keywords: "privacy, data protection, Formora",
+  });
 
   return (
     <div className="container mx-auto py-10 px-4">

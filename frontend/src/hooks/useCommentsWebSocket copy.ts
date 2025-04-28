@@ -65,11 +65,11 @@ export function useCommentsWebSocket(templateId: number) {
         // Try to reconnect
         // reload window
 
-        // setTimeout(() => {
-        //   window.location.reload();
-        //   // console.log("Reconnecting WebSocket...");
-        //   connectWebSocket(url);
-        // }, 100); // Reconnect after 1 mili second
+        setTimeout(() => {
+          window.location.reload();
+          // console.log("Reconnecting WebSocket...");
+          connectWebSocket(url);
+        }, 100); // Reconnect after 1 mili second
       };
 
       socket.onerror = (error) => {

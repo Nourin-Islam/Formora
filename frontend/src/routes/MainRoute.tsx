@@ -24,6 +24,7 @@ import ManageTagsPage from "@/pages/ManageTags";
 import ManageTopics from "@/pages/ManageTopics";
 import TemplatesHome from "@/pages/TemplatesHome";
 import SearchPage from "@/pages/Search";
+import TemplateView from "@/pages/TemplateView";
 
 const router = createBrowserRouter([
   {
@@ -42,6 +43,7 @@ const router = createBrowserRouter([
           { path: "privacy", element: <Privacy /> },
           { path: "about", element: <About /> },
           { path: "contact", element: <Contact /> },
+          { path: "view-template/:id", element: <TemplateView /> },
         ],
       },
       {

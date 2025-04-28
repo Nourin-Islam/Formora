@@ -57,12 +57,17 @@ export default function TemplateCard({ template, userId, onDelete, onLike, onUnl
     };
   }, [isDialogOpen]);
 
-  const handleViewTemplate = () => {
+  const handleFillTemplate = () => {
     if (onView) {
       onView(template.id);
     } else {
       navigate(`/check-form/${template.id}`);
     }
+  };
+
+  const handleViewTemplate = () => {
+    // console.log("onView not provided, navigating to default route");
+    navigate(`/view-template/${template.id}`);
   };
 
   const handleEditTemplate = () => {
@@ -113,10 +118,16 @@ export default function TemplateCard({ template, userId, onDelete, onLike, onUnl
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={handleViewTemplate}>
-                  <Edit className="mr-2 h-4 w-4" />
-                  {t("common.tCard.Fill")}
-                </DropdownMenuItem>
+                {userId && (
+                  <DropdownMenuItem onClick={handleFillTemplate}>
+                    <Edit className="mr-2 h-4 w-4" /> {t("common.tCard.Fill")}
+                  </DropdownMenuItem>
+                )}
+                {!userId && (
+                  <DropdownMenuItem onClick={handleViewTemplate}>
+                    <Eye className="mr-2 h-4 w-4" /> {t("common.tCard.Check")}
+                  </DropdownMenuItem>
+                )}
                 {userId === template.user.clerkId && (
                   <>
                     <DropdownMenuItem onClick={handleEditTemplate}>

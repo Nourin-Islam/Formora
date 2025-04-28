@@ -284,6 +284,7 @@
     "tCard": {
       "by": "от",
       "Fill": "Заполнить",
+      "Check": "Проверить",
       "Manage": "Управление",
       "Delete": "Удалить",
       "Public": "Публичный",
@@ -348,17 +349,17 @@
       "Create a new template": "Создать новый шаблон",
       "Please enter a search term to find related templates": "Введите поисковый запрос, чтобы найти шаблоны"
     },
-    "common": {
-      "verification": {
-        "Verification Error": "Ошибка верификации",
-        "Something went wrong during verification": "Что-то пошло не так во время верификации",
-        "Try Again": "Попробовать снова",
-        "Verifying your account": "Верифицируем ваш аккаунт",
-        "Verifying": "Верифицируем",
-        "Completing authentication...": "Завершаем аутентификацию...",
-        "Debug Info": "Отладочная информация"
-      }
+
+    "verification": {
+      "Verification Error": "Ошибка верификации",
+      "Something went wrong during verification": "Что-то пошло не так во время верификации",
+      "Try Again": "Попробовать снова",
+      "Verifying your account": "Верифицируем ваш аккаунт",
+      "Verifying": "Верифицируем",
+      "Completing authentication...": "Завершаем аутентификацию...",
+      "Debug Info": "Отладочная информация"
     },
+
     "errorPage": {
       "Oops!": "Ой!",
       "Sorry, an unexpected error has occurred.": "Извините, произошла непредвиденная ошибка.",
@@ -420,7 +421,9 @@
       "Update Form": "Обновить форму",
       "Submit Form": "Отправить форму",
       "Form deleted successfully": "Форма успешно удалена",
-      "Failed to delete form": "Не удалось удалить форму"
+      "Failed to delete form": "Не удалось удалить форму",
+      "Please sign in to fill this form": "Пожалуйста, войдите в систему, чтобы заполнить эту форму",
+      "Sign in to submit": "Войдите, чтобы отправить"
     },
     "tCloud": {
       "Failed to load tags. Please try again.": "Не удалось загрузить теги. Пожалуйста, попробуйте снова.",

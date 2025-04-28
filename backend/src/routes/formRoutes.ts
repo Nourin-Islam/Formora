@@ -5,7 +5,10 @@ import { submitForm } from "../controllers/submitForm.controller";
 
 const router = express.Router();
 
-// Get template for filling
+// Get template for authenticated user for filling
+router.get("/check/:id", getTemplateForFilling);
+
+// Get template for authenticated user for filling
 router.get("/fill/:id", authenticateUser, getTemplateForFilling);
 
 // Submit a filled form

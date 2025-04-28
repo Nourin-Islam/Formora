@@ -288,6 +288,7 @@
     "tCard": {
       "by": "by",
       "Fill": "Fill",
+      "Check": "Check",
       "Manage": "Manage",
       "Delete": "Delete",
       "Public": "Public",
@@ -422,7 +423,9 @@
       "Update Form": "Update Form",
       "Submit Form": "Submit Form",
       "Form deleted successfully": "Form deleted successfully",
-      "Failed to delete form": "Failed to delete form"
+      "Failed to delete form": "Failed to delete form",
+      "Please sign in to fill this form": "Please sign in to fill this form",
+      "Sign in to submit": "Sign in to submit"
     },
     "tCloud": {
       "Failed to load tags. Please try again.": "Failed to load tags. Please try again.",
