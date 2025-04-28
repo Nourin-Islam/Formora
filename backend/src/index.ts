@@ -5,10 +5,10 @@ import cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import { handleClerkWebhook } from "./webhooks.js";
-import routes from "./routes/allRoutes.ts"; // This will import from routes/index.ts
+import routes from "./routes/allRoutes"; // This will import from routes/index
 import { createServer } from "http";
-import { setupWebSocket, broadcastCommentUpdate } from "./websocket.ts";
-import "./lib/refreshView.ts";
+import { setupWebSocket, broadcastCommentUpdate } from "./websocket";
+import "./lib/refreshView";
 
 dotenv.config();
 

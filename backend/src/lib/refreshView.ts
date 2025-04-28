@@ -1,7 +1,7 @@
-// cron/refreshMaterializedView.ts
-import { refreshEvents } from "./refresh.ts";
+// cron/refreshMaterializedView
+import { refreshEvents } from "./refresh";
 import { PrismaClient } from "@prisma/client";
-import { cache } from "./cache.ts";
+import { cache } from "./cache";
 
 const prisma = new PrismaClient();
 
@@ -45,7 +45,7 @@ refreshEvents.on("refreshView", () => {
 
 // Then in any place that mutates related data, just trigger the event:
 
-// import { refreshEvents } from './refresh.ts';
+// import { refreshEvents } from './refresh';
 
 // After prisma.template.create/update/delete
 // refreshEvents.emit('refreshView');

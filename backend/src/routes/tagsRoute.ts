@@ -1,7 +1,7 @@
 import express from "express";
-import { authenticateUser } from "../middleware/authenticateUser.ts";
-import { requireAdmin } from "../middleware/auth.ts";
-import { getAllTags, searchTags, createTag, updateTag, deleteTag } from "../controllers/tags.controller.ts";
+import { authenticateUser } from "../middleware/authenticateUser";
+import { requireAdmin } from "../middleware/auth";
+import { getAllTags, searchTags, createTag, updateTag, deleteTag } from "../controllers/tags.controller";
 
 const router = express.Router();
 

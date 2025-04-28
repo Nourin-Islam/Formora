@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { prisma } from "../lib/prisma.ts";
-import { refreshEvents } from "../lib/refresh.ts";
+import { prisma } from "../lib/prisma";
+import { refreshEvents } from "../lib/refresh";
 
 // Get template for filling with user's existing form if it exists
 export const getTemplateForFilling = async (req: Request, res: Response) => {

@@ -1,7 +1,7 @@
 import express from "express";
-import { authenticateUser } from "../middleware/authenticateUser.ts";
-import { getTemplateForFilling, getFilledForm, deleteFilledForm, getAllSubmissionsByTemplate, getAllMyResponses } from "../controllers/fillForm.controller.ts";
-import { submitForm } from "../controllers/submitForm.controller.ts";
+import { authenticateUser } from "../middleware/authenticateUser";
+import { getTemplateForFilling, getFilledForm, deleteFilledForm, getAllSubmissionsByTemplate, getAllMyResponses } from "../controllers/fillForm.controller";
+import { submitForm } from "../controllers/submitForm.controller";
 
 const router = express.Router();
 

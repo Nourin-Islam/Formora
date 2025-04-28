@@ -1,5 +1,5 @@
 import express from "express";
-import { getLatestTemplates, getPopularTemplates, getTagCloud, getTopTopics } from "../controllers/home.controller.ts";
+import { getLatestTemplates, getPopularTemplates, getTagCloud, getTopTopics } from "../controllers/home.controller";
 
 const router = express.Router();
 

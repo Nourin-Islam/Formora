@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { prisma } from "../lib/prisma.ts";
+import { prisma } from "../lib/prisma";
 import { getAuth } from "@clerk/express";
 
 export const authenticateUser = async (req: Request, res: Response, next: NextFunction) => {

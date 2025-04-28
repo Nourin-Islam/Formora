@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { prisma } from "../lib/prisma.ts";
-import { cache } from "../lib/cache.ts";
+import { prisma } from "../lib/prisma";
+import { cache } from "../lib/cache";
 
 // 1. Latest 4 templates
 export const getLatestTemplates = async (_req: Request, res: Response) => {

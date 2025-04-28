@@ -1,7 +1,7 @@
-// controllers/topics.controller.ts
-import { prisma } from "../lib/prisma.ts";
+// controllers/topics.controller
+import { prisma } from "../lib/prisma";
 import { Request, Response } from "express";
-import { refreshEvents } from "../lib/refresh.ts";
+import { refreshEvents } from "../lib/refresh";
 
 export const getAllTopics = async (req: Request, res: Response) => {
   try {

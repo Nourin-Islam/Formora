@@ -1,5 +1,5 @@
 import express from "express";
-import { getImageKitAuth } from "../controllers/imagekit.controller.ts";
+import { getImageKitAuth } from "../controllers/imagekit.controller";
 
 const router = express.Router();
 

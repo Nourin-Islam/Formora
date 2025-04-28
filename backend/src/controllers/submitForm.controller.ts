@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
-import { prisma } from "../lib/prisma.ts"; // Adjust path as needed
-import { refreshEvents } from "../lib/refresh.ts";
-import { sendFormSubmissionEmail } from "../lib/sendMail.ts"; // Adjust path as needed
+import { prisma } from "../lib/prisma"; // Adjust path as needed
+import { refreshEvents } from "../lib/refresh";
+import { sendFormSubmissionEmail } from "../lib/sendMail"; // Adjust path as needed
 export const submitForm = async (req: Request, res: Response) => {
   if (!req.user) {
     res.status(401).json({ message: "Unauthorized" });

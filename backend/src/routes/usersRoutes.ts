@@ -1,8 +1,8 @@
-// usersRoute.ts
+// usersRoute
 import express from "express";
-import { requireAdmin } from "../middleware/auth.ts";
-import { authenticateUser } from "../middleware/authenticateUser.ts";
-import { getAllUsers, updateUser, deleteUser } from "../controllers/users.controller.ts";
+import { requireAdmin } from "../middleware/auth";
+import { authenticateUser } from "../middleware/authenticateUser";
+import { getAllUsers, updateUser, deleteUser } from "../controllers/users.controller";
 
 const router = express.Router();
 

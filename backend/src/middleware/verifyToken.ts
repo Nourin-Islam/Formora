@@ -1,5 +1,5 @@
 import { verifyToken } from "@clerk/backend";
-import { prisma } from "../lib/prisma.ts";
+import { prisma } from "../lib/prisma";
 
 interface VerifiedUser {
   id: string;

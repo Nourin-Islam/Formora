@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
-import { prisma } from "../lib/prisma.ts";
-import { cache } from "../lib/cache.ts";
-import { refreshEvents } from "../lib/refresh.ts";
+import { prisma } from "../lib/prisma";
+import { cache } from "../lib/cache";
+import { refreshEvents } from "../lib/refresh";
 
 export const getAllTemplates = async (req: Request, res: Response) => {
   try {

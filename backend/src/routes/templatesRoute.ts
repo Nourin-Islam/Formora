@@ -1,6 +1,6 @@
 import express from "express";
-import { authenticateUser } from "../middleware/authenticateUser.ts";
-import { getAllTemplates, getTemplateById, createTemplate, updateTemplate, deleteTemplate } from "../controllers/template.controller.ts";
+import { authenticateUser } from "../middleware/authenticateUser";
+import { getAllTemplates, getTemplateById, createTemplate, updateTemplate, deleteTemplate } from "../controllers/template.controller";
 
 const router = express.Router();
 

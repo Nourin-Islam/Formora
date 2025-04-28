@@ -1,6 +1,6 @@
 import express from "express";
-import { authenticateUser } from "../middleware/authenticateUser.ts";
-import { addLike, removeLike, createComment, updateComment, deleteComment } from "../controllers/interactions.controller.ts";
+import { authenticateUser } from "../middleware/authenticateUser";
+import { addLike, removeLike, createComment, updateComment, deleteComment } from "../controllers/interactions.controller";
 
 const router = express.Router();
 

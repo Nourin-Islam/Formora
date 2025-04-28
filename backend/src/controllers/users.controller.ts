@@ -1,8 +1,8 @@
-// users.controller.ts
+// users.controller
 import { Request, Response } from "express";
-import { prisma } from "../lib/prisma.ts";
+import { prisma } from "../lib/prisma";
 import { clerkClient } from "@clerk/express";
-import { refreshEvents } from "../lib/refresh.ts";
+import { refreshEvents } from "../lib/refresh";
 
 import { z } from "zod";
 

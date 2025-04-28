@@ -11,8 +11,9 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "declaration": true,
-    "emitDeclarationOnly": true,
-    "allowImportingTsExtensions": true,
+    "emitDeclarationOnly": false, // Changed from true
+    "noEmit": false,
+    "allowImportingTsExtensions": false, // Changed from true
     "typeRoots": ["./node_modules/@types", "./types"]
   },
   "ts-node": {

@@ -1,6 +1,6 @@
 // @ts-ignore
 import nodemailer from "nodemailer";
-import { prisma } from "../lib/prisma.ts";
+import { prisma } from "../lib/prisma";
 
 interface EmailFormData {
   to: string;

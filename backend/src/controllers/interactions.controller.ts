@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
-import { prisma } from "../lib/prisma.ts";
-import { refreshEvents } from "../lib/refresh.ts";
+import { prisma } from "../lib/prisma";
+import { refreshEvents } from "../lib/refresh";
 
-import { broadcastCommentUpdate } from "../websocket.ts";
+import { broadcastCommentUpdate } from "../websocket";
 
 // Interfaces
 interface UserPayload {

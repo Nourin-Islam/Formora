@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { prisma } from "../lib/prisma.ts";
+import { prisma } from "../lib/prisma";
 
 export const searchTemplates = async (req: Request, res: Response) => {
   const searchText = (req.query.q || req.query.query) as string;

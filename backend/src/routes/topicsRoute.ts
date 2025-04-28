@@ -1,8 +1,8 @@
-// routes/topicsRoute.ts
+// routes/topicsRoute
 import express from "express";
-import { getAllTopics, createTopic, updateTopic, deleteTopic } from "../controllers/topics.controller.ts";
-import { authenticateUser } from "../middleware/authenticateUser.ts";
-import { requireAdmin } from "../middleware/auth.ts";
+import { getAllTopics, createTopic, updateTopic, deleteTopic } from "../controllers/topics.controller";
+import { authenticateUser } from "../middleware/authenticateUser";
+import { requireAdmin } from "../middleware/auth";
 
 const router = express.Router();
 

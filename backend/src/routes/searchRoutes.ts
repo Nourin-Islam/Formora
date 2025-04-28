@@ -1,5 +1,5 @@
 import express from "express";
-import { searchTemplates } from "../controllers/search.controller.ts";
+import { searchTemplates } from "../controllers/search.controller";
 
 const router = express.Router();
 // @ts-ignore
