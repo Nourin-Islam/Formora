@@ -3,7 +3,7 @@ import axios from "axios";
 
 // Base API instance for public routes
 export const publicApi = axios.create({
-  baseURL: "http://localhost:3000/api",
+  baseURL: import.meta.env.VITE_API_URL,
 });
 
 // Function to create authenticated API instance
@@ -11,7 +11,7 @@ export const createAuthenticatedApi = async (getToken: () => Promise<string | nu
   const token = await getToken();
 
   const authenticatedApi = axios.create({
-    baseURL: "http://localhost:3000/api",
+    baseURL: import.meta.env.VITE_API_URL,
     headers: token ? { Authorization: `Bearer ${token}` } : {},
   });
 

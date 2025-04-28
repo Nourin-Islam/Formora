@@ -3,7 +3,6 @@ const IMAGEKIT_AUTH_END = import.meta.env.VITE_IMAGEKIT_AUTH_END;
 const ImageKitAuthenticator = async () => {
   try {
     const response = await fetch(IMAGEKIT_AUTH_END);
-    // const response = await fetch("http://localhost:3000/imagekit_auth");
 
     if (!response.ok) {
       const errorText = await response.text();

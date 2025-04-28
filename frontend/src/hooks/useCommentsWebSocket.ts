@@ -26,7 +26,7 @@ export function useCommentsWebSocket(templateId: number) {
 
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     // const host = window.location.host;
-    const host = "localhost:3000"; // Replace with your server's host and port
+    const host = import.meta.env.VITE_HOST; // Replace with your server's host and port
     let wsUrl = `${protocol}//${host}/comments?templateId=${templateId}`;
 
     // console.log("WebSocket URL:", wsUrl);
