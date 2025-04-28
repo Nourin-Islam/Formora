@@ -159,7 +159,7 @@ export const getTemplateById = async (req: Request, res: Response) => {
 export const createTemplate = async (req: Request, res: Response) => {
   if (!req.user) return res.status(401).json({ message: "Unauthorized" });
 
-  console.log("Creating template by: ", req.user);
+  // console.log("Creating template by: ", req.user);
 
   try {
     const { title, description, topicId, isPublic, isPublished, imageUrl, tags, accessUsers, questions } = req.body;

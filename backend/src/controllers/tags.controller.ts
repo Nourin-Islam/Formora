@@ -54,19 +54,6 @@ export const searchTags = async (req: Request, res: Response) => {
   }
 };
 
-export const getTagById = async (req: Request, res: Response) => {
-  try {
-    const tagId = parseInt(req.params.id);
-    const tag = await prisma.tag.findUnique({ where: { id: tagId } });
-
-    if (!tag) return res.status(404).json({ error: "Tag not found" });
-
-    res.json(tag);
-  } catch (err) {
-    res.status(500).json({ error: "Failed to fetch tag" });
-  }
-};
-
 export const createTag = async (req: Request, res: Response) => {
   try {
     const { name } = req.body;
@@ -126,3 +113,19 @@ export const deleteTag = async (req: Request, res: Response) => {
     }
   }
 };
+
+/*
+export const getTagById = async (req: Request, res: Response) => {
+  try {
+    const tagId = parseInt(req.params.id);
+    const tag = await prisma.tag.findUnique({ where: { id: tagId } });
+
+    if (!tag) return res.status(404).json({ error: "Tag not found" });
+
+    res.json(tag);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch tag" });
+  }
+};
+
+*/

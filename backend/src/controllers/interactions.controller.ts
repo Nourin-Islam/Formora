@@ -68,7 +68,7 @@ export const addLike = async (req: Request, res: Response): Promise<void> => {
 
 export const removeLike = async (req: Request, res: Response): Promise<void> => {
   try {
-    console.log("Removing like from template:", req.params.templateId);
+    // console.log("Removing like from template:", req.params.templateId);
     const { templateId } = req.params;
     if (!req.user) {
       res.status(401).json({ message: "Unauthorized" });
@@ -158,72 +158,6 @@ export const createComment = async (req: Request, res: Response): Promise<void> 
   } catch (error) {
     console.error("Error creating comment:", error);
     res.status(500).json({ message: "Failed to create comment" });
-  }
-};
-
-export const getComments = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { templateId } = req.params;
-    const numericTemplateId = parseInt(templateId);
-
-    const comments = await prisma.comment.findMany({
-      where: { templateId: numericTemplateId },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-      },
-      orderBy: { createdAt: "asc" },
-    });
-
-    console.log("Fetched comments for template:", templateId, "Comments:", comments);
-    res.status(200).json(comments);
-  } catch (error) {
-    console.error("Error fetching comments:", error);
-    res.status(500).json({ message: "Failed to fetch comments" });
-  }
-};
-
-export const getCommentsForUser = async (req: Request, res: Response): Promise<void> => {
-  try {
-    if (!req.user) {
-      res.status(401).json({ message: "Unauthorized" });
-      return;
-    }
-
-    const requestingUserId = req.user.id;
-    const requestingUserIsAdmin = req.user.isAdmin;
-    const { templateId } = req.params;
-    const numericTemplateId = parseInt(templateId);
-
-    const comments = await prisma.comment.findMany({
-      where: { templateId: numericTemplateId },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-      },
-      orderBy: { createdAt: "asc" },
-    });
-
-    res.status(200).json({
-      comments,
-      requestingUser: {
-        userId: requestingUserId,
-        isAdmin: requestingUserIsAdmin,
-      },
-    });
-  } catch (error) {
-    console.error("Error fetching comments:", error);
-    res.status(500).json({ message: "Failed to fetch comments" });
   }
 };
 
@@ -323,3 +257,71 @@ export const deleteComment = async (req: Request, res: Response): Promise<void> 
     res.status(500).json({ message: "Failed to delete comment" });
   }
 };
+
+/*
+export const getComments = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { templateId } = req.params;
+    const numericTemplateId = parseInt(templateId);
+
+    const comments = await prisma.comment.findMany({
+      where: { templateId: numericTemplateId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "asc" },
+    });
+
+    // console.log("Fetched comments for template:", templateId, "Comments:", comments);
+    res.status(200).json(comments);
+  } catch (error) {
+    console.error("Error fetching comments:", error);
+    res.status(500).json({ message: "Failed to fetch comments" });
+  }
+};
+
+export const getCommentsForUser = async (req: Request, res: Response): Promise<void> => {
+  try {
+    if (!req.user) {
+      res.status(401).json({ message: "Unauthorized" });
+      return;
+    }
+
+    const requestingUserId = req.user.id;
+    const requestingUserIsAdmin = req.user.isAdmin;
+    const { templateId } = req.params;
+    const numericTemplateId = parseInt(templateId);
+
+    const comments = await prisma.comment.findMany({
+      where: { templateId: numericTemplateId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "asc" },
+    });
+
+    res.status(200).json({
+      comments,
+      requestingUser: {
+        userId: requestingUserId,
+        isAdmin: requestingUserIsAdmin,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching comments:", error);
+    res.status(500).json({ message: "Failed to fetch comments" });
+  }
+};
+*/

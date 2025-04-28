@@ -80,7 +80,7 @@ export const handleClerkWebhook = async (req: Request, res: Response, next: Next
         break;
 
       case "user.deleted":
-        console.log(`Webhook received for deleted user ${data.id}, no DB action taken.`);
+        // console.log(`Webhook received for deleted user ${data.id}, no DB action taken.`);
         break;
     }
 

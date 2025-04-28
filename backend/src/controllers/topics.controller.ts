@@ -32,51 +32,6 @@ export const getAllTopics = async (req: Request, res: Response) => {
   }
 };
 
-export const searchTopics = async (req: Request, res: Response) => {
-  try {
-    const query = req.query.q as string;
-    const limit = parseInt(req.query.limit as string) || 10;
-
-    if (!query) {
-      res.status(400).json({ error: "Search query is required" });
-      return;
-    }
-
-    const topics = await prisma.topic.findMany({
-      where: {
-        name: {
-          contains: query,
-          mode: "insensitive",
-        },
-      },
-      take: limit,
-    });
-
-    res.json(topics);
-  } catch (err) {
-    res.status(500).json({ error: "Failed to search topics" });
-  }
-};
-
-export const getTopicById = async (req: Request, res: Response) => {
-  try {
-    const topicId = parseInt(req.params.id);
-
-    const topic = await prisma.topic.findUnique({
-      where: { id: topicId },
-    });
-
-    if (!topic) {
-      res.status(404).json({ error: "Topic not found" });
-      return;
-    }
-
-    res.json(topic);
-  } catch (err) {
-    res.status(500).json({ error: "Failed to fetch topic" });
-  }
-};
-
 export const createTopic = async (req: Request, res: Response) => {
   try {
     const { name } = req.body;
@@ -131,3 +86,50 @@ export const deleteTopic = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to delete topic" });
   }
 };
+
+/*
+export const searchTopics = async (req: Request, res: Response) => {
+  try {
+    const query = req.query.q as string;
+    const limit = parseInt(req.query.limit as string) || 10;
+
+    if (!query) {
+      res.status(400).json({ error: "Search query is required" });
+      return;
+    }
+
+    const topics = await prisma.topic.findMany({
+      where: {
+        name: {
+          contains: query,
+          mode: "insensitive",
+        },
+      },
+      take: limit,
+    });
+
+    res.json(topics);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to search topics" });
+  }
+};
+
+export const getTopicById = async (req: Request, res: Response) => {
+  try {
+    const topicId = parseInt(req.params.id);
+
+    const topic = await prisma.topic.findUnique({
+      where: { id: topicId },
+    });
+
+    if (!topic) {
+      res.status(404).json({ error: "Topic not found" });
+      return;
+    }
+
+    res.json(topic);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch topic" });
+  }
+};
+*/

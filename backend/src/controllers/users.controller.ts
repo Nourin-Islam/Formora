@@ -3,36 +3,8 @@ import { Request, Response } from "express";
 import { prisma } from "../lib/prisma.ts";
 import { clerkClient } from "@clerk/express";
 import { refreshEvents } from "../lib/refresh.ts";
-import { getAuth } from "@clerk/express";
+
 import { z } from "zod";
-
-export const searchUsers = async (req: Request, res: Response) => {
-  try {
-    const { q: searchTerm } = req.query;
-
-    if (!searchTerm) {
-      res.json([]);
-      return;
-    }
-
-    const users = await prisma.user.findMany({
-      where: {
-        OR: [{ name: { contains: searchTerm as string, mode: "insensitive" } }, { email: { contains: searchTerm as string, mode: "insensitive" } }],
-      },
-      take: 10,
-      select: {
-        id: true,
-        email: true,
-        name: true,
-      },
-    });
-
-    res.json(users);
-  } catch (error) {
-    console.error("Error searching users:", error);
-    res.status(500).json({ error: "Failed to search users" });
-  }
-};
 
 export const getAllUsers = async (req: Request, res: Response) => {
   try {
@@ -130,6 +102,7 @@ export const deleteUser = async (req: Request, res: Response) => {
   }
 };
 
+/*
 export const getUserPreferences = async (req: Request, res: Response) => {
   try {
     if (!req.user) {
@@ -231,3 +204,34 @@ export const setUserPreferences = async (req: Request, res: Response) => {
     return;
   }
 };
+
+
+export const searchUsers = async (req: Request, res: Response) => {
+  try {
+    const { q: searchTerm } = req.query;
+
+    if (!searchTerm) {
+      res.json([]);
+      return;
+    }
+
+    const users = await prisma.user.findMany({
+      where: {
+        OR: [{ name: { contains: searchTerm as string, mode: "insensitive" } }, { email: { contains: searchTerm as string, mode: "insensitive" } }],
+      },
+      take: 10,
+      select: {
+        id: true,
+        email: true,
+        name: true,
+      },
+    });
+
+    res.json(users);
+  } catch (error) {
+    console.error("Error searching users:", error);
+    res.status(500).json({ error: "Failed to search users" });
+  }
+};
+
+*/

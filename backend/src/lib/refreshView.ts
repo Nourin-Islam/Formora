@@ -17,9 +17,9 @@ refreshEvents.on("refreshView", () => {
     isRefreshing = true;
     try {
       cache.flushAll(); // Clear all cache after refresh
-      console.log("✅ Cache cleared");
+      // console.log("✅ Cache cleared");
 
-      console.log("⏳ Refreshing materialized view...");
+      // console.log("⏳ Refreshing materialized view...");
       await prisma.$executeRaw`REFRESH MATERIALIZED VIEW CONCURRENTLY template_search_joined_view`;
 
       console.log("✅ View refreshed");

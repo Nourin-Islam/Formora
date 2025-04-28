@@ -10,7 +10,6 @@ export function ThemeToggle() {
   const { user } = useUser();
   const { resolvedTheme, setTheme, language, setLanguage } = useThemeStore();
   const { i18n } = useTranslation();
-  const { t } = useTranslation("common");
 
   const toggleTheme = async () => {
     const newTheme = resolvedTheme === "dark" ? "light" : "dark";

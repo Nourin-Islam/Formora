@@ -1,7 +1,7 @@
 import { WebSocketServer, WebSocket } from "ws";
 import { IncomingMessage } from "http";
-import { prisma } from "./lib/prisma.ts";
-import { verifyJwtToken } from "./middleware/verifyToken.ts"; // Your auth utility
+import { prisma } from "./lib/prisma";
+import { verifyJwtToken } from "./middleware/verifyToken"; // Your auth utility
 
 interface CommentUpdate {
   templateId: number;

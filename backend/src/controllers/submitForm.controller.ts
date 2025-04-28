@@ -21,8 +21,8 @@ export const submitForm = async (req: Request, res: Response) => {
       userEmail?: string | null;
     } = req.body;
 
-    console.log("Received answers:", answers);
-    console.log("Send email copy:", sendEmailCopy);
+    // console.log("Received answers:", answers);
+    // console.log("Send email copy:", sendEmailCopy);
 
     const userId = req.user.id;
 
@@ -83,7 +83,7 @@ export const submitForm = async (req: Request, res: Response) => {
       return;
     }
 
-    console.log("All questions answered:", answerQuestionIds);
+    // console.log("All questions answered:", answerQuestionIds);
 
     // Validate answer types
     const invalidAnswers = [];
@@ -93,7 +93,7 @@ export const submitForm = async (req: Request, res: Response) => {
       if (!question) continue;
 
       let isValid = true;
-      console.log(`Validating question ${parsedQuestionId} (${question.questionType}):`, value);
+      // console.log(`Validating question ${parsedQuestionId} (${question.questionType}):`, value);
 
       switch (question.questionType) {
         case "INTEGER":
@@ -124,7 +124,7 @@ export const submitForm = async (req: Request, res: Response) => {
       }
 
       if (!isValid) {
-        console.log(`Invalid answer for question ${parsedQuestionId}:`, value);
+        // console.log(`Invalid answer for question ${parsedQuestionId}:`, value);
         invalidAnswers.push(parsedQuestionId);
       }
     }
@@ -153,11 +153,11 @@ export const submitForm = async (req: Request, res: Response) => {
           data: { updatedAt: new Date() }, // Empty update triggers updatedAt
         });
 
-        console.log("Form updated:", {
-          id: updatedForm.id,
-          createdAt: updatedForm.createdAt,
-          updatedAt: updatedForm.updatedAt,
-        });
+        // console.log("Form updated:", {
+        //   id: updatedForm.id,
+        //   createdAt: updatedForm.createdAt,
+        //   updatedAt: updatedForm.updatedAt,
+        // });
 
         // Create new answers
         await Promise.all(

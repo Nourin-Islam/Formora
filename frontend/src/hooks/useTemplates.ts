@@ -19,7 +19,7 @@ export const useTemplates = (filters?: FilterOptions) => {
       // console.log("Response from API:", response.data); // Log the response data
       return response.data;
     },
-    staleTime: 0,
+    staleTime: 30000, // 30 seconds,
     refetchInterval: false,
   });
 };

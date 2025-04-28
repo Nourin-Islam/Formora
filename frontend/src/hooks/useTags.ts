@@ -27,7 +27,7 @@ export const useTags = (params: TagQueryParams) => {
       console.log("Response from API:", response.data); // Log the response data
       return response.data;
     },
-    staleTime: 0, // Adjust the stale time as needed
+    staleTime: 300000, // 5 minutes
   });
 };
 

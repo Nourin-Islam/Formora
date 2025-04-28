@@ -29,7 +29,6 @@ export default function TopicsPieChartSection() {
     );
   }
 
-  // Process data for the chart
   const chartData = (Array.isArray(topicsData) ? topicsData : [])
     .filter((topic): topic is Topic => typeof topic === "object" && topic !== null && "topicId" in topic && "topicName" in topic && "templateCount" in topic)
     .map((topic) => ({
@@ -37,7 +36,23 @@ export default function TopicsPieChartSection() {
       value: topic.templateCount,
       id: topic.topicId,
     }))
-    .filter((item) => item.value > 0); // Exclude topics with zero templates
+    .filter((item) => item.value > 0);
+
+  // This function renders label *inside* each pie slice
+  const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index, name }: any) => {
+    const RADIAN = Math.PI / 180;
+    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+    return (
+      <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" fontSize={14} style={{ pointerEvents: "none" }}>
+        {name}
+        {/* Optionally add percent */}
+        {/* {" "}{(percent * 100).toFixed(0)}% */}
+      </text>
+    );
+  };
 
   return (
     <div className="container mx-auto">
@@ -48,18 +63,23 @@ export default function TopicsPieChartSection() {
           <div className="h-[380px]">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie data={chartData} cx="50%" cy="50%" labelLine={false} outerRadius={150} fill="#8884d8" dataKey="value" label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}>
+                <Pie data={chartData} cx="50%" cy="50%" outerRadius={150} fill="#8884d8" dataKey="value" label={renderCustomizedLabel} labelLine={false}>
                   {chartData.map((entry, index) => (
                     <Cell key={`cell-${entry.id}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(value: number) => [`${value} templates`, "Count"]} />
+                <Tooltip
+                  formatter={(value: number, name: string) => {
+                    const topic = chartData.find((item) => item.name === name);
+                    return [`${topic?.value || value} templates`, name];
+                  }}
+                  contentStyle={{ backgroundColor: "#fff", borderRadius: "8px", border: "1px solid #ddd" }}
+                />
                 <Legend
                   layout="horizontal"
                   verticalAlign="bottom"
                   align="center"
                   formatter={(value) => {
-                    // Find the corresponding data point to get the count
                     const dataPoint = chartData.find((item) => item.name === value);
                     return (
                       <span className="text-sm text-foreground">
@@ -71,18 +91,6 @@ export default function TopicsPieChartSection() {
               </PieChart>
             </ResponsiveContainer>
           </div>
-
-          {/* Additional stats
-          <div className="mt-6 grid grid-cols-2 md:grid-cols-3 gap-4">
-            {chartData.map((topic, index) => (
-              <div key={topic.id} className="flex items-center space-x-2">
-                <div className="w-4 h-4 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
-                <span className="text-sm">
-                  {topic.name}: {topic.value}
-                </span>
-              </div>
-            ))}
-          </div> */}
         </CardContent>
       </Card>
     </div>

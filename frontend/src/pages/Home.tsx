@@ -14,16 +14,16 @@ export default function Home() {
     <>
       <SEO title="Formora" description="Build powerful forms effortlessly with Formora. Create surveys, quizzes, registrations, and more — all in just a few clicks." />
       <div>
-        <h2 className="text-2xl font-bold mb-4 text-center">{t("common.home.welcome")}</h2>
-        <h3 className="text-xl text-center mb-2">{t("common.home.subtitle")}</h3>
-        <p className="text-center mb-8">{t("common.home.description")}</p>
+        {/* <h2 className="text-2xl font-bold mb-4 text-center">{t("common.home.welcome")}</h2> */}
+        <h3 className="text-lg font-bold text-center mb-2">{t("common.home.subtitle")}</h3>
+        <p className="text-sm text-center mb-4">{t("common.home.description")}</p>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8 items-stretch">
-          <div className="col-start-1 col-end-4 lg:col-end-3">
+          <div className="col-start-1 col-end-2 lg:col-end-3">
             <LatestTemplatesSection />
           </div>
 
-          <div className="col-start-1 col-end-4 lg:col-start-3 lg:col-end-4">
+          <div className="col-start-1 col-end-2 lg:col-start-3 lg:col-end-4">
             <TagCloudSection />
             <TopicsChart />
           </div>
