@@ -1,0 +1,3 @@
+{
+  "rewrites": [{ "source": "https://formora.vercel.app/(.*)", "destination": "https://formora.vercel.app/" }]
+}
