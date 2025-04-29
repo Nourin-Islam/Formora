@@ -190,7 +190,7 @@ export default function SearchPage() {
 
           {showFilters && <TemplateFilters filters={filters} onFilterChange={handleFilterChange} topics={topics} />}
 
-          <TemplateList templates={templates} isLoading={isLoading} isError={!!error} userId={userId ?? null} filters={filters} totalPages={totalPages} onPageChange={handlePageChange} onRefetch={fetchSearchResults} onLike={handleLike} onUnlike={handleUnLike} onView={handleViewTemplate} onEdit={handleEditTemplate} onDelete={handleDeleteTemplate} isDeleting={isDeleting} emptyStateMessage={`${t("common.search.No templates found matching")} "${query}"`} createButtonText={t("common.search.Create a new template")} />
+          <TemplateList error={error} templates={templates} isLoading={isLoading} isError={!!error} userId={userId ?? null} filters={filters} totalPages={totalPages} onPageChange={handlePageChange} onLike={handleLike} onUnlike={handleUnLike} onView={handleViewTemplate} onEdit={handleEditTemplate} onDelete={handleDeleteTemplate} isDeleting={isDeleting} emptyStateMessage={`${t("common.search.No templates found matching")} "${query}"`} createButtonText={t("common.search.Create a new template")} />
         </div>
       ) : (
         <div className="  container mx-auto py-8 flex flex-col items-center justify-center min-h-[calc(100vh-400px)]">

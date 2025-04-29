@@ -11,6 +11,7 @@ import { useState, useMemo } from "react";
 import SmallSkeleton from "@/components/global/SmallSkeleton";
 import { useTranslation } from "react-i18next";
 import { Eye } from "lucide-react";
+import ErrorReload from "@/components/global/ErrorReload";
 
 interface SubmissionRow {
   form_id: number;
@@ -113,16 +114,7 @@ function TemplatesPreviousSubmissions({ id }: { id: string }) {
 
   if (isLoading) return <SmallSkeleton />;
 
-  if (error) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("common.subPrevious.Previous Submissions")}</CardTitle>
-        </CardHeader>
-        <CardContent className="text-center py-8 text-red-500">{t("common.subPrevious.Failed to load submissions")}</CardContent>
-      </Card>
-    );
-  }
+  if (error) return <ErrorReload error={error} />;
 
   if (sortedSubmissions.length === 0) {
     return (

@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { prisma } from "../lib/prisma";
 import { refreshEvents } from "../lib/refresh";
+import { cache } from "../lib/cache";
 
 export const getAllTags = async (req: Request, res: Response) => {
   try {
@@ -10,20 +11,37 @@ export const getAllTags = async (req: Request, res: Response) => {
     const sortOrder = (req.query.sortOrder as string) || "asc";
     const nameFilter = (req.query.name as string) || undefined;
 
+    const cacheKey = `tags:${page}:${limit}:${sortBy}:${sortOrder}:${nameFilter}`;
+    const cachedTags = await cache.get(cacheKey);
+
+    if (cachedTags) {
+      const parsedTags = typeof cachedTags === "string" ? JSON.parse(cachedTags) : cachedTags;
+      const totalCount = await prisma.tag.count({
+        where: nameFilter ? { name: { contains: nameFilter, mode: "insensitive" } } : undefined,
+      });
+
+      return res.json({
+        tags: parsedTags,
+        totalPages: Math.ceil(totalCount / limit),
+        hasNextPage: page * limit < totalCount,
+        cached: true,
+      });
+    }
+
+    // Fetch from DB if not in cache
     const tags = await prisma.tag.findMany({
       where: nameFilter ? { name: { contains: nameFilter, mode: "insensitive" } } : undefined,
-      // orderBy ID ascending by default
-      // orderBy: { id: sortOrder === "asc" ? "asc" : "desc" },
       orderBy: { [sortBy]: sortOrder },
-      // orderBy: { id: sortOrder },
       skip: (page - 1) * limit,
       take: limit,
     });
 
-    // console.log("Tags fetched:", tags);
     const totalCount = await prisma.tag.count({
       where: nameFilter ? { name: { contains: nameFilter, mode: "insensitive" } } : undefined,
     });
+
+    // Set cache
+    cache.set(cacheKey, JSON.stringify(tags), 5 * 60); // 5 min TTL
 
     res.json({
       tags,

@@ -3,6 +3,7 @@ import { useTopicsData } from "@/hooks/useTemplates";
 import SmallSkeleton from "@/components/global/SmallSkeleton";
 import { Card, CardContent } from "@/components/ui/card";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
+import ErrorReload from "../global/ErrorReload";
 
 type Topic = {
   topicId: number;
@@ -14,20 +15,11 @@ const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#A28DFF", "#FF6B6B"
 
 export default function TopicsPieChartSection() {
   const { t } = useTranslation("common");
-  const { data: topicsData, isLoading, isError, refetch } = useTopicsData();
+  const { data: topicsData, isLoading, isError, error } = useTopicsData();
 
   if (isLoading) return <SmallSkeleton />;
 
-  if (isError) {
-    return (
-      <div className="container mx-auto py-8 text-center">
-        <p className="text-red-500">{t("Failed to load topics. Please try again.")}</p>
-        <button onClick={() => refetch()} className="mt-4 px-4 py-2 bg-primary text-white rounded hover:bg-primary-dark">
-          {t("Retry")}
-        </button>
-      </div>
-    );
-  }
+  if (isError) return <ErrorReload error={error} />;
 
   const chartData = (Array.isArray(topicsData) ? topicsData : [])
     .filter((topic): topic is Topic => typeof topic === "object" && topic !== null && "topicId" in topic && "topicName" in topic && "templateCount" in topic)

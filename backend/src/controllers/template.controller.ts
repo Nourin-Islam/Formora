@@ -5,16 +5,24 @@ import { refreshEvents } from "../lib/refresh";
 
 export const getAllTemplates = async (req: Request, res: Response) => {
   try {
+    if (!req.user) return res.status(401).json({ message: "Unauthorized" });
+    const userId = req.user.id;
+    const isAdmin = req.user.isAdmin;
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
     const offset = (page - 1) * limit;
-    const sortBy = (req.query.sortBy as string) || "createdAt";
-    const sortOrder = (req.query.sortOrder as string) || "desc";
+    let sortBy = (req.query.sortBy as string) || "createdAt";
+    let sortOrder = (req.query.sortOrder as string) || "desc";
+    const allowedSortFields = ["createdAt", "title", "updatedAt"];
+    const allowedSortOrder = ["asc", "desc"];
+
+    if (!allowedSortFields.includes(sortBy)) sortBy = "createdAt";
+    if (!allowedSortOrder.includes(sortOrder)) sortOrder = "desc";
 
     const titleFilter = req.query.title as string | undefined;
     const topicId = req.query.topicId ? parseInt(req.query.topicId as string) : undefined;
     const isPublic = req.query.isPublic === "true" ? true : req.query.isPublic === "false" ? false : undefined;
-    const userId = req.query.userId ? parseInt(req.query.userId as string) : undefined;
+    // const userId = req.query.userId ? parseInt(req.query.userId as string) : undefined;
     const isPublished = req.query.isPublished === "true" ? true : req.query.isPublished === "false" ? false : undefined;
     const tagName = req.query.tag as string | undefined;
 
@@ -28,18 +36,42 @@ export const getAllTemplates = async (req: Request, res: Response) => {
 
     const whereClause = filters.length > 0 ? `WHERE ${filters.join(" AND ")}` : "";
 
-    // const cacheKey = `joined-view:${page}:${limit}:${sortBy}:${sortOrder}:${JSON.stringify(filters)}`;
-    // const cached = cache.get(cacheKey);
-    // if (cached) {
-    //   return res.json(cached);
-    // }
+    const filterParams = {
+      titleFilter,
+      topicId,
+      userId: isAdmin ? undefined : userId,
+      isPublic,
+      isPublished,
+      tagName,
+    };
+    const cacheKey = `joined-view:${page}:${limit}:${sortBy}:${sortOrder}:${JSON.stringify(filterParams)}`;
 
-    const templates = await prisma.$queryRawUnsafe<any[]>(`
-      SELECT * FROM template_search_view t
-      ${whereClause}
-      ORDER BY t."${sortBy}" ${sortOrder}
-      LIMIT ${limit} OFFSET ${offset}
-    `);
+    const cached = await cache.get(cacheKey);
+    if (cached) {
+      return res.json(typeof cached === "string" ? JSON.parse(cached) : cached);
+    }
+
+    // if isAdmin, fetch all templates
+    // if not, fetch only  templates created by the user
+
+    let templates: any[] = [];
+    if (isAdmin) {
+      templates = await prisma.$queryRawUnsafe<any[]>(`
+        SELECT * FROM template_search_view t
+        ${whereClause}
+        ORDER BY t."${sortBy}" ${sortOrder}
+        LIMIT ${limit} OFFSET ${offset}
+      `);
+    } else {
+      templates = await prisma.$queryRawUnsafe<any[]>(`
+        SELECT * FROM template_search_view t
+        ${whereClause}
+        AND t."user"->>'id' = '${userId}'
+        ORDER BY t."${sortBy}" ${sortOrder}
+        LIMIT ${limit} OFFSET ${offset}
+      `);
+    }
+    // console.log("Templates fetched from view:", templates);
 
     const countResult = await prisma.$queryRawUnsafe<any[]>(`
       SELECT COUNT(*) FROM template_search_view t
@@ -83,7 +115,7 @@ export const getAllTemplates = async (req: Request, res: Response) => {
       totalCount,
     };
 
-    // cache.set(cacheKey, responseData);
+    cache.set(cacheKey, JSON.stringify(responseData), 60 * 5); // Cache for 5 minutes
     // console.log("Templates fetched from view:", responseData);
 
     res.json(responseData);
@@ -95,6 +127,10 @@ export const getAllTemplates = async (req: Request, res: Response) => {
 
 export const getTemplateById = async (req: Request, res: Response) => {
   try {
+    if (!req.user) return res.status(401).json({ message: "Unauthorized" });
+    const userId = req.user.id;
+    const isAdmin = req.user.isAdmin;
+
     const templateId = parseInt(req.params.id);
 
     const template = await prisma.template.findUnique({
@@ -137,6 +173,10 @@ export const getTemplateById = async (req: Request, res: Response) => {
       },
     });
 
+    // if not isAdmin and template.user.clerkId !== userId, then reutrn 403
+    if (!isAdmin && template?.user.id !== Number(userId)) {
+      return res.status(403).json({ error: "Not authorized to access this template" });
+    }
     if (!template) {
       return res.status(404).json({ error: "Template not found" });
     }

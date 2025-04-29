@@ -13,6 +13,7 @@ import FourTemplatesSkeleton from "../global/FourTemplatesSkeleton";
 import { useLatestTemplates, useDeleteTemplate } from "@/hooks/useTemplates";
 import { useLikeTemplate, useUnlikeTemplate } from "@/hooks/useTemplateInteractions";
 import type { Template } from "@/types";
+import ErrorReload from "@/components/global/ErrorReload";
 
 export default function LatestTemplatesSection() {
   const { t } = useTranslation("common");
@@ -30,7 +31,7 @@ export default function LatestTemplatesSection() {
     sortOrder: "desc",
   };
 
-  const { data: templatesData, isLoading, isError, refetch } = useLatestTemplates();
+  const { data: templatesData, isLoading, isError, error, refetch } = useLatestTemplates();
   const { mutate: deleteTemplate, isPending: isDeleting } = useDeleteTemplate();
   const likeMutation = useLikeTemplate([["templates", filters], ["popular-templates"], ["latest-templates"]]);
   const unlikeMutation = useUnlikeTemplate([["templates", filters], ["popular-templates"], ["latest-templates"]]);
@@ -113,16 +114,7 @@ export default function LatestTemplatesSection() {
 
   if (isLoading) return <FourTemplatesSkeleton />;
 
-  if (isError) {
-    return (
-      <div className="container mx-auto py-8 text-center">
-        <p className="text-red-500">{t("common.home.latest.load_templates_failed")}</p>
-        <Button onClick={() => refetch()} className="mt-4">
-          {t("common.home.latest.retry")}
-        </Button>
-      </div>
-    );
-  }
+  if (isError) return <ErrorReload error={error} />;
 
   return (
     <section className="container mx-auto py-8">

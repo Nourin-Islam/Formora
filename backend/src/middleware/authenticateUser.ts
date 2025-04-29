@@ -17,7 +17,7 @@ export const authenticateUser = async (req: Request, res: Response, next: NextFu
     // console.log("Fetched user:", user);
 
     if (!user) {
-      res.status(404).json({ error: "User not found" });
+      res.status(401).json({ error: "User not found" });
       return;
     }
 
@@ -34,7 +34,7 @@ export const authenticateUser = async (req: Request, res: Response, next: NextFu
       isAdmin: user.isAdmin,
       status: user.status,
     };
-
+    // console.log("User authenticated:", req.user);
     next(); // ✅ go to next middleware
   } catch (error) {
     console.error("Authentication failed:", error);

@@ -156,7 +156,7 @@
       "updated": "updated",
       "successfully": "successfully",
       "Failed to update template": "Failed to update template",
-      "Error loading template:": "Error loading template:",
+      "Error_loading_template": "Error loading template:",
       "Template not found": "Template not found",
       "Manage Template": "Manage Template",
       "Edit Details || Add Question || Change Access || Check Submissions": "Edit Details || Add Question || Change Access || Check Submissions",
@@ -432,6 +432,9 @@
       "Retry": "Retry",
       "Explore_by_Tags": "Explore by Tags",
       "Show Less": "Show Less"
+    },
+    "tError": {
+      "Error_loading_request": "Error loading what you requested"
     },
     "Create New Template": "Create New Template"
   }

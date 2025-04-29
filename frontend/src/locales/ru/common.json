@@ -152,7 +152,7 @@
       "updated": "обновлен",
       "successfully": "успешно",
       "Failed to update template": "Не удалось обновить шаблон",
-      "Error loading template:": "Ошибка загрузки шаблона:",
+      "Error_loading_template": "Ошибка загрузки шаблона:",
       "Template not found": "Шаблон не найден",
       "Manage Template": "Управление шаблоном",
       "Edit Details || Add Question || Change Access || Check Submissions": "Редактировать детали || Добавить вопрос || Изменить доступ || Просмотреть отправки",
@@ -430,6 +430,9 @@
       "Retry": "Повторить",
       "Explore_by_Tags": "Поиск по тегам",
       "Show Less": "Показать меньше"
+    },
+    "tError": {
+      "Error_loading_request": "Ошибка загрузки запроса:"
     },
     "Create New Template": "Создать новый шаблон"
   }

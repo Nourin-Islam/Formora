@@ -12,6 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 
 import { usePopularTemplates } from "@/hooks/useTemplates";
 import SmallSkeleton from "@/components/global/SmallSkeleton";
+import ErrorReload from "@/components/global/ErrorReload";
 
 type SortField = "title" | "createdAt" | "topic" | "likesCount" | "questionCount" | "submissionCount" | "user";
 
@@ -24,7 +25,7 @@ export default function TrendingTemplatesSection() {
   }>({ field: "createdAt", direction: "desc" });
 
   // Data fetching
-  const { data: templatesData, isLoading, isError, refetch } = usePopularTemplates();
+  const { data: templatesData, isLoading, isError, error } = usePopularTemplates();
 
   // Sort templates
   const sortedTemplates = [...(templatesData?.templates || [])].sort((a, b) => {
@@ -72,16 +73,7 @@ export default function TrendingTemplatesSection() {
   // Loading and error states
   if (isLoading) return <SmallSkeleton />;
 
-  if (isError) {
-    return (
-      <div className="container mx-auto py-8 text-center">
-        <p className="text-red-500">{t("common.home.trending.error.loadTemplates")}</p>
-        <Button onClick={() => refetch()} className="mt-4">
-          {t("common.home.trending.action.retry")}
-        </Button>
-      </div>
-    );
-  }
+  if (isError) return <ErrorReload error={error} />;
 
   return (
     <div className="">

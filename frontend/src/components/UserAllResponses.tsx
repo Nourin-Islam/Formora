@@ -11,6 +11,7 @@ import { useState } from "react";
 import { Eye } from "lucide-react";
 import SmallSkeleton from "@/components/global/SmallSkeleton";
 import { useTranslation } from "react-i18next";
+import ErrorReload from "@/components/global/ErrorReload";
 
 interface FormResponse {
   form_id: number;
@@ -51,16 +52,7 @@ function UserAllResponses() {
 
   if (isLoading) return <SmallSkeleton />;
 
-  if (error) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("common.uAllResponses.My Form Responses")}</CardTitle>
-        </CardHeader>
-        <CardContent className="text-center py-8 text-red-500">{t("common.uAllResponses.Failed to load responses")}</CardContent>
-      </Card>
-    );
-  }
+  if (error) return <ErrorReload error={error} />;
 
   if (sortedResponses.length === 0) {
     return (

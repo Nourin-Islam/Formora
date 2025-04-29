@@ -21,6 +21,7 @@ import { useTranslation } from "react-i18next";
 import MDEditor from "@uiw/react-md-editor";
 import { useThemeStore } from "@/store/themeStore";
 import useSEO from "@/hooks/useSEO";
+import ErrorReload from "@/components/global/ErrorReload";
 
 const FormFill = () => {
   useSEO({
@@ -250,16 +251,7 @@ const FormFill = () => {
     return <SmallSkeleton />;
   }
 
-  if (error) {
-    return (
-      <div className="container max-w-4xl py-8">
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{(error as any)?.response?.data?.error || t("common.fFill.Failed to load form")}</AlertDescription>
-        </Alert>
-      </div>
-    );
-  }
+  if (error) return <ErrorReload error={error} />;
 
   if (!template) {
     return (

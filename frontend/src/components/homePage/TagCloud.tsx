@@ -5,6 +5,7 @@ import SmallSkeleton from "@/components/global/SmallSkeleton";
 import { Card, CardContent } from "@/components/ui/card";
 import { useState } from "react";
 import { TagCloud } from "@/types";
+import ErrorReload from "@/components/global/ErrorReload";
 
 // 👉 New type to include "count"
 type TagWithCount = TagCloud & { count: number };
@@ -13,7 +14,7 @@ const TOP_TAGS_LIMIT = 20; // Show top 20 tags by default
 
 export default function TagCloudSection() {
   const { t } = useTranslation("common");
-  const { data: tags, isLoading, isError, refetch } = useTagCloud();
+  const { data: tags, isLoading, isError, error } = useTagCloud();
   const [showAllTags, setShowAllTags] = useState(false);
 
   const getTagSize = (count: number, maxCount: number) => {
@@ -27,16 +28,7 @@ export default function TagCloudSection() {
 
   if (isLoading) return <SmallSkeleton />;
 
-  if (isError) {
-    return (
-      <div className="container mx-auto py-8 text-center">
-        <p className="text-red-500">{t("common.tCloud.Failed to load tags. Please try again.")}</p>
-        <button onClick={() => refetch()} className="mt-4 px-4 py-2 bg-primary text-white rounded hover:bg-primary-dark">
-          {t("common.tCloud.Retry")}
-        </button>
-      </div>
-    );
-  }
+  if (isError) return <ErrorReload error={error} />;
 
   // 👉 Use the new type
   const processedTags: TagWithCount[] = (Array.isArray(tags) ? tags : [])

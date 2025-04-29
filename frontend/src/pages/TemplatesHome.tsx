@@ -41,7 +41,7 @@ export default function TemplatesHome() {
   const topics = topicsData?.topics || [];
 
   // Fetch templates with filters
-  const { data: templatesData, isLoading, isError, refetch } = useTemplates(filters);
+  const { data: templatesData, isLoading, isError, error, refetch } = useTemplates(filters);
   const templates = templatesData?.templates || [];
   const totalPages = templatesData?.totalPages || 1;
 
@@ -140,7 +140,7 @@ export default function TemplatesHome() {
 
           {showFilters && <TemplateFilters filters={filters} onFilterChange={handleFilterChange} topics={topics} />}
 
-          <TemplateList templates={templates} isLoading={isLoading} isError={isError} userId={userId ?? null} filters={filters} totalPages={totalPages} onPageChange={handlePageChange} onRefetch={refetch} onLike={handleLike} onUnlike={handleUnLike} onView={handleViewTemplate} onEdit={handleEditTemplate} onDelete={handleDeleteTemplate} isDeleting={isDeleting} emptyStateMessage={t("common.thome.No templates found")} createButtonText={t("common.thome.Create your first template")} />
+          <TemplateList error={error} templates={templates} isLoading={isLoading} isError={isError} userId={userId ?? null} filters={filters} totalPages={totalPages} onPageChange={handlePageChange} onLike={handleLike} onUnlike={handleUnLike} onView={handleViewTemplate} onEdit={handleEditTemplate} onDelete={handleDeleteTemplate} isDeleting={isDeleting} emptyStateMessage={t("common.thome.No templates found")} createButtonText={t("common.thome.Create your first template")} />
         </TabsContent>
         <TabsContent value="submissions" className="space-y-4">
           <UserAllResponses />

@@ -17,8 +17,9 @@ import { toast } from "sonner";
 import { topicFormSchema } from "@/types";
 import { Topic } from "@/hooks/useTopics";
 import { useTopics, useCreateTopic, useUpdateTopic, useDeleteTopic, useBulkDeleteTopics } from "@/hooks/useTopics";
-import { useTranslation } from "react-i18next";
+
 import useSEO from "@/hooks/useSEO";
+import ErrorReload from "@/components/global/ErrorReload";
 
 export const columns: ColumnDef<Topic, any>[] = [
   {
@@ -46,7 +47,7 @@ export default function ManageTopics() {
     description: "Manage your topics effectively with Formora.",
     keywords: "topics, management, Formora",
   });
-  const { t } = useTranslation();
+
   // State for table controls
   const [nameFilter, setNameFilter] = useState("");
   const [debouncedNameFilter] = useDebounce(nameFilter, 700);
@@ -165,16 +166,7 @@ export default function ManageTopics() {
 
   if (isLoading) return <LoadingSpinner />;
 
-  if (isError) {
-    return (
-      <div className="text-red-500">
-        Error loading topics: {error?.message}
-        <Button variant="outline" onClick={() => window.location.reload()}>
-          {t("Retry")}
-        </Button>
-      </div>
-    );
-  }
+  if (isError) return <ErrorReload error={error} />;
 
   return (
     <div className="space-y-4">

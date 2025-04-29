@@ -5,7 +5,7 @@ import { getAllTemplates, getTemplateById, createTemplate, updateTemplate, delet
 const router = express.Router();
 
 // @ts-ignore
-router.get("/:id", getTemplateById);
+router.get("/:id", authenticateUser, getTemplateById);
 
 // @ts-ignore
 router.put("/:id", authenticateUser, updateTemplate);
@@ -14,7 +14,7 @@ router.put("/:id", authenticateUser, updateTemplate);
 router.delete("/:id", authenticateUser, deleteTemplate);
 
 // @ts-ignore
-router.get("/", getAllTemplates);
+router.get("/", authenticateUser, getAllTemplates);
 
 // @ts-ignore
 router.post("/", authenticateUser, createTemplate);

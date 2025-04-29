@@ -16,6 +16,7 @@ import { useAuth } from "@clerk/clerk-react";
 import { Eye, FilePenIcon, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import useSEO from "@/hooks/useSEO";
+import ErrorReload from "@/components/global/ErrorReload";
 
 const FormView = () => {
   useSEO({
@@ -62,16 +63,7 @@ const FormView = () => {
     return <SmallSkeleton />;
   }
 
-  if (error) {
-    return (
-      <div className="container max-w-4xl py-8">
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{(error as any)?.response?.data?.error || t("common.fView.Failed to load form")}</AlertDescription>
-        </Alert>
-      </div>
-    );
-  }
+  if (error) return <ErrorReload error={error} />;
 
   if (!form) {
     return (

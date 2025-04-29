@@ -22,6 +22,7 @@ import { useTranslation } from "react-i18next";
 import { useMemo } from "react";
 import { camelToPascal } from "@/lib/utils";
 import useSEO from "@/hooks/useSEO";
+import ErrorReload from "@/components/global/ErrorReload";
 
 export default function ManageTagsTable() {
   useSEO({
@@ -230,16 +231,7 @@ export default function ManageTagsTable() {
 
   if (isLoading) return <SmallSkeleton />;
 
-  if (isError) {
-    return (
-      <div className="text-red-500">
-        {t("common.tags.Error loading tags:")} {error?.message}
-        <Button variant="outline" onClick={() => window.location.reload()}>
-          {t("common.tags.Retry")}
-        </Button>
-      </div>
-    );
-  }
+  if (isError) return <ErrorReload error={error} />;
 
   return (
     <div className="space-y-4">

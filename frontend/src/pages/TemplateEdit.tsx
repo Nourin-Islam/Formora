@@ -21,6 +21,7 @@ import { useTranslation } from "react-i18next";
 import { useThemeStore } from "@/store/themeStore";
 import TemplatesPreviousSubmissions from "@/components/templateShow/TemplatesPreviousSubmissions";
 import useSEO from "@/hooks/useSEO";
+import ErrorReload from "@/components/global/ErrorReload";
 
 export default function TemplateEdit() {
   useSEO({
@@ -142,12 +143,8 @@ export default function TemplateEdit() {
   };
 
   if (isLoading) return <TemplatesSkeleton />;
-  if (error)
-    return (
-      <div className="text-red-500">
-        {t("common.tedit.Error loading template:")} {error.message}
-      </div>
-    );
+  if (error) return <ErrorReload error={error} />;
+
   if (!template) return <div>{t("common.tedit.Template not found")}</div>;
 
   return (

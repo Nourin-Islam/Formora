@@ -9,6 +9,7 @@ import { Pagination } from "@/components/ui/pagination";
 import TemplatesSkeleton from "@/components/global/TemplatesSkeleton";
 import TemplateCard from "./TemplateCard";
 import { TemplateFilterOptions, Template } from "@/types";
+import ErrorReload from "@/components/global/ErrorReload";
 
 import { useTranslation } from "react-i18next";
 
@@ -16,11 +17,12 @@ interface TemplateListProps {
   templates: Template[];
   isLoading: boolean;
   isError: boolean;
+  error?: any;
   userId: string | null;
   filters: TemplateFilterOptions;
   totalPages: number;
   onPageChange: (page: number) => void;
-  onRefetch: () => void;
+
   onLike: (templateId: number) => void;
   onUnlike: (templateId: number) => void;
   onView?: (templateId: number) => void;
@@ -31,7 +33,7 @@ interface TemplateListProps {
   createButtonText?: string;
 }
 
-export default function TemplateList({ templates = [], isLoading = false, isError = false, userId, filters, totalPages = 1, onPageChange, onRefetch, onLike, onUnlike, onView, onEdit, onDelete, isDeleting = false, emptyStateMessage = "No templates found", createButtonText = "Create Template" }: TemplateListProps) {
+export default function TemplateList({ templates = [], isLoading = false, isError = false, userId, filters, totalPages = 1, onPageChange, error, onLike, onUnlike, onView, onEdit, onDelete, isDeleting = false, emptyStateMessage = "No templates found", createButtonText = "Create Template" }: TemplateListProps) {
   const navigate = useNavigate();
   const { t } = useTranslation("common");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false);
@@ -61,16 +63,7 @@ export default function TemplateList({ templates = [], isLoading = false, isErro
     return <TemplatesSkeleton />;
   }
 
-  if (isError) {
-    return (
-      <div className="container mx-auto py-8 text-center">
-        <p className="text-red-500">{t("common.tList.Failed to load templates. Please try again.")}</p>
-        <Button onClick={onRefetch} className="mt-4">
-          {t("common.tList.Retry")}
-        </Button>
-      </div>
-    );
-  }
+  if (isError) return <ErrorReload error={error} />;
 
   return (
     <>

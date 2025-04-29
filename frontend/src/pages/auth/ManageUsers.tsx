@@ -14,6 +14,7 @@ import { useUsers, useUpdateUserAdmin, useUpdateUserBlock, useDeleteUser } from 
 import SmallSkeleton from "@/components/global/SmallSkeleton";
 import { useTranslation } from "react-i18next";
 import { useMemo } from "react";
+import ErrorReload from "@/components/global/ErrorReload";
 
 export default function ManageUsersTable() {
   // State for table controls
@@ -117,16 +118,7 @@ export default function ManageUsersTable() {
 
   if (isLoading) return <SmallSkeleton />;
 
-  if (isError) {
-    return (
-      <div className="container mx-auto py-8 text-center">
-        <p className="text-red-500">{error?.message}</p>
-        <Button onClick={() => window.location.reload()} className="mt-4">
-          {t("common.users.Retry")}
-        </Button>
-      </div>
-    );
-  }
+  if (isError) return <ErrorReload error={error} />;
 
   return (
     <div className="space-y-4">
@@ -139,7 +131,7 @@ export default function ManageUsersTable() {
                 {t("common.users.Make Admin")}
               </Button>
             </TooltipTrigger>
-            <TooltipContent>{t("common.users.common.users.Make selected users admin")}</TooltipContent>
+            <TooltipContent>{t("common.users.Make selected users admin")}</TooltipContent>
           </Tooltip>
 
           <Tooltip>
