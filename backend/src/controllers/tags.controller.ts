@@ -49,7 +49,7 @@ export const getAllTags = async (req: Request, res: Response) => {
       hasNextPage: page * limit < totalCount,
     });
   } catch (err) {
-    res.status(500).json({ error: "Failed to fetch tags" });
+    res.status(500).json({ message: "Failed to fetch tags" });
   }
 };
 
@@ -90,7 +90,7 @@ export const createTag = async (req: Request, res: Response) => {
     console.log("Tag created:", tag);
     refreshEvents.emit("refreshView");
   } catch (err) {
-    res.status(500).json({ error: "Failed to create tag" });
+    res.status(500).json({ message: "Failed to create tag" });
   }
 };
 
@@ -108,9 +108,9 @@ export const updateTag = async (req: Request, res: Response) => {
     refreshEvents.emit("refreshView");
   } catch (err: any) {
     if (err.code === "P2025") {
-      res.status(404).json({ error: "Tag not found" });
+      res.status(404).json({ message: "Tag not found" });
     } else {
-      res.status(500).json({ error: "Failed to update tag" });
+      res.status(500).json({ message: "Failed to update tag" });
     }
   }
 };
@@ -125,9 +125,9 @@ export const deleteTag = async (req: Request, res: Response) => {
     refreshEvents.emit("refreshView");
   } catch (err: any) {
     if (err.code === "P2025") {
-      res.status(404).json({ error: "Tag not found" });
+      res.status(404).json({ message: "Tag not found" });
     } else {
-      res.status(500).json({ error: "Failed to delete tag" });
+      res.status(500).json({ message: "Failed to delete tag" });
     }
   }
 };
@@ -138,11 +138,11 @@ export const getTagById = async (req: Request, res: Response) => {
     const tagId = parseInt(req.params.id);
     const tag = await prisma.tag.findUnique({ where: { id: tagId } });
 
-    if (!tag) return res.status(404).json({ error: "Tag not found" });
+    if (!tag) return res.status(404).json({ message: "Tag not found" });
 
     res.json(tag);
   } catch (err) {
-    res.status(500).json({ error: "Failed to fetch tag" });
+    res.status(500).json({ message: "Failed to fetch tag" });
   }
 };
 

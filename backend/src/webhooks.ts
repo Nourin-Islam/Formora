@@ -20,7 +20,7 @@ export const handleClerkWebhook = async (req: Request, res: Response, next: Next
 
   if (!WEBHOOK_SECRET) {
     console.error("Missing Clerk webhook secret");
-    return res.status(500).json({ error: "Server configuration error" });
+    return res.status(500).json({ message: "Server configuration error" });
   }
 
   // Get raw body as string
@@ -42,7 +42,7 @@ export const handleClerkWebhook = async (req: Request, res: Response, next: Next
   } catch (err) {
     console.error("Webhook verification failed:", err);
     return res.status(401).json({
-      error: "Invalid webhook signature",
+      message: "Invalid webhook signature",
       details: err instanceof Error ? err.message : String(err),
     });
   }
@@ -88,7 +88,7 @@ export const handleClerkWebhook = async (req: Request, res: Response, next: Next
   } catch (error) {
     console.error("Webhook processing error:", error);
     res.status(500).json({
-      error: "Internal server error",
+      message: "Internal server error",
       details: error instanceof Error ? error.message : String(error),
     });
   }

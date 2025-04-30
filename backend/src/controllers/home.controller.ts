@@ -27,7 +27,7 @@ export const getLatestTemplates = async (_req: Request, res: Response) => {
     res.json(responseData);
   } catch (err) {
     console.error("Failed to fetch latest templates", err);
-    res.status(500).json({ error: "Error loading latest templates" });
+    res.status(500).json({ message: "Error loading latest templates" });
   }
 };
 
@@ -58,7 +58,7 @@ export const getPopularTemplates = async (_req: Request, res: Response) => {
     res.json(responseData);
   } catch (err) {
     console.error("Failed to fetch popular templates", err);
-    res.status(500).json({ error: "Error loading popular templates" });
+    res.status(500).json({ message: "Error loading popular templates" });
   }
 };
 
@@ -83,7 +83,7 @@ export const getTagCloud = async (_req: Request, res: Response) => {
     res.json(results);
   } catch (err) {
     console.error("Failed to fetch tag cloud", err);
-    res.status(500).json({ error: "Error loading tag cloud" });
+    res.status(500).json({ message: "Error loading tag cloud" });
   }
 };
 
@@ -115,7 +115,7 @@ export const getTopTopics = async (_req: Request, res: Response) => {
     res.json(parsedResults);
   } catch (err) {
     console.error("Failed to fetch top topics", err);
-    res.status(500).json({ error: "Error loading top topics" });
+    res.status(500).json({ message: "Error loading top topics" });
   }
 };
 

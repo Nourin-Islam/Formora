@@ -18,6 +18,7 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from "@/component
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MoreVertical, Trash2, Edit } from "lucide-react";
 import { useCommentsWebSocket } from "@/hooks/useCommentsWebSocket";
+import { useUser } from "@clerk/clerk-react";
 
 // Types
 interface Comment {
@@ -39,7 +40,10 @@ type CommentsProps = {
 
 export function Comments({ templateId }: CommentsProps) {
   const { getToken, userId } = useAuth();
-  const { comments, isConnected, requestingUser } = useCommentsWebSocket(templateId);
+  const { user } = useUser();
+  const isAdmin = user?.publicMetadata?.isAdmin === true;
+
+  const { comments, isConnected } = useCommentsWebSocket(templateId);
   const { t } = useTranslation("common");
   // const [requestingUser, setRequestingUser] = useState<RequestingUser | null>(null);
   const queryClient = useQueryClient();
@@ -48,7 +52,7 @@ export function Comments({ templateId }: CommentsProps) {
 
   // Form validation schema
   const commentFormSchema = z.object({
-    content: z.string().min(1, t("common.comments.Comment cannot be empty")).max(1000, t("common.comments.Comment too long")),
+    content: z.string().min(1, t("common.comments.Comment cannot be empty")).max(500, t("common.comments.Comment too long")),
   });
 
   // Cleanup function for pointer-events
@@ -150,7 +154,10 @@ export function Comments({ templateId }: CommentsProps) {
   // Check if user can edit/delete comment
   const canModifyComment = (commentUserId: number) => {
     if (!userId) return false;
-    return requestingUser?.userId === commentUserId.toString() || requestingUser?.isAdmin;
+    console.log("comment.UserId", commentUserId);
+    console.log("current user's Id", userId);
+
+    return userId === commentUserId.toString() || isAdmin;
   };
 
   // Handle dialog close
@@ -165,6 +172,7 @@ export function Comments({ templateId }: CommentsProps) {
     return <div>{t("common.comments.Connecting to live comments...")}</div>;
   }
 
+  console.log("comments", comments);
   return (
     <Card className="mt-6" id="comments">
       <CardHeader>
@@ -218,7 +226,7 @@ export function Comments({ templateId }: CommentsProps) {
                       <p className="text-sm text-muted-foreground">{new Date(comment.createdAt).toLocaleString()}</p>
                     </div>
 
-                    {canModifyComment(comment.userId) && (
+                    {canModifyComment(comment.user.clerkId) && (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon" className="h-8 w-8">

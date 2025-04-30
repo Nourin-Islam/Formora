@@ -15,8 +15,15 @@ import SmallSkeleton from "@/components/global/SmallSkeleton";
 import { useTranslation } from "react-i18next";
 import { useMemo } from "react";
 import ErrorReload from "@/components/global/ErrorReload";
+import useSEO from "@/hooks/useSEO";
 
 export default function ManageUsersTable() {
+  // SEO setup
+  useSEO({
+    title: "Formora: Manage Users",
+    description: "Manage users and their roles in Formora.",
+    keywords: "manage users, user roles, admin panel",
+  });
   // State for table controls
   const { t } = useTranslation("common");
   const [emailFilter, setEmailFilter] = useState("");

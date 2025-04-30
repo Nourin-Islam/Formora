@@ -6,10 +6,6 @@ import { verifyJwtToken } from "./middleware/verifyToken"; // Your auth utility
 interface CommentUpdate {
   templateId: number;
   comments: any[];
-  requestingUser?: {
-    userId: string;
-    isAdmin: boolean;
-  };
 }
 
 const wss = new WebSocketServer({ noServer: true });
@@ -41,21 +37,6 @@ export function setupWebSocket(server: any) {
     }
 
     const numericTemplateId = parseInt(templateId);
-    let requestingUser = null;
-
-    // Authenticate if token exists
-    if (token) {
-      try {
-        const user = await verifyJwtToken(token);
-        requestingUser = {
-          userId: user.id,
-          isAdmin: user.isAdmin,
-        };
-      } catch (error) {
-        ws.close(4001, "Invalid token");
-        return;
-      }
-    }
 
     // Add to subscriptions
     if (!commentSubscriptions.has(numericTemplateId)) {
@@ -69,7 +50,6 @@ export function setupWebSocket(server: any) {
       JSON.stringify({
         templateId: numericTemplateId,
         comments,
-        ...(requestingUser && { requestingUser }),
       })
     );
 
@@ -86,6 +66,7 @@ async function getCommentsFromDB(templateId: number) {
       user: {
         select: {
           id: true,
+          clerkId: true,
           name: true,
           email: true,
         },
@@ -95,7 +76,7 @@ async function getCommentsFromDB(templateId: number) {
   });
 }
 
-export function broadcastCommentUpdate(templateId: number, requestingUser?: { userId: string; isAdmin: boolean }) {
+export function broadcastCommentUpdate(templateId: number) {
   const subscribers = commentSubscriptions.get(templateId);
   if (!subscribers) return;
 
@@ -103,7 +84,6 @@ export function broadcastCommentUpdate(templateId: number, requestingUser?: { us
     const update: CommentUpdate = {
       templateId,
       comments,
-      ...(requestingUser && { requestingUser }),
     };
 
     subscribers.forEach((client) => {

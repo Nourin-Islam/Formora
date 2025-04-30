@@ -13,6 +13,6 @@ export const getImageKitAuth = (req: Request, res: Response): void => {
     res.json(authParams);
   } catch (err) {
     console.error("Error generating auth params:", err);
-    res.status(500).json({ error: "Failed to generate auth params" });
+    res.status(500).json({ message: "Failed to generate auth params" });
   }
 };

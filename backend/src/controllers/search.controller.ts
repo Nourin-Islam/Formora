@@ -8,7 +8,7 @@ export const searchTemplates = async (req: Request, res: Response) => {
   const offset = (page - 1) * limit;
 
   if (!searchText) {
-    return res.status(400).json({ error: "Missing search text" });
+    return res.status(400).json({ message: "Missing search text" });
   }
 
   try {
@@ -103,7 +103,7 @@ export const searchTemplates = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error("Search error (view):", error);
-    res.status(500).json({ error: "Search failed" });
+    res.status(500).json({ message: "Search failed" });
   }
 };
 
@@ -112,7 +112,7 @@ export const searchTemplates = async (req: Request, res: Response) => {
 //     const { query } = req.query;
 
 //     if (!query || typeof query !== "string") {
-//       return res.status(400).json({ error: "Search query required" });
+//       return res.status(400).json({ message: "Search query required" });
 //     }
 
 //     const templates = await prisma.template.findMany({
@@ -130,7 +130,7 @@ export const searchTemplates = async (req: Request, res: Response) => {
 
 //     res.json(templates);
 //   } catch (error) {
-//     console.error("Search error:", error);
-//     res.status(500).json({ error: "Search failed" });
+//     console.error("Search message:", error);
+//     res.status(500).json({ message: "Search failed" });
 //   }
 // };

@@ -49,7 +49,7 @@ const FormFill = () => {
         return response.data;
       } catch (err: any) {
         // console.log("Error fetching template data:", err);
-        toast.error(err || t("common.fFill.Failed to load form"));
+        toast.error(t("common.fFill.Failed to load form"));
         // if (err.response?.data?.error) {
         //   // Throw the error with the server message
         //   throw new Error(err.response.data.error.message);
@@ -228,7 +228,8 @@ const FormFill = () => {
       navigate(`/forms/${data.formId}`, { state: { success: true } });
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.error || t("common.fFill.Failed to submit form"));
+      console.log("error:", error);
+      toast.error(t("common.fFill.Failed to submit form"));
     },
   });
 
@@ -243,7 +244,8 @@ const FormFill = () => {
       navigate("/templates");
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.error || t("common.fFill.Failed to delete form"));
+      console.log("error:", error);
+      toast.error(t("common.fFill.Failed to delete form"));
     },
   });
 

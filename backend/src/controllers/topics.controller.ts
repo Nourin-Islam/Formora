@@ -28,7 +28,7 @@ export const getAllTopics = async (req: Request, res: Response) => {
       hasNextPage: page * limit < totalCount,
     });
   } catch (err) {
-    res.status(500).json({ error: "Failed to fetch topics" });
+    res.status(500).json({ message: "Failed to fetch topics" });
   }
 };
 
@@ -43,7 +43,7 @@ export const createTopic = async (req: Request, res: Response) => {
     res.status(201).json(topic);
     refreshEvents.emit("refreshView");
   } catch (err) {
-    res.status(500).json({ error: "Failed to create topic" });
+    res.status(500).json({ message: "Failed to create topic" });
   }
 };
 
@@ -61,10 +61,10 @@ export const updateTopic = async (req: Request, res: Response) => {
     refreshEvents.emit("refreshView");
   } catch (err: any) {
     if (err.code === "P2025") {
-      res.status(404).json({ error: "Topic not found" });
+      res.status(404).json({ message: "Topic not found" });
       return;
     }
-    res.status(500).json({ error: "Failed to update topic" });
+    res.status(500).json({ message: "Failed to update topic" });
   }
 };
 
@@ -80,10 +80,10 @@ export const deleteTopic = async (req: Request, res: Response) => {
     refreshEvents.emit("refreshView");
   } catch (err: any) {
     if (err.code === "P2025") {
-      res.status(404).json({ error: "Topic not found" });
+      res.status(404).json({ message: "Topic not found" });
       return;
     }
-    res.status(500).json({ error: "Failed to delete topic" });
+    res.status(500).json({ message: "Failed to delete topic" });
   }
 };
 
@@ -94,7 +94,7 @@ export const searchTopics = async (req: Request, res: Response) => {
     const limit = parseInt(req.query.limit as string) || 10;
 
     if (!query) {
-      res.status(400).json({ error: "Search query is required" });
+      res.status(400).json({ message: "Search query is required" });
       return;
     }
 
@@ -110,7 +110,7 @@ export const searchTopics = async (req: Request, res: Response) => {
 
     res.json(topics);
   } catch (err) {
-    res.status(500).json({ error: "Failed to search topics" });
+    res.status(500).json({ message: "Failed to search topics" });
   }
 };
 
@@ -123,13 +123,13 @@ export const getTopicById = async (req: Request, res: Response) => {
     });
 
     if (!topic) {
-      res.status(404).json({ error: "Topic not found" });
+      res.status(404).json({ message: "Topic not found" });
       return;
     }
 
     res.json(topic);
   } catch (err) {
-    res.status(500).json({ error: "Failed to fetch topic" });
+    res.status(500).json({ message: "Failed to fetch topic" });
   }
 };
 */

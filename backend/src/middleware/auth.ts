@@ -24,7 +24,7 @@ export const clerkAuth = requireAuth();
 // export const requireUser = async (req: Request, res: Response, next: NextFunction) => {
 //   try {
 //     if (!req.auth?.userId) {
-//       return res.status(401).json({ error: "Unauthorized" });
+//       return res.status(401).json({ message: "Unauthorized" });
 //     }
 
 //     const user = await prisma.user.findUnique({
@@ -40,24 +40,24 @@ export const clerkAuth = requireAuth();
 //     });
 
 //     if (!user || user.status !== "ACTIVE") {
-//       return res.status(401).json({ error: "User not found or inactive" });
+//       return res.status(401).json({ message: "User not found or inactive" });
 //     }
 
 //     if (!user.clerkId) {
-//       return res.status(401).json({ error: "Invalid user data" });
+//       return res.status(401).json({ message: "Invalid user data" });
 //     }
 //     req.user = { ...user, id: user.id.toString(), clerkId: user.clerkId };
 //     next();
 //   } catch (error) {
 //     console.error("Auth middleware error:", error);
-//     res.status(500).json({ error: "Internal server error" });
+//     res.status(500).json({ message: "Internal server error" });
 //   }
 // };
 
 export const requireAdmin = (req: Request, res: Response, next: NextFunction) => {
   // console.log("Checking admin access for user:");
   if (!req.user?.isAdmin) {
-    res.status(403).json({ error: "Admin access required" });
+    res.status(403).json({ message: "Admin access required" });
     return; // Explicitly return after sending response
   }
   // console.log("User has admin access!");

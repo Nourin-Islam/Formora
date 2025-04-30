@@ -33,7 +33,7 @@ export const getAllUsers = async (req: Request, res: Response) => {
     res.json({ users, totalPages, totalCount });
   } catch (error) {
     console.error("Error fetching users:", error);
-    res.status(500).json({ error: "Failed to fetch users" });
+    res.status(500).json({ message: "Failed to fetch users" });
   }
 };
 
@@ -55,7 +55,7 @@ export const updateUser = async (req: Request, res: Response) => {
         });
       } catch (clerkError) {
         console.error("Error updating Clerk metadata:", clerkError);
-        res.status(500).json({ error: "Failed to sync metadata with Clerk" });
+        res.status(500).json({ message: "Failed to sync metadata with Clerk" });
         return;
       }
     }
@@ -64,7 +64,7 @@ export const updateUser = async (req: Request, res: Response) => {
     refreshEvents.emit("refreshView");
   } catch (error) {
     console.error("Error updating user:", error);
-    res.status(500).json({ error: "Failed to update user" });
+    res.status(500).json({ message: "Failed to update user" });
   }
 };
 
@@ -78,7 +78,7 @@ export const deleteUser = async (req: Request, res: Response) => {
     });
 
     if (!user) {
-      res.status(404).json({ error: "User not found" });
+      res.status(404).json({ message: "User not found" });
       return;
     }
 
@@ -87,7 +87,7 @@ export const deleteUser = async (req: Request, res: Response) => {
         const response = await clerkClient.users.deleteUser(user.clerkId);
         console.log("Clerk response:", response);
       } catch (clerkError) {
-        res.status(500).json({ error: "Failed to delete user from authentication system" });
+        res.status(500).json({ message: "Failed to delete user from authentication system" });
         return;
       }
     }
@@ -98,7 +98,7 @@ export const deleteUser = async (req: Request, res: Response) => {
     refreshEvents.emit("refreshView");
   } catch (error) {
     console.error("Error deleting user:", error);
-    res.status(500).json({ error: "Failed to delete user" });
+    res.status(500).json({ message: "Failed to delete user" });
   }
 };
 
@@ -106,7 +106,7 @@ export const deleteUser = async (req: Request, res: Response) => {
 export const getUserPreferences = async (req: Request, res: Response) => {
   try {
     if (!req.user) {
-      res.status(403).json({ error: "Not Authorized" });
+      res.status(403).json({ message: "Not Authorized" });
       return;
     }
 
@@ -133,7 +133,7 @@ export const getUserPreferences = async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Error fetching user preferences:", error);
     res.status(500).json({
-      error: "Failed to fetch user preferences",
+      message: "Failed to fetch user preferences",
       details: error instanceof Error ? error.message : "Unknown error",
     });
     return;
@@ -148,7 +148,7 @@ const PreferencesSchema = z.object({
 export const setUserPreferences = async (req: Request, res: Response) => {
   try {
     if (!req.user) {
-      res.status(403).json({ error: "Not Authorized" });
+      res.status(403).json({ message: "Not Authorized" });
       return;
     }
 
@@ -157,7 +157,7 @@ export const setUserPreferences = async (req: Request, res: Response) => {
 
     if (!validationResult.success) {
       res.status(400).json({
-        error: "Invalid preferences data",
+        message: "Invalid preferences data",
         details: validationResult.error.flatten(),
       });
       return;
@@ -198,7 +198,7 @@ export const setUserPreferences = async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Error updating user preferences:", error);
     res.status(500).json({
-      error: "Failed to update preferences",
+      message: "Failed to update preferences",
       details: error instanceof Error ? error.message : "Unknown error",
     });
     return;
@@ -230,7 +230,7 @@ export const searchUsers = async (req: Request, res: Response) => {
     res.json(users);
   } catch (error) {
     console.error("Error searching users:", error);
-    res.status(500).json({ error: "Failed to search users" });
+    res.status(500).json({ message: "Failed to search users" });
   }
 };
 

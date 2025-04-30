@@ -26,16 +26,18 @@ export const getTemplateForFilling = async (req: Request, res: Response) => {
         },
       },
     });
+    // console.log("Template for filling:", template);
 
     if (!template) {
-      res.status(404).json({ error: "Template not found" });
+      res.status(404).json({ message: "Template not found" });
+      console.log("Template not found:", templateId);
       return;
     }
 
     // Check access permissions
     if (!template.isPublic) {
       if (!userId) {
-        res.status(403).json({ error: "Authentication required" });
+        res.status(403).json({ message: "Authentication required" });
         return;
       }
 
@@ -47,7 +49,7 @@ export const getTemplateForFilling = async (req: Request, res: Response) => {
       });
 
       if (!hasAccess && template.userId !== parseInt(userId)) {
-        res.status(403).json({ error: "You don't have access to this template" });
+        res.status(403).json({ message: "You don't have access to this template" });
         return;
       }
     }
@@ -82,7 +84,7 @@ export const getTemplateForFilling = async (req: Request, res: Response) => {
     });
   } catch (err) {
     console.error("Error fetching template:", err);
-    res.status(500).json({ error: "Failed to fetch template" });
+    res.status(500).json({ message: "Failed to fetch template" });
   }
 };
 
@@ -120,7 +122,7 @@ export const getFilledForm = async (req: Request, res: Response) => {
     });
 
     if (!form) {
-      res.status(404).json({ error: "Form not found" });
+      res.status(404).json({ message: "Form not found" });
       return;
     }
 
@@ -130,7 +132,7 @@ export const getFilledForm = async (req: Request, res: Response) => {
     const isTemplateOwner = form?.template?.userId === parseInt(userId as string);
 
     if (!isAdmin && !isFormOwner && !isTemplateOwner) {
-      res.status(403).json({ error: "Not authorized to view this form" });
+      res.status(403).json({ message: "Not authorized to view this form" });
       return;
     }
 
@@ -158,7 +160,7 @@ export const getFilledForm = async (req: Request, res: Response) => {
     res.json(formattedForm);
   } catch (err) {
     console.error("Error fetching form:", err);
-    res.status(500).json({ error: "Failed to fetch form" });
+    res.status(500).json({ message: "Failed to fetch form" });
   }
 };
 
@@ -175,7 +177,7 @@ export const deleteFilledForm = async (req: Request, res: Response) => {
     });
 
     if (!form) {
-      res.status(404).json({ error: "Form not found" });
+      res.status(404).json({ message: "Form not found" });
       return;
     }
 
@@ -185,7 +187,7 @@ export const deleteFilledForm = async (req: Request, res: Response) => {
     const isTemplateOwner = form.template?.userId === parseInt(userId as string);
 
     if (!isAdmin && !isFormOwner && !isTemplateOwner) {
-      res.status(403).json({ error: "Not authorized to delete this form" });
+      res.status(403).json({ message: "Not authorized to delete this form" });
       return;
     }
 
@@ -204,7 +206,7 @@ export const deleteFilledForm = async (req: Request, res: Response) => {
     res.status(200).json({ message: "Form deleted successfully" });
   } catch (err) {
     console.error("Error deleting filled form:", err);
-    res.status(500).json({ error: "Failed to delete filled form" });
+    res.status(500).json({ message: "Failed to delete filled form" });
   }
 };
 
@@ -219,14 +221,14 @@ export const getAllSubmissionsByTemplate = async (req: Request, res: Response) =
     });
 
     if (!template) {
-      return res.status(404).json({ error: "Template not found" });
+      return res.status(404).json({ message: "Template not found" });
     }
 
     const isAdmin = req.user?.isAdmin;
     const isTemplateOwner = template.userId === parseInt(userId as string);
 
     if (!isAdmin && !isTemplateOwner) {
-      return res.status(403).json({ error: "Not authorized to view submissions for this template" });
+      return res.status(403).json({ message: "Not authorized to view submissions for this template" });
     }
 
     // Explicitly select fields excluding the 4 specified ones
@@ -250,7 +252,7 @@ export const getAllSubmissionsByTemplate = async (req: Request, res: Response) =
     return;
   } catch (err) {
     console.error("Error fetching submissions:", err);
-    res.status(500).json({ error: "Failed to fetch submissions" });
+    res.status(500).json({ message: "Failed to fetch submissions" });
     return;
   }
 };

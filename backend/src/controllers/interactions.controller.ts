@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { prisma } from "../lib/prisma";
 import { refreshEvents } from "../lib/refresh";
+import { commentCreateSchema, commentUpdateSchema } from "../controllers/schemas/all";
 
 import { broadcastCommentUpdate } from "../websocket";
 
@@ -127,6 +128,16 @@ export const createComment = async (req: Request, res: Response): Promise<void> 
       return;
     }
 
+    // Validate with Zod
+    const validationResult = commentCreateSchema.safeParse(req.body);
+    if (!validationResult.success) {
+      res.status(400).json({
+        message: "Validation failed",
+        errors: validationResult.error.flatten().fieldErrors,
+      });
+      return;
+    }
+
     const userId = req.user.id;
     const numericTemplateId = parseInt(templateId);
 
@@ -168,6 +179,16 @@ export const updateComment = async (req: Request, res: Response): Promise<void> 
 
     if (!req.user) {
       res.status(401).json({ message: "Unauthorized" });
+      return;
+    }
+
+    // Validate with Zod
+    const validationResult = commentUpdateSchema.safeParse(req.body);
+    if (!validationResult.success) {
+      res.status(400).json({
+        message: "Validation failed",
+        errors: validationResult.error.flatten().fieldErrors,
+      });
       return;
     }
 

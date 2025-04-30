@@ -37,7 +37,7 @@ const TemplateView = () => {
   // Redirect to the full template view if user is logged in
   useEffect(() => {
     if (userId) {
-      navigate(`/view-template/${id}`);
+      navigate(`/check-form/${id}`);
     }
   }, [userId]);
 
@@ -58,7 +58,7 @@ const TemplateView = () => {
         const response = await publicApi.get(`/forms/check/${id}`);
         return response.data;
       } catch (err: any) {
-        toast.error(err || t("common.fFill.Failed to load form"));
+        // toast.error( t("common.fFill.Failed to load form"));
       }
     },
     retry: false,
@@ -137,9 +137,9 @@ const TemplateView = () => {
     <div className="container max-w-4xl py-8">
       <Card>
         <CardHeader>
-          {template.imageUrl && <img src={`https://ik.imagekit.io/odinbook/${template.imageUrl}`} alt={template.title} className="w-auto mx-auto h-full max-h-[150px] object-cover rounded-md mb-4" />}
+          {template?.imageUrl && <img src={`https://ik.imagekit.io/odinbook/${template.imageUrl}`} alt={template.title} className="w-auto mx-auto h-full max-h-[150px] object-cover rounded-md mb-4" />}
           <CardTitle>{template.title}</CardTitle>
-          {template.description && (
+          {template?.description && (
             <div data-color-mode={theme} className="prose max-w-none">
               <MDEditor.Markdown source={template.description} />
             </div>
@@ -148,7 +148,7 @@ const TemplateView = () => {
 
         <CardContent onClick={promptLogin}>
           <div className="space-y-6">
-            {template.questions.map((question: any) => (
+            {template?.questions?.map((question: any) => (
               <div key={question.id} className="space-y-2">
                 <Label htmlFor={`question_${question.id}`}>{question.title}</Label>
                 {question.description && <p className="text-sm text-muted-foreground">{question.description}</p>}
@@ -198,13 +198,13 @@ const TemplateView = () => {
 
         <CardFooter className="flex justify-between border-t">
           <Button onClick={promptLogin} variant="ghost" size="sm" className="text-red-500">
-            <Heart className={`mr-1 h-4 w-4 ${userId && template.peopleLiked.includes(userId) ? "fill-current" : ""}`} />
+            <Heart className={`mr-1 h-4 w-4 ${userId && template?.peopleLiked?.includes(userId) ? "fill-current" : ""}`} />
             {template.likesCount}
           </Button>
           <Button onClick={promptLogin}>{t("common.fFill.Sign in to submit")}</Button>
         </CardFooter>
       </Card>
-      {id && <Comments templateId={parseInt(id, 10)} />}
+      {id && !error && <Comments templateId={parseInt(id, 10)} />}
     </div>
   );
 };

@@ -8,7 +8,7 @@ export const authenticateUser = async (req: Request, res: Response, next: NextFu
   // console.log("Auth object:", auth);
 
   if (!auth.userId) {
-    res.status(401).json({ error: "Unauthorized" });
+    res.status(401).json({ message: "Unauthorized" });
     return;
   }
 
@@ -17,12 +17,12 @@ export const authenticateUser = async (req: Request, res: Response, next: NextFu
     // console.log("Fetched user:", user);
 
     if (!user) {
-      res.status(401).json({ error: "User not found" });
+      res.status(401).json({ message: "User not found" });
       return;
     }
 
     if (!user.clerkId) {
-      res.status(400).json({ error: "Invalid user data: clerkId is null" });
+      res.status(400).json({ message: "Invalid user data: clerkId is null" });
       return;
     }
 
@@ -38,7 +38,7 @@ export const authenticateUser = async (req: Request, res: Response, next: NextFu
     next(); // ✅ go to next middleware
   } catch (error) {
     console.error("Authentication failed:", error);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ message: "Internal server error" });
     return;
   }
 };

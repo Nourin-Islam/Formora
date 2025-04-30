@@ -6,16 +6,20 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import { handleClerkWebhook } from "./webhooks.js";
 import routes from "./routes/allRoutes"; // This will import from routes/index
+// @ts-ignore
+import statusMonitor from "express-status-monitor";
 import { createServer } from "http";
-import { setupWebSocket, broadcastCommentUpdate } from "./websocket";
+import { setupWebSocket } from "./websocket";
 import "./lib/refreshView";
 
 dotenv.config();
 
 const app = express();
+
 const server = createServer(app);
 
 app.set("trust proxy", 1);
+app.use(statusMonitor()); // Enable monitoring
 app.use(clerkMiddleware());
 const PORT = parseInt(process.env.PORT || "3000", 10);
 
@@ -66,7 +70,7 @@ app.use("/api", routes);
 // Error handling
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error(err.stack);
-  res.status(500).json({ error: "Internal server error" });
+  res.status(500).json({ message: "Internal server error" });
 });
 
 server.listen(PORT, () => {

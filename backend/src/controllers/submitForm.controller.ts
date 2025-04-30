@@ -28,7 +28,7 @@ export const submitForm = async (req: Request, res: Response) => {
 
     // Validate email parameters
     if (sendEmailCopy && (!userEmail || !validateEmail(userEmail))) {
-      res.status(400).json({ error: "Valid email address is required when requesting email copy" });
+      res.status(400).json({ message: "Valid email address is required when requesting email copy" });
       return;
     }
 
@@ -38,7 +38,7 @@ export const submitForm = async (req: Request, res: Response) => {
     });
 
     if (!template) {
-      res.status(404).json({ error: "Template not found" });
+      res.status(404).json({ message: "Template not found" });
       return;
     }
 
@@ -59,7 +59,7 @@ export const submitForm = async (req: Request, res: Response) => {
       });
 
       if (!hasAccess && template.userId !== parseInt(userId)) {
-        res.status(403).json({ error: "You don't have access to this template" });
+        res.status(403).json({ message: "You don't have access to this template" });
         return;
       }
     }
@@ -77,7 +77,7 @@ export const submitForm = async (req: Request, res: Response) => {
     const missingQuestions = questionIds.filter((id) => !answerQuestionIds.includes(id));
     if (missingQuestions.length > 0) {
       res.status(400).json({
-        error: "Missing answers for some questions",
+        message: "Missing answers for some questions",
         missingQuestions,
       });
       return;
@@ -131,7 +131,7 @@ export const submitForm = async (req: Request, res: Response) => {
 
     if (invalidAnswers.length > 0) {
       res.status(400).json({
-        error: "Invalid answer types for some questions",
+        message: "Invalid answer types for some questions",
         invalidAnswers,
       });
       return;
@@ -256,7 +256,7 @@ export const submitForm = async (req: Request, res: Response) => {
     }
   } catch (err) {
     console.error("Error submitting form:", err);
-    res.status(500).json({ error: "Failed to submit form" });
+    res.status(500).json({ message: "Failed to submit form" });
   }
 };
 

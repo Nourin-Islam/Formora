@@ -121,7 +121,7 @@ export const getAllTemplates = async (req: Request, res: Response) => {
     res.json(responseData);
   } catch (err) {
     console.error("Error fetching templates from view:", err);
-    res.status(500).json({ error: "Failed to fetch templates from view" });
+    res.status(500).json({ message: "Failed to fetch templates from view" });
   }
 };
 
@@ -175,10 +175,10 @@ export const getTemplateById = async (req: Request, res: Response) => {
 
     // if not isAdmin and template.user.clerkId !== userId, then reutrn 403
     if (!isAdmin && template?.user.id !== Number(userId)) {
-      return res.status(403).json({ error: "Not authorized to access this template" });
+      return res.status(403).json({ message: "Not authorized to access this template" });
     }
     if (!template) {
-      return res.status(404).json({ error: "Template not found" });
+      return res.status(404).json({ message: "Template not found" });
     }
 
     const { likes, ...templateData } = template;
@@ -192,7 +192,7 @@ export const getTemplateById = async (req: Request, res: Response) => {
     res.json(formattedTemplate);
   } catch (err) {
     console.error("Error fetching template:", err);
-    res.status(500).json({ error: "Failed to fetch template" });
+    res.status(500).json({ message: "Failed to fetch template" });
   }
 };
 
@@ -206,7 +206,7 @@ export const createTemplate = async (req: Request, res: Response) => {
     const userId = req.user.id;
 
     if (!userId && !req.user.isAdmin) {
-      return res.status(403).json({ error: "Not Authorized" });
+      return res.status(403).json({ message: "Not Authorized" });
     }
 
     const createdTemplate = await prisma.$transaction(async (prisma) => {
@@ -294,7 +294,7 @@ export const createTemplate = async (req: Request, res: Response) => {
     refreshEvents.emit("refreshView");
   } catch (err) {
     console.error("Error creating template:", err);
-    res.status(500).json({ error: "Failed to create template" });
+    res.status(500).json({ message: "Failed to create template" });
   }
 };
 
@@ -319,11 +319,11 @@ export const updateTemplate = async (req: Request, res: Response) => {
     });
 
     if (!existingTemplate) {
-      return res.status(404).json({ error: "Template not found" });
+      return res.status(404).json({ message: "Template not found" });
     }
 
     if (existingTemplate.userId !== parseInt(userId) && !req.user.isAdmin) {
-      return res.status(403).json({ error: "Not authorized to update this template" });
+      return res.status(403).json({ message: "Not authorized to update this template" });
     }
 
     const updatedTemplate = await prisma.$transaction(async (tx) => {
@@ -471,7 +471,7 @@ export const updateTemplate = async (req: Request, res: Response) => {
     refreshEvents.emit("refreshView");
   } catch (err) {
     console.error("Error updating template:", err);
-    res.status(500).json({ error: "Failed to update template" });
+    res.status(500).json({ message: "Failed to update template" });
   }
 };
 
@@ -485,14 +485,14 @@ export const deleteTemplate = async (req: Request, res: Response) => {
     });
 
     if (!existingTemplate) {
-      return res.status(404).json({ error: "Template not found" });
+      return res.status(404).json({ message: "Template not found" });
     }
 
     const isOwner = existingTemplate.userId === parseInt(userId as string, 10);
     const isAdmin = req.user?.isAdmin;
 
     if (!isOwner && !isAdmin) {
-      return res.status(403).json({ error: "Not authorized to delete this template" });
+      return res.status(403).json({ message: "Not authorized to delete this template" });
     }
 
     await prisma.template.delete({
@@ -503,6 +503,6 @@ export const deleteTemplate = async (req: Request, res: Response) => {
     refreshEvents.emit("refreshView");
   } catch (err) {
     console.error("Error deleting template:", err);
-    res.status(500).json({ error: "Failed to delete template" });
+    res.status(500).json({ message: "Failed to delete template" });
   }
 };
