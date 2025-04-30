@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
 
 function ErrorReload(error: any) {
-  // console.log("Error in fetching: ", error);
+  console.log("Error in fetching: ", error);
   const { t } = useTranslation("common");
   return (
     <div className="text-red-500 min-h-[calc(100vh-400px)] flex items-center justify-center flex-col gap-4">
