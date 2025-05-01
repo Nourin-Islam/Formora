@@ -27,7 +27,7 @@ export function setupWebSocket(server: any) {
   wss.on("connection", async (ws, req) => {
     const url = new URL(req.url || "", `http://${req.headers.host}`);
     const templateId = url.searchParams.get("templateId");
-    const token = url.searchParams.get("token");
+    // const token = url.searchParams.get("token");
     // console.log("New WebSocket connection:", { templateId, token });
     // console.log("process.env.CLERK_SECRET_KEY: ", process.env.CLERK_SECRET_KEY);
 

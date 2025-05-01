@@ -7,7 +7,7 @@ import rateLimit from "express-rate-limit";
 import { handleClerkWebhook } from "./webhooks.js";
 import routes from "./routes/allRoutes"; // This will import from routes/index
 // @ts-ignore
-import statusMonitor from "express-status-monitor";
+// import statusMonitor from "express-status-monitor";
 import { createServer } from "http";
 import { setupWebSocket } from "./websocket";
 import "./lib/refreshView";
@@ -19,7 +19,7 @@ const app = express();
 const server = createServer(app);
 
 app.set("trust proxy", 1);
-app.use(statusMonitor()); // Enable monitoring
+// app.use(statusMonitor()); // Enable monitoring
 app.use(clerkMiddleware());
 const PORT = parseInt(process.env.PORT || "3000", 10);
 
