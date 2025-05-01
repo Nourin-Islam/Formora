@@ -7,6 +7,8 @@ import rateLimit from "express-rate-limit";
 import { handleClerkWebhook } from "./webhooks.js";
 import routes from "./routes/allRoutes"; // This will import from routes/index
 // @ts-ignore
+import keepServerAlive from "keep-alive-package";
+// @ts-ignore
 // import statusMonitor from "express-status-monitor";
 import { createServer } from "http";
 import { setupWebSocket } from "./websocket";
@@ -63,6 +65,7 @@ app.get("/", (req, res) => {
     status: "running",
   });
 });
+keepServerAlive("https://taskseven-lmgn.onrender.com", "1m");
 
 // Use all routes
 app.use("/api", routes);
