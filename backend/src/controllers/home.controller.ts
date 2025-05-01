@@ -6,11 +6,14 @@ import { cache } from "../lib/cache";
 export const getLatestTemplates = async (_req: Request, res: Response) => {
   const cacheKey = "latest-templates";
   const cached = cache.get(cacheKey);
+
   if (cached) return res.json(cached);
 
   try {
     const results = await prisma.$queryRawUnsafe<any[]>(`
       SELECT * FROM template_search_view
+      WHERE "isPublic" = true
+      AND "isPublished" = true
       ORDER BY "createdAt" DESC
       LIMIT 4
     `);
