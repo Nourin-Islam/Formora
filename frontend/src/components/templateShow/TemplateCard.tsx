@@ -14,6 +14,7 @@ import MDEditor from "@uiw/react-md-editor";
 import { useThemeStore } from "@/store/themeStore";
 import { motion } from "framer-motion";
 import { cardVariants } from "@/lib/framerHelper";
+import { useUser } from "@clerk/clerk-react";
 
 interface TemplateCardProps {
   template: Template;
@@ -29,8 +30,17 @@ export default function TemplateCard({ template, userId, onDelete, onLike, onUnl
   const navigate = useNavigate();
   const { t } = useTranslation("common");
   const { theme } = useThemeStore();
+  const { user } = useUser();
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const [canEditDelete, setCanEditDelete] = useState(false);
+
+  useEffect(() => {
+    if (userId === template.user.clerkId || user?.publicMetadata?.isAdmin) {
+      setCanEditDelete(true);
+    }
+  }, [userId, user]);
 
   // Cleanup function for pointer-events
   useEffect(() => {
@@ -128,7 +138,7 @@ export default function TemplateCard({ template, userId, onDelete, onLike, onUnl
                     <Eye className="mr-2 h-4 w-4" /> {t("common.tCard.Check")}
                   </DropdownMenuItem>
                 )}
-                {userId === template.user.clerkId && (
+                {canEditDelete && (
                   <>
                     <DropdownMenuItem onClick={handleEditTemplate}>
                       <Eye className="mr-2 h-4 w-4" />
