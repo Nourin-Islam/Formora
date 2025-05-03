@@ -34,9 +34,9 @@ const features = [
       {
         section: "Form System",
         items: [
-          { task: "Authenticated users can fill out forms if allowed by template access", completed: false },
+          { task: "Authenticated users can fill out forms if allowed by template access", completed: true },
           { task: "Users can view their own filled forms", completed: true },
-          { task: "Template creator (or admin) can view all filled forms for their templates", completed: false },
+          { task: "Template creator (or admin) can view all filled forms for their templates", completed: true },
           { task: "Template creator (or admin) can view/edit any user’s form answers", completed: false },
           { task: "Editable answers are available to form owner and admins", completed: false },
         ],

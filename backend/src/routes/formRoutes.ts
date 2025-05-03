@@ -1,7 +1,7 @@
 import express from "express";
 import { authenticateUser } from "../middleware/authenticateUser";
-import { getTemplateForFilling, getFilledForm, deleteFilledForm, getAllSubmissionsByTemplate, getAllMyResponses } from "../controllers/fillForm.controller";
-import { submitForm } from "../controllers/submitForm.controller";
+import { getTemplateForFilling, getTemplateForEditing, getFilledForm, deleteFilledForm, getAllSubmissionsByTemplate, getAllMyResponses } from "../controllers/fillForm.controller";
+import { submitForm, updateFilledForm } from "../controllers/submitForm.controller";
 
 const router = express.Router();
 
@@ -11,8 +11,12 @@ router.get("/check/:id", getTemplateForFilling);
 // Get template for authenticated user for filling
 router.get("/fill/:id", authenticateUser, getTemplateForFilling);
 
+router.get("/edit/:id", authenticateUser, getTemplateForEditing);
+
 // Submit a filled form
 router.post("/fill", authenticateUser, submitForm);
+// update a filled form
+router.put("/fill/:id", authenticateUser, updateFilledForm);
 
 // Get a filled form
 router.get("/view/:id", authenticateUser, getFilledForm);

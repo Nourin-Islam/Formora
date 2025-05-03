@@ -19,6 +19,7 @@ import AdminRoute from "@/routes/AdminRoute";
 import TemplateCreation from "@/pages/TemplateCreate";
 import TemplateEdit from "@/pages/TemplateEdit";
 import FormFill from "@/pages/FormFill";
+import FormEdit from "@/pages/FormEdit";
 import FormView from "@/pages/FormView";
 import ManageTagsPage from "@/pages/ManageTags";
 import ManageTopics from "@/pages/ManageTopics";
@@ -55,6 +56,7 @@ const router = createBrowserRouter([
           { path: "create-template", element: <TemplateCreation /> },
           { path: "manage-template/:id", element: <TemplateEdit /> },
           { path: "check-form/:id", element: <FormFill /> },
+          { path: "edit-form/:id", element: <FormEdit /> },
           { path: "forms/:id", element: <FormView /> },
         ],
       },

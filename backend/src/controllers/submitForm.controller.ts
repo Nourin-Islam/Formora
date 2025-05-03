@@ -2,6 +2,13 @@ import { Request, Response } from "express";
 import { prisma } from "../lib/prisma"; // Adjust path as needed
 import { refreshEvents } from "../lib/refresh";
 import { sendFormSubmissionEmail } from "../lib/sendMail"; // Adjust path as needed
+
+// Helper function to validate email format
+function validateEmail(email: string): boolean {
+  const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  return re.test(email);
+}
+
 export const submitForm = async (req: Request, res: Response) => {
   if (!req.user) {
     res.status(401).json({ message: "Unauthorized" });
@@ -140,68 +147,8 @@ export const submitForm = async (req: Request, res: Response) => {
     let form;
 
     if (existingForm) {
-      // Update existing form
-      form = await prisma.$transaction(async (prisma) => {
-        // First, delete existing answers
-        await prisma.answer.deleteMany({
-          where: { formId: existingForm.id },
-        });
-
-        // Then update the form to trigger the updatedAt field
-        const updatedForm = await prisma.form.update({
-          where: { id: existingForm.id },
-          data: { updatedAt: new Date() }, // Empty update triggers updatedAt
-        });
-
-        // console.log("Form updated:", {
-        //   id: updatedForm.id,
-        //   createdAt: updatedForm.createdAt,
-        //   updatedAt: updatedForm.updatedAt,
-        // });
-
-        // Create new answers
-        await Promise.all(
-          answers.map(({ questionId, value }) => {
-            const parsedQuestionId = typeof questionId === "string" ? parseInt(questionId) : questionId;
-            const question = questions.find((q) => q.id === parsedQuestionId);
-            let finalValue;
-
-            // Process value based on question type
-            if (question?.questionType === "CHECKBOX" && Array.isArray(question.options) && question.options.length > 0) {
-              finalValue = Array.isArray(value) ? value.join(",") : String(value);
-            } else {
-              finalValue = String(value);
-            }
-
-            return prisma.answer.create({
-              data: {
-                formId: existingForm.id,
-                questionId: parsedQuestionId,
-                value: finalValue,
-              },
-            });
-          })
-        );
-
-        return updatedForm;
-      });
-
-      // Send email if requested (for existing form update)
-      if (sendEmailCopy && userEmail) {
-        try {
-          await sendFormSubmissionEmail(form.id, userEmail);
-        } catch (emailError) {
-          console.error("Failed to send email confirmation:", emailError);
-          // Don't fail the whole request if email sending fails
-        }
-      }
-
-      res.status(200).json({
-        message: "Form updated successfully",
-        formId: form.id,
-        emailSent: sendEmailCopy && userEmail ? true : false,
-      });
-      refreshEvents.emit("refreshView");
+      res.status(400).json({ message: "You have already submitted this form. To update, use the appropriate endpoint." });
+      return;
     } else {
       // Create new form
       form = await prisma.$transaction(async (prisma) => {
@@ -260,8 +207,164 @@ export const submitForm = async (req: Request, res: Response) => {
   }
 };
 
-// Helper function to validate email format
-function validateEmail(email: string): boolean {
-  const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-  return re.test(email);
-}
+export const updateFilledForm = async (req: Request, res: Response) => {
+  if (!req.user) {
+    res.status(401).json({ message: "Unauthorized" });
+    return;
+  }
+
+  const formId = parseInt(req.params.id);
+  const userId = req.user.id;
+  const isAdmin = req.user?.isAdmin;
+  console.log("isAdmin", isAdmin);
+
+  try {
+    const {
+      answers,
+      sendEmailCopy = false,
+      userEmail = null,
+    }: {
+      answers: { questionId: number; value: any }[];
+      sendEmailCopy?: boolean;
+      userEmail?: string | null;
+    } = req.body;
+
+    // Validate email parameters
+    if (sendEmailCopy && (!userEmail || !validateEmail(userEmail))) {
+      res.status(400).json({ message: "Valid email address is required when requesting email copy" });
+      return;
+    }
+
+    // Fetch form and verify ownership
+    const existingForm = await prisma.form.findUnique({
+      where: { id: formId },
+      include: { template: true },
+    });
+
+    if (!existingForm) {
+      res.status(404).json({ message: "Form not found" });
+      return;
+    }
+
+    if (existingForm.userId !== parseInt(userId) && !isAdmin) {
+      res.status(403).json({ message: "You don't have permission to update this form" });
+      return;
+    }
+
+    const templateId = existingForm.templateId;
+
+    const questions = await prisma.question.findMany({
+      where: { templateId },
+      select: { id: true, questionType: true, options: true },
+    });
+
+    const questionIds = questions.map((q) => q.id);
+    const answerQuestionIds = answers.map((a) => (typeof a.questionId === "string" ? parseInt(a.questionId) : a.questionId));
+
+    const missingQuestions = questionIds.filter((id) => !answerQuestionIds.includes(id));
+    if (missingQuestions.length > 0) {
+      res.status(400).json({
+        message: "Missing answers for some questions",
+        missingQuestions,
+      });
+      return;
+    }
+
+    const invalidAnswers = [];
+    for (const { questionId, value } of answers) {
+      const parsedQuestionId = typeof questionId === "string" ? parseInt(questionId) : questionId;
+      const question = questions.find((q) => q.id === parsedQuestionId);
+      if (!question) continue;
+
+      let isValid = true;
+
+      switch (question.questionType) {
+        case "INTEGER":
+          isValid = !isNaN(Number(value)) && Number.isInteger(Number(value)) && Number(value) >= 0;
+          break;
+        case "CHECKBOX":
+          if (question.options && Array.isArray(question.options) && question.options.length > 0) {
+            if (Array.isArray(value)) {
+              isValid = true;
+            } else if (typeof value === "string") {
+              const selectedOptions = value.split(",").map((opt) => opt.trim());
+              isValid = selectedOptions.length > 0;
+            } else {
+              isValid = false;
+            }
+          } else {
+            isValid = value === true || value === false || value === "true" || value === "false" || value === "1" || value === "0";
+          }
+          break;
+        case "STRING":
+        case "TEXT":
+          isValid = typeof value === "string" && value.trim().length > 0;
+          break;
+      }
+
+      if (!isValid) {
+        invalidAnswers.push(parsedQuestionId);
+      }
+    }
+
+    if (invalidAnswers.length > 0) {
+      res.status(400).json({
+        message: "Invalid answer types for some questions",
+        invalidAnswers,
+      });
+      return;
+    }
+
+    const updatedForm = await prisma.$transaction(async (prisma) => {
+      await prisma.answer.deleteMany({ where: { formId } });
+
+      const updatedForm = await prisma.form.update({
+        where: { id: formId },
+        data: { updatedAt: new Date() },
+      });
+
+      await Promise.all(
+        answers.map(({ questionId, value }) => {
+          const parsedQuestionId = typeof questionId === "string" ? parseInt(questionId) : questionId;
+          const question = questions.find((q) => q.id === parsedQuestionId);
+          let finalValue;
+
+          if (question?.questionType === "CHECKBOX" && Array.isArray(question.options) && question.options.length > 0) {
+            finalValue = Array.isArray(value) ? value.join(",") : String(value);
+          } else {
+            finalValue = String(value);
+          }
+
+          return prisma.answer.create({
+            data: {
+              formId,
+              questionId: parsedQuestionId,
+              value: finalValue,
+            },
+          });
+        })
+      );
+
+      return updatedForm;
+    });
+
+    if (sendEmailCopy && userEmail) {
+      try {
+        await sendFormSubmissionEmail(formId, userEmail);
+      } catch (emailError) {
+        console.error("Failed to send email confirmation:", emailError);
+      }
+    }
+
+    res.status(200).json({
+      message: "Form updated successfully",
+      formId,
+      emailSent: sendEmailCopy && userEmail ? true : false,
+    });
+
+    refreshEvents.emit("refreshView");
+  } catch (err) {
+    console.error("Error updating form:", err);
+    res.status(500).json({ message: "Failed to update form" });
+  }
+};

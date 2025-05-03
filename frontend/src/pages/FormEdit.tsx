@@ -23,7 +23,7 @@ import { useThemeStore } from "@/store/themeStore";
 import useSEO from "@/hooks/useSEO";
 import ErrorReload from "@/components/global/ErrorReload";
 
-const FormFill = () => {
+const FormEdit = () => {
   useSEO({
     title: "Formora: Fill Form",
     description: "Fill out the template with your information.",
@@ -45,7 +45,8 @@ const FormFill = () => {
     queryFn: async () => {
       try {
         const { authenticatedApi } = await createAuthenticatedApi(getToken);
-        const response = await authenticatedApi.get(`/forms/fill/${id}`);
+        const response = await authenticatedApi.get(`/forms/edit/${id}`);
+        console.log("templateData:", response.data);
         return response.data;
       } catch (err: any) {
         // console.log("Error fetching template data:", err);
@@ -63,15 +64,16 @@ const FormFill = () => {
   const template = templateData?.template;
   const existingForm = templateData?.existingForm;
   const { theme } = useThemeStore();
-  // console.log("templateData.existingForm.id:", templateData?.existingForm?.id);
 
-  useEffect(() => {
-    if (templateData?.existingForm) {
-      // redirect to /edit-form/:id if the user has already submitted the form
-      navigate(`/edit-form/${templateData.existingForm.id}`, { state: { success: true } });
-      // document.title = template.title || "Form Fill";
-    }
-  }, [templateData]);
+  // useEffect(() => {
+  //   if (!templateData?.existingForm) {
+  //     // redirect to homepage if no existing form is found
+  //     toast.error(t("common.fFill.Form not found"));
+  //     navigate("/");
+
+  //     // document.title = template.title || "Form Fill";
+  //   }
+  // }, [templateData]);
 
   // Generate dynamic schema based on template questions
   const formSchema: z.ZodObject<any> = z.object({
@@ -228,11 +230,11 @@ const FormFill = () => {
         userEmail: values.sendEmailCopy ? values.userEmail : null,
       };
 
-      const response = await authenticatedApi.post("/forms/fill", payload);
+      const response = await authenticatedApi.put(`/forms/fill/${id}`, payload);
       return response.data;
     },
     onSuccess: (data) => {
-      toast.success(t("common.fFill.Form submitted successfully"));
+      toast.success(existingForm ? t("common.fFill.Form updated successfully") : t("common.fFill.Form submitted successfully"));
       // navigate("/forms");
       navigate(`/forms/${data.formId}`, { state: { success: true } });
     },
@@ -396,10 +398,10 @@ const FormFill = () => {
             {submitForm.isPending ? (
               <>
                 <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-t-transparent border-white"></span>
-                {t("common.fFill.Submitting...")}
+                {t("common.fFill.Updating...")}
               </>
             ) : (
-              t("common.fFill.Submit Form")
+              t("common.fFill.Update Form")
             )}
           </Button>
         </CardFooter>
@@ -409,4 +411,4 @@ const FormFill = () => {
   );
 };
 
-export default FormFill;
+export default FormEdit;

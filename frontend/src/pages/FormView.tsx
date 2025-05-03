@@ -88,7 +88,7 @@ const FormView = () => {
               </CardDescription>
             </div>
 
-            <Tooltip>
+            {/* <Tooltip>
               <TooltipTrigger asChild>
                 <Button variant="outline" className="ml-auto cursor-pointer" onClick={() => navigate(`/check-form/${form.template.id}`)}>
                   <Eye className="h-4 w-4" />
@@ -96,11 +96,11 @@ const FormView = () => {
                 </Button>
               </TooltipTrigger>
               <TooltipContent>{t("common.fView.View Template")}</TooltipContent>
-            </Tooltip>
+            </Tooltip> */}
 
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="outline" className="mx-3 cursor-pointer" onClick={() => navigate(`/check-form/${form.template.id}`)}>
+                <Button variant="outline" className="ml-auto mr-4 cursor-pointer" onClick={() => navigate(`/edit-form/${id}`)}>
                   <FilePenIcon className="h-4 w-4" />
                   <span className="sr-only">{t("common.fView.Edit Answers")}</span>
                 </Button>

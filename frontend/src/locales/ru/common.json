@@ -424,7 +424,9 @@
       "Form deleted successfully": "Форма успешно удалена",
       "Failed to delete form": "Не удалось удалить форму",
       "Please sign in to fill this form": "Пожалуйста, войдите в систему, чтобы заполнить эту форму",
-      "Sign in to submit": "Войдите, чтобы отправить"
+      "Sign in to submit": "Войдите, чтобы отправить",
+      "Form not found": "Форма не найдена",
+      "Failed to submit form": "Не удалось отправить форму"
     },
     "tCloud": {
       "Failed to load tags. Please try again.": "Не удалось загрузить теги. Пожалуйста, попробуйте снова.",

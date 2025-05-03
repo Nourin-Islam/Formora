@@ -7,6 +7,7 @@ export const getTemplateForFilling = async (req: Request, res: Response) => {
   try {
     const templateId = parseInt(req.params.id);
     const userId = req.user?.id;
+    const isAdmin = req.user?.isAdmin;
 
     const template = await prisma.template.findUnique({
       where: { id: templateId },
@@ -48,7 +49,7 @@ export const getTemplateForFilling = async (req: Request, res: Response) => {
         },
       });
 
-      if (!hasAccess && template.userId !== parseInt(userId)) {
+      if (!hasAccess && template.userId !== parseInt(userId) && !isAdmin) {
         res.status(403).json({ message: "You don't have access to this template" });
         return;
       }
@@ -93,6 +94,7 @@ export const getFilledForm = async (req: Request, res: Response) => {
   try {
     const formId = parseInt(req.params.id);
     const userId = req.user?.id;
+    console.log("Fetching filled form with ID:", formId, "for user ID:", userId);
 
     const form = await prisma.form.findUnique({
       where: { id: formId },
@@ -289,5 +291,72 @@ export const getAllMyResponses = async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Error fetching user responses:", error);
     res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
+export const getTemplateForEditing = async (req: Request, res: Response) => {
+  try {
+    const formId = parseInt(req.params.id);
+    const userId = req.user?.id;
+    const isAdmin = req.user?.isAdmin;
+
+    const form = await prisma.form.findUnique({
+      where: { id: formId },
+      include: {
+        template: {
+          include: {
+            user: { select: { id: true, name: true } },
+            topic: true,
+            questions: {
+              orderBy: { position: "asc" },
+              select: {
+                id: true,
+                title: true,
+                description: true,
+                questionType: true,
+                position: true,
+                options: true,
+              },
+            },
+          },
+        },
+        answers: {
+          include: {
+            question: {
+              select: {
+                id: true,
+                questionType: true,
+                options: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!form || !form.template) {
+      res.status(404).json({ message: "Form or template not found" });
+      return;
+    }
+
+    // Optional: enforce edit access control (if necessary)
+    if (form.userId !== parseInt(userId as string) && !isAdmin) {
+      res.status(403).json({ message: "You are not authorized to edit this submission" });
+      return;
+    }
+
+    res.json({
+      template: form.template,
+      existingForm: {
+        id: form.id,
+        userId: form.userId,
+        createdAt: form.createdAt,
+        updatedAt: form.updatedAt,
+        answers: form.answers,
+      },
+    });
+  } catch (err) {
+    console.error("Error fetching form for editing:", err);
+    res.status(500).json({ message: "Failed to fetch form for editing" });
   }
 };
