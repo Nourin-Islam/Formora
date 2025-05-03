@@ -87,7 +87,7 @@ export const createTag = async (req: Request, res: Response) => {
     });
 
     res.status(201).json(tag);
-    console.log("Tag created:", tag);
+    // console.log("Tag created:", tag);
     refreshEvents.emit("refreshView");
   } catch (err) {
     res.status(500).json({ message: "Failed to create tag" });

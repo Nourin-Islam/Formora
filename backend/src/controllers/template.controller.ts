@@ -296,183 +296,6 @@ export const createTemplate = async (req: Request, res: Response) => {
   }
 };
 
-// export const updateTemplate = async (req: Request, res: Response) => {
-//   if (!req.user) return res.status(401).json({ message: "Unauthorized" });
-//   // console.log("Updating template : ", req.body);
-
-//   try {
-//     const templateId = parseInt(req.params.id);
-//     const userId = req.user.id;
-//     const { title, description, topicId, isPublic, isPublished, imageUrl, tags = [], accessUsers = [], questions = [] } = req.body;
-
-//     console.log("Updating template by: ", req.user, " with data: ", req.body);
-//     // Verify template exists and user has permission
-//     const existingTemplate = await prisma.template.findUnique({
-//       where: { id: templateId },
-//       include: {
-//         tags: { include: { tag: true } },
-//         accesses: true,
-//         questions: true,
-//       },
-//     });
-
-//     if (!existingTemplate) {
-//       return res.status(404).json({ message: "Template not found" });
-//     }
-
-//     if (existingTemplate.userId !== parseInt(userId) && !req.user.isAdmin) {
-//       return res.status(403).json({ message: "Not authorized to update this template" });
-//     }
-
-//     const updatedTemplate = await prisma.$transaction(async (tx) => {
-//       // Update template basic info
-//       const template = await tx.template.update({
-//         where: { id: templateId },
-//         data: {
-//           title,
-//           description,
-//           topicId: parseInt(topicId),
-//           isPublic,
-//           isPublished,
-//           imageUrl: imageUrl || null,
-//           updatedAt: new Date(),
-//         },
-//       });
-
-//       // Handle tags
-//       const existingTagNames = existingTemplate.tags.map((t) => t.tag.name);
-//       const tagsToRemove = existingTemplate.tags.filter((t) => !tags.includes(t.tag.name)).map((t) => t.tag.id);
-//       const tagsToAdd = tags.filter((t: string) => !existingTagNames.includes(t));
-
-//       if (tagsToRemove.length > 0) {
-//         await tx.templateTag.deleteMany({
-//           where: {
-//             templateId,
-//             tagId: { in: tagsToRemove },
-//           },
-//         });
-
-//         await tx.tag.updateMany({
-//           where: { id: { in: tagsToRemove } },
-//           data: { usageCount: { decrement: 1 } },
-//         });
-//       }
-
-//       for (const tagName of tagsToAdd) {
-//         const tag = await tx.tag.upsert({
-//           where: { name: tagName },
-//           update: { usageCount: { increment: 1 } },
-//           create: { name: tagName, usageCount: 1 },
-//         });
-
-//         await tx.templateTag.create({
-//           data: { templateId, tagId: tag.id },
-//         });
-//       }
-
-//       // Handle access control
-//       if (!isPublic) {
-//         const existingAccessUserIds = existingTemplate.accesses.map((a) => a.userId);
-//         const usersToRemove = existingTemplate.accesses.filter((a) => !accessUsers.includes(a.userId)).map((a) => a.userId);
-//         const usersToAdd = accessUsers.filter((id: number) => !existingAccessUserIds.includes(id));
-
-//         if (usersToRemove.length > 0) {
-//           await tx.templateAccess.deleteMany({
-//             where: {
-//               templateId,
-//               userId: { in: usersToRemove },
-//             },
-//           });
-//         }
-
-//         if (usersToAdd.length > 0) {
-//           await tx.templateAccess.createMany({
-//             data: usersToAdd.map((userId: number) => ({
-//               templateId,
-//               userId,
-//             })),
-//             skipDuplicates: true,
-//           });
-//         }
-//       } else {
-//         await tx.templateAccess.deleteMany({ where: { templateId } });
-//       }
-
-//       // Questions update
-//       const existingQuestionIds = existingTemplate.questions.map((q) => q.id);
-//       const incomingQuestionIds = questions.filter((q: any) => q.id).map((q: any) => q.id);
-//       const questionsToDelete = existingQuestionIds.filter((id) => !incomingQuestionIds.includes(id));
-
-//       if (questionsToDelete.length > 0) {
-//         await tx.question.deleteMany({
-//           where: { id: { in: questionsToDelete } },
-//         });
-//       }
-
-//       for (const question of questions) {
-//         if (question.id) {
-//           await tx.question.update({
-//             where: { id: question.id },
-//             data: {
-//               title: question.title,
-//               description: question.description || "",
-//               questionType: question.questionType,
-//               position: question.position,
-//               showInTable: question.showInTable ?? false,
-//               options: question.options || null,
-//               correctAnswers: question.correctAnswers || null,
-//               updatedAt: new Date(),
-//             },
-//           });
-//         } else {
-//           await tx.question.create({
-//             data: {
-//               templateId,
-//               title: question.title,
-//               description: question.description || "",
-//               questionType: question.questionType,
-//               position: question.position,
-//               showInTable: question.showInTable ?? false,
-//               options: question.options || null,
-//               correctAnswers: question.correctAnswers || null,
-//             },
-//           });
-//         }
-//       }
-
-//       return template;
-//     });
-
-//     // Fetch full updated template
-//     const fullTemplate = await prisma.template.findUnique({
-//       where: { id: templateId },
-//       include: {
-//         user: { select: { id: true, name: true, email: true } },
-//         topic: true,
-//         questions: { orderBy: { position: "asc" } },
-//         tags: { include: { tag: true } },
-//         accesses: {
-//           include: {
-//             user: { select: { id: true, name: true, email: true } },
-//           },
-//         },
-//       },
-//     });
-
-//     const response = {
-//       ...fullTemplate,
-//       tags: fullTemplate?.tags.map((t) => t.tag),
-//       accessUsers: fullTemplate?.accesses.map((a) => a.user),
-//     };
-
-//     res.json(response);
-//     refreshEvents.emit("refreshView");
-//   } catch (err) {
-//     console.error("Error updating template:", err);
-//     res.status(500).json({ message: "Failed to update template" });
-//   }
-// };
-
 export const deleteTemplate = async (req: Request, res: Response) => {
   try {
     const templateId = parseInt(req.params.id);
@@ -513,9 +336,6 @@ export const updateTemplate = async (req: Request, res: Response) => {
     const userId = req.user.id;
     const { title, description, topicId, isPublic, isPublished, imageUrl, tags = [], accessUsers = [], questions = [] } = req.body;
 
-    // console.log("Updating template by: ", req.user, " with data: ", req.body);
-
-    // Verify template exists and user has permission
     const existingTemplate = await prisma.template.findUnique({
       where: { id: templateId },
       include: {
@@ -525,18 +345,15 @@ export const updateTemplate = async (req: Request, res: Response) => {
       },
     });
 
-    if (!existingTemplate) {
-      return res.status(404).json({ message: "Template not found" });
-    }
+    if (!existingTemplate) return res.status(404).json({ message: "Template not found" });
 
     if (existingTemplate.userId !== parseInt(userId) && !req.user.isAdmin) {
       return res.status(403).json({ message: "Not authorized to update this template" });
     }
 
-    // Process the update in a transaction
     await prisma.$transaction(
       async (tx) => {
-        // Update template basic info
+        // 1. Update template info
         await tx.template.update({
           where: { id: templateId },
           data: {
@@ -550,18 +367,14 @@ export const updateTemplate = async (req: Request, res: Response) => {
           },
         });
 
-        // Handle tags
+        // 2. Tags handling
         const existingTagNames = existingTemplate.tags.map((t) => t.tag.name);
         const tagsToRemove = existingTemplate.tags.filter((t) => !tags.includes(t.tag.name)).map((t) => t.tag.id);
-        const tagsToAdd = tags.filter((t: string) => !existingTagNames.includes(t));
+        const tagsToAdd = tags.filter((name: string) => !existingTagNames.includes(name));
 
-        // Remove tags that are no longer associated
         if (tagsToRemove.length > 0) {
           await tx.templateTag.deleteMany({
-            where: {
-              templateId,
-              tagId: { in: tagsToRemove },
-            },
+            where: { templateId, tagId: { in: tagsToRemove } },
           });
 
           await tx.tag.updateMany({
@@ -570,105 +383,108 @@ export const updateTemplate = async (req: Request, res: Response) => {
           });
         }
 
-        // Add new tags
-        for (const tagName of tagsToAdd) {
-          const tag = await tx.tag.upsert({
-            where: { name: tagName },
-            update: { usageCount: { increment: 1 } },
-            create: { name: tagName, usageCount: 1 },
-          });
+        if (tagsToAdd.length > 0) {
+          const existing = await tx.tag.findMany({ where: { name: { in: tagsToAdd } } });
+          const existingNames = existing.map((t) => t.name);
+          const newTags = tagsToAdd.filter((name: any) => !existingNames.includes(name));
 
-          await tx.templateTag.create({
-            data: { templateId, tagId: tag.id },
-          });
-        }
-
-        // Handle access control
-        if (!isPublic) {
-          const existingAccessUserIds = existingTemplate.accesses.map((a) => a.userId);
-          const usersToRemove = existingTemplate.accesses.filter((a) => !accessUsers.includes(a.userId)).map((a) => a.userId);
-          const usersToAdd = accessUsers.filter((id: number) => !existingAccessUserIds.includes(id));
-
-          if (usersToRemove.length > 0) {
-            await tx.templateAccess.deleteMany({
-              where: {
-                templateId,
-                userId: { in: usersToRemove },
-              },
+          if (newTags.length > 0) {
+            await tx.tag.createMany({
+              data: newTags.map((name: any) => ({ name, usageCount: 1 })),
+              skipDuplicates: true,
             });
           }
 
-          if (usersToAdd.length > 0) {
-            // Create each access separately to avoid transaction timeout
-            for (const addUserId of usersToAdd) {
-              await tx.templateAccess.create({
-                data: {
-                  templateId,
-                  userId: addUserId,
-                },
-              });
-            }
-          }
-        } else {
-          // Remove all access controls if template is made public
-          await tx.templateAccess.deleteMany({ where: { templateId } });
+          await tx.tag.updateMany({
+            where: { name: { in: tagsToAdd } },
+            data: { usageCount: { increment: 1 } },
+          });
+
+          const allTags = await tx.tag.findMany({
+            where: { name: { in: tagsToAdd } },
+            select: { id: true },
+          });
+
+          await tx.templateTag.createMany({
+            data: allTags.map((tag) => ({ templateId, tagId: tag.id })),
+            skipDuplicates: true,
+          });
         }
 
-        // Questions update
+        // 3. Access control
+        const existingAccessUserIds = existingTemplate.accesses.map((a) => a.userId);
+        const usersToRemove = existingTemplate.accesses.filter((a) => !accessUsers.includes(a.userId)).map((a) => a.userId);
+        const usersToAdd = accessUsers.filter((id: number) => !existingAccessUserIds.includes(id));
+
+        if (usersToRemove.length > 0) {
+          await tx.templateAccess.deleteMany({
+            where: { templateId, userId: { in: usersToRemove } },
+          });
+        }
+
+        if (isPublic) {
+          await tx.templateAccess.deleteMany({ where: { templateId } });
+        } else if (usersToAdd.length > 0) {
+          await tx.templateAccess.createMany({
+            data: usersToAdd.map((id: number) => ({ templateId, userId: id })),
+            skipDuplicates: true,
+          });
+        }
+
+        // 4. Questions
         const existingQuestionIds = existingTemplate.questions.map((q) => q.id);
         const incomingQuestionIds = questions.filter((q: any) => q.id).map((q: any) => q.id);
         const questionsToDelete = existingQuestionIds.filter((id) => !incomingQuestionIds.includes(id));
 
-        // Delete questions that are no longer needed
         if (questionsToDelete.length > 0) {
           await tx.question.deleteMany({
             where: { id: { in: questionsToDelete } },
           });
         }
 
-        // Update existing questions first
         const questionsToUpdate = questions.filter((q: any) => q.id);
-        for (const question of questionsToUpdate) {
-          await tx.question.update({
-            where: { id: question.id },
-            data: {
-              title: question.title,
-              description: question.description || "",
-              questionType: question.questionType,
-              position: question.position,
-              showInTable: question.showInTable ?? false,
-              options: question.options || null,
-              correctAnswers: question.correctAnswers || null,
-              updatedAt: new Date(),
-            },
-          });
-        }
-
-        // Create new questions
         const questionsToCreate = questions.filter((q: any) => !q.id);
-        for (const question of questionsToCreate) {
-          await tx.question.create({
-            data: {
+
+        await Promise.all(
+          questionsToUpdate.map((q: any) =>
+            tx.question.update({
+              where: { id: q.id },
+              data: {
+                title: q.title,
+                description: q.description || "",
+                questionType: q.questionType,
+                position: q.position,
+                showInTable: q.showInTable ?? false,
+                options: q.options || null,
+                correctAnswers: q.correctAnswers || null,
+                updatedAt: new Date(),
+              },
+            })
+          )
+        );
+
+        if (questionsToCreate.length > 0) {
+          await tx.question.createMany({
+            data: questionsToCreate.map((q: any) => ({
               templateId,
-              title: question.title,
-              description: question.description || "",
-              questionType: question.questionType,
-              position: question.position,
-              showInTable: question.showInTable ?? false,
-              options: question.options || null,
-              correctAnswers: question.correctAnswers || null,
-            },
+              title: q.title,
+              description: q.description || "",
+              questionType: q.questionType,
+              position: q.position,
+              showInTable: q.showInTable ?? false,
+              options: q.options || null,
+              correctAnswers: q.correctAnswers || null,
+            })),
           });
         }
       },
       {
-        // Add transaction options to increase timeout
-        maxWait: 10000, // 10 seconds max wait time
-        timeout: 30000, // 30 seconds transaction timeout
+        maxWait: 10000,
+        timeout: 30000,
       }
     );
 
-    // Fetch full updated template
+    // Final fetch
     const fullTemplate = await prisma.template.findUnique({
       where: { id: templateId },
       include: {
@@ -677,9 +493,7 @@ export const updateTemplate = async (req: Request, res: Response) => {
         questions: { orderBy: { position: "asc" } },
         tags: { include: { tag: true } },
         accesses: {
-          include: {
-            user: { select: { id: true, name: true, email: true } },
-          },
+          include: { user: { select: { id: true, name: true, email: true } } },
         },
       },
     });

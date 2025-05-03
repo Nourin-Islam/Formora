@@ -4,10 +4,12 @@ import { prisma } from "../lib/prisma";
 import { clerkClient } from "@clerk/express";
 import { refreshEvents } from "../lib/refresh";
 
-import { z } from "zod";
-
 export const getAllUsers = async (req: Request, res: Response) => {
   try {
+    if (!req.user?.isAdmin) {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+
     const { page = 1, limit = 10, sortBy = "name", sortOrder = "asc", email } = req.query;
     const where: any = {};
     if (email) where.email = { contains: email as string, mode: "insensitive" };
@@ -38,8 +40,13 @@ export const getAllUsers = async (req: Request, res: Response) => {
 };
 
 export const updateUser = async (req: Request, res: Response) => {
-  console.log("Updating user:", req.body, req.params.id);
+  // console.log("Updating user:", req.body, req.params.id);
   try {
+    // Verify current user has permission to update
+    if (!req.user?.isAdmin) {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+
     const { isAdmin, isBlocked } = req.body;
     const userId = parseInt(req.params.id);
 
@@ -85,7 +92,7 @@ export const deleteUser = async (req: Request, res: Response) => {
     if (user.clerkId) {
       try {
         const response = await clerkClient.users.deleteUser(user.clerkId);
-        console.log("Clerk response:", response);
+        // console.log("Clerk response:", response);
       } catch (clerkError) {
         res.status(500).json({ message: "Failed to delete user from authentication system" });
         return;
@@ -93,7 +100,7 @@ export const deleteUser = async (req: Request, res: Response) => {
     }
 
     const rest = await prisma.user.delete({ where: { id: userId } });
-    console.log("Deleted user from database:", rest);
+    // console.log("Deleted user from database:", rest);
     res.json({ message: "User deleted successfully" });
     refreshEvents.emit("refreshView");
   } catch (error) {
@@ -101,137 +108,3 @@ export const deleteUser = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Failed to delete user" });
   }
 };
-
-/*
-export const getUserPreferences = async (req: Request, res: Response) => {
-  try {
-    if (!req.user) {
-      res.status(403).json({ message: "Not Authorized" });
-      return;
-    }
-
-    const userId = req.user.id;
-
-    const user = await prisma.user.findUnique({
-      where: { id: parseInt(userId) },
-      select: {
-        id: true,
-        clerkId: true,
-        email: true,
-        name: true,
-        isAdmin: true,
-        status: true,
-        languagePreference: true,
-        themePreference: true,
-        isBlocked: true,
-        createdAt: true,
-      },
-    });
-
-    res.json({ user });
-    return;
-  } catch (error) {
-    console.error("Error fetching user preferences:", error);
-    res.status(500).json({
-      message: "Failed to fetch user preferences",
-      details: error instanceof Error ? error.message : "Unknown error",
-    });
-    return;
-  }
-};
-
-const PreferencesSchema = z.object({
-  languagePreference: z.string().min(2).max(5), // e.g. "en", "fr", "es"
-  themePreference: z.enum(["light", "dark", "system"]),
-});
-
-export const setUserPreferences = async (req: Request, res: Response) => {
-  try {
-    if (!req.user) {
-      res.status(403).json({ message: "Not Authorized" });
-      return;
-    }
-
-    // Validate request body
-    const validationResult = PreferencesSchema.safeParse(req.body);
-
-    if (!validationResult.success) {
-      res.status(400).json({
-        message: "Invalid preferences data",
-        details: validationResult.error.flatten(),
-      });
-      return;
-    }
-
-    const { languagePreference, themePreference } = validationResult.data;
-    const userId = req.user.id; // From authenticateUser middleware
-
-    // Update user preferences
-    const updatedUser = await prisma.user.update({
-      where: { id: parseInt(userId) },
-      data: {
-        languagePreference,
-        themePreference,
-        updatedAt: new Date(), // Explicitly set updatedAt
-      },
-      select: {
-        id: true,
-        clerkId: true,
-        email: true,
-        name: true,
-        isAdmin: true,
-        status: true,
-        languagePreference: true,
-        themePreference: true,
-        isBlocked: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
-
-    res.json({
-      success: true,
-      message: "Preferences updated successfully",
-      data: { updatedUser },
-    });
-    return;
-  } catch (error) {
-    console.error("Error updating user preferences:", error);
-    res.status(500).json({
-      message: "Failed to update preferences",
-      details: error instanceof Error ? error.message : "Unknown error",
-    });
-    return;
-  }
-};
-
-
-export const searchUsers = async (req: Request, res: Response) => {
-  try {
-    const { q: searchTerm } = req.query;
-
-    if (!searchTerm) {
-      res.json([]);
-      return;
-    }
-
-    const users = await prisma.user.findMany({
-      where: {
-        OR: [{ name: { contains: searchTerm as string, mode: "insensitive" } }, { email: { contains: searchTerm as string, mode: "insensitive" } }],
-      },
-      take: 10,
-      select: {
-        id: true,
-        email: true,
-        name: true,
-      },
-    });
-
-    res.json(users);
-  } catch (error) {
-    console.error("Error searching users:", error);
-    res.status(500).json({ message: "Failed to search users" });
-  }
-};
-
-*/
