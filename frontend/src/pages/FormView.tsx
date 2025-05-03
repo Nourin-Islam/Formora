@@ -13,7 +13,7 @@ import { AlertCircle } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { createAuthenticatedApi } from "@/lib/api";
 import { useAuth } from "@clerk/clerk-react";
-import { Eye, FilePenIcon, Trash2 } from "lucide-react";
+import { FilePenIcon, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import useSEO from "@/hooks/useSEO";
 import ErrorReload from "@/components/global/ErrorReload";
