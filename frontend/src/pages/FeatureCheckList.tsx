@@ -59,7 +59,7 @@ const features = [
           { task: "Tag cloud (clicking a tag links to filtered search results)", completed: true },
           { task: "Comments on templates (linear, append-only, auto-updated every 2-5 seconds)", completed: true },
           { task: "Likes on templates (1 per user)", completed: true },
-          { task: "Full-text search (uses DB or external engine, no full-table scans)", completed: false },
+          { task: "Full-text search (uses DB or external engine, no full-table scans)", completed: true },
           { task: "Header has full-text search on every page", completed: true },
         ],
       },
@@ -88,7 +88,7 @@ const features = [
           { task: "Avoids full DB scans and loops with queries", completed: false },
           { task: "Images are not uploaded to web server", completed: true },
           { task: "No DB queries in loops", completed: false },
-          { task: "Full-text search is implemented correctly (e.g., tsvector, pg_trgm, etc. if using PostgreSQL)", completed: false },
+          { task: "Full-text search is implemented correctly (tsvector using PostgreSQL)", completed: true },
         ],
       },
       {
@@ -96,7 +96,7 @@ const features = [
         items: [
           { task: "Social login (OAuth via Google, GitHub, etc.)", completed: true },
           { task: "'One-from-list' question type with custom options (e.g., dropdowns)", completed: false },
-          { task: "Unlimited number of questions per type", completed: false },
+          { task: "Unlimited number of questions per type", completed: true },
           { task: "'Email me a copy' checkbox for form submitter", completed: true },
         ],
       },
