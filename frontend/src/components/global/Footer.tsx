@@ -11,6 +11,9 @@ export default function Footer() {
         <p className="max-w-md mx-auto mb-6 text-sm">{t("common.footer.description")}</p>
 
         <div className="flex justify-center space-x-6 text-sm mb-6">
+          <Link to="/feature-check-list" className="hover:underline">
+            {t("common.footer.Features List")}
+          </Link>
           <Link to="/about" className="hover:underline">
             {t("common.footer.about")}
           </Link>

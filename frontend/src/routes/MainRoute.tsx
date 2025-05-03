@@ -25,6 +25,7 @@ import ManageTopics from "@/pages/ManageTopics";
 import TemplatesHome from "@/pages/TemplatesHome";
 import SearchPage from "@/pages/Search";
 import TemplateView from "@/pages/TemplateView";
+import FeatureList from "@/pages/FeatureCheckList";
 
 const router = createBrowserRouter([
   {
@@ -44,6 +45,7 @@ const router = createBrowserRouter([
           { path: "about", element: <About /> },
           { path: "contact", element: <Contact /> },
           { path: "view-template/:id", element: <TemplateView /> },
+          { path: "feature-check-list", element: <FeatureList /> },
         ],
       },
       {

@@ -82,7 +82,7 @@ export default function ManageUsersTable() {
       {
         accessorKey: "isBlocked",
         header: t("common.users.Status"),
-        cell: ({ row }) => <Badge variant={row.getValue("isBlocked") ? "destructive" : "default"}>{row.getValue("isBlocked") ? t("common.users.Blocked") : t("common.users.Active")}</Badge>,
+        cell: ({ row }) => <Badge variant={row.getValue("isBlocked") ? "default" : "default"}>{row.getValue("isBlocked") ? t("common.users.Blocked") : t("common.users.Active")}</Badge>,
       },
     ],
     [t]

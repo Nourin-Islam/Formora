@@ -44,7 +44,7 @@ export const getAllTemplates = async (req: Request, res: Response) => {
       isPublished,
       tagName,
     };
-    const cacheKey = `joined-view:${page}:${limit}:${sortBy}:${sortOrder}:${JSON.stringify(filterParams)}`;
+    const cacheKey = `joined-view:${page}:${limit}:${sortBy}:${sortOrder}:${userId}:${JSON.stringify(filterParams)}`;
 
     const cached = await cache.get(cacheKey);
     if (cached) {
@@ -58,7 +58,6 @@ export const getAllTemplates = async (req: Request, res: Response) => {
     if (isAdmin) {
       templates = await prisma.$queryRawUnsafe<any[]>(`
         SELECT * FROM template_search_view t
-        ${whereClause}
         ORDER BY t."${sortBy}" ${sortOrder}
         LIMIT ${limit} OFFSET ${offset}
       `);
@@ -71,7 +70,6 @@ export const getAllTemplates = async (req: Request, res: Response) => {
         LIMIT ${limit} OFFSET ${offset}
       `);
     }
-    // console.log("Templates fetched from view:", templates);
 
     const countResult = await prisma.$queryRawUnsafe<any[]>(`
       SELECT COUNT(*) FROM template_search_view t
