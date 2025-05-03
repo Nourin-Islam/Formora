@@ -30,7 +30,7 @@ const FormView = () => {
   const { getToken } = useAuth();
   const success = location.state?.success;
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t } = useTranslation("common");
 
   const {
     data: form,

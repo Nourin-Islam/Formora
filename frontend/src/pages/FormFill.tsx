@@ -219,7 +219,7 @@ const FormFill = () => {
         userEmail: values.sendEmailCopy ? values.userEmail : null,
       };
 
-      const response = await authenticatedApi.post("common.fFill./forms/fill", payload);
+      const response = await authenticatedApi.post("/forms/fill", payload);
       return response.data;
     },
     onSuccess: (data) => {
