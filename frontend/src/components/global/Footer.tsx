@@ -10,7 +10,7 @@ export default function Footer() {
         <h2 className="text-xl font-semibold mb-2">Formora</h2>
         <p className="max-w-md mx-auto mb-6 text-sm">{t("common.footer.description")}</p>
 
-        <div className="flex justify-center space-x-6 text-sm mb-6">
+        <div className="flex justify-center flex-wrap space-x-6 space-y-4 text-sm mb-6">
           <Link to="/feature-check-list" className="hover:underline">
             {t("common.footer.Features List")}
           </Link>

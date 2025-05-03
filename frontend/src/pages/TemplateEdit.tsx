@@ -157,9 +157,9 @@ export default function TemplateEdit() {
           </CardHeader>
           <CardContent>
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="mb-4">
+              <TabsList className="mb-8 sm:mb-4 items-center flex flex-wrap space-y-2 ">
                 <TabsTrigger value="general">{t("common.tedit.General Settings")}</TabsTrigger>
-                <TabsTrigger value="questions">
+                <TabsTrigger className="flex justify-center items-center my-0" value="questions">
                   {t("common.tedit.Questions")} ({questions.length})
                 </TabsTrigger>
                 <TabsTrigger value="access">{t("common.tedit.Access")}</TabsTrigger>
@@ -196,7 +196,7 @@ export default function TemplateEdit() {
                 <QuestionManagement questions={questions} setQuestions={setQuestions} />
               </TabsContent>
 
-              <TabsContent value="access" className="space-y-4">
+              <TabsContent value="access" className="space-y-4 mt-6">
                 <div className="flex items-center space-x-2">
                   <Switch id="isPublic" checked={isPublic} onCheckedChange={setIsPublic} />
                   <Label htmlFor="isPublic">{t("common.tedit.Public template (accessible to all authenticated users)")}</Label>
@@ -216,7 +216,7 @@ export default function TemplateEdit() {
           </CardContent>
 
           {activeTab !== "previousSubmissions" && (
-            <CardFooter className="flex justify-between">
+            <CardFooter className="flex flex-wrap justify-between">
               <Button variant="outline" type="button" onClick={() => navigate(-1)} disabled={updateTemplate.isPending}>
                 {t("common.tedit.Cancel")}
               </Button>

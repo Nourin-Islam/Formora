@@ -170,7 +170,7 @@ export default function ManageTopics() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex items-center flex-wrap justify-between gap-4">
         <div className="flex gap-2">
           {/* Create Topic Button */}
           <Tooltip>

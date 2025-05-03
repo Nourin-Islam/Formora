@@ -117,11 +117,11 @@ export default function TemplatesHome() {
       <Tabs defaultValue="general" value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="mb-4">
           <TabsTrigger value="templates">
-            <h1 className="text-xl font-bold">{t("common.thome.My Templates")}</h1>
+            <h1 className=" text-base sm:text-xl font-bold">{t("common.thome.My Templates")}</h1>
           </TabsTrigger>
 
           <TabsTrigger value="submissions">
-            <h1 className="text-xl font-bold">{t("common.thome.My Submissions")}</h1>
+            <h1 className="text-base sm:text-xl font-bold">{t("common.thome.My Submissions")}</h1>
           </TabsTrigger>
         </TabsList>
 

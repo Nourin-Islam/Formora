@@ -129,8 +129,8 @@ export default function ManageUsersTable() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex gap-2">
+      <div className="flex items-center flex-wrap justify-between gap-4">
+        <div className="flex flex-wrap justify-center sm:justify-start gap-2">
           <Tooltip>
             <TooltipTrigger asChild>
               <Button variant="outline" size="sm" onClick={() => handleBulkAdminToggle(true)} disabled={table.getSelectedRowModel().rows.length === 0 || isUpdating}>

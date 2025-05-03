@@ -115,9 +115,9 @@ export default function TemplateCreationForm() {
 
         <CardContent>
           <Tabs defaultValue="general" value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="mb-4">
+            <TabsList className="mb-8 sm:mb-4 items-center flex flex-wrap space-y-2 ">
               <TabsTrigger value="general">{t("common.tCreate.General Settings")}</TabsTrigger>
-              <TabsTrigger value="questions">
+              <TabsTrigger className="flex justify-center items-center my-0" value="questions">
                 {t("common.tCreate.Questions")} ({questions.length})
               </TabsTrigger>
               <TabsTrigger value="access">{t("common.tCreate.Access Settings")}</TabsTrigger>
@@ -154,7 +154,7 @@ export default function TemplateCreationForm() {
               <QuestionManagement questions={questions} setQuestions={setQuestions} />
             </TabsContent>
 
-            <TabsContent value="access" className="space-y-4">
+            <TabsContent value="access" className="space-y-4 mt-6">
               <div className="flex items-center space-x-2">
                 <Switch id="isPublic" checked={isPublic} onCheckedChange={setIsPublic} />
                 <Label htmlFor="isPublic">{t("common.tCreate.Public template (accessible to all authenticated users)")}</Label>
@@ -170,7 +170,7 @@ export default function TemplateCreationForm() {
           </Tabs>
         </CardContent>
 
-        <CardFooter className="flex justify-between">
+        <CardFooter className="flex justify-center space-y-4 sm:justify-between flex-wrap">
           <Button variant="outline" onClick={() => navigate(-1)}>
             {t("common.tCreate.Cancel")}
           </Button>
