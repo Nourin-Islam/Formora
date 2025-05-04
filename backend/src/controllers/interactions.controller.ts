@@ -151,6 +151,7 @@ export const createComment = async (req: Request, res: Response): Promise<void> 
         user: {
           select: {
             id: true,
+            clerkId: true,
             name: true,
             email: true,
           },
@@ -159,10 +160,7 @@ export const createComment = async (req: Request, res: Response): Promise<void> 
     });
 
     // Broadcast the new comment to all subscribers
-    broadcastCommentUpdate(numericTemplateId, {
-      userId: req.user.id,
-      isAdmin: req.user.isAdmin,
-    });
+    broadcastCommentUpdate(numericTemplateId);
 
     res.status(201).json(comment);
     refreshEvents.emit("refreshView");
@@ -223,10 +221,7 @@ export const updateComment = async (req: Request, res: Response): Promise<void> 
     });
 
     // Broadcast the updated comment to all subscribers
-    broadcastCommentUpdate(comment.templateId, {
-      userId: req.user.id,
-      isAdmin: req.user.isAdmin,
-    });
+    broadcastCommentUpdate(comment.templateId);
 
     res.status(200).json(updatedComment);
     refreshEvents.emit("refreshView");
@@ -266,10 +261,7 @@ export const deleteComment = async (req: Request, res: Response): Promise<void> 
     });
 
     // Broadcast the comment deletion to all subscribers
-    broadcastCommentUpdate(comment.templateId, {
-      userId: req.user.id,
-      isAdmin: req.user.isAdmin,
-    });
+    broadcastCommentUpdate(comment.templateId);
 
     res.status(200).json({ message: "Comment deleted successfully" });
     refreshEvents.emit("refreshView");

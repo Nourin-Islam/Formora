@@ -406,7 +406,7 @@ const FormEdit = () => {
           </Button>
         </CardFooter>
       </Card>
-      {id && <Comments templateId={parseInt(id, 10)} />}
+      {id && <Comments templateId={parseInt(template.id, 10)} />}
     </div>
   );
 };

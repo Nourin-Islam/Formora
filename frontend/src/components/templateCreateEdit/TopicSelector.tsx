@@ -17,7 +17,7 @@ export const TopicSelector = ({ value, onChange, className }: TopicSelectorProps
     error,
   } = useTopics({
     page: 1,
-    limit: 10, // Only need first page since there are few topics
+    limit: 5,
     sortBy: "name",
     sortOrder: "asc",
   });

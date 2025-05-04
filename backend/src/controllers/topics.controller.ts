@@ -2,6 +2,7 @@
 import { prisma } from "../lib/prisma";
 import { Request, Response } from "express";
 import { refreshEvents } from "../lib/refresh";
+import { cache } from "../lib/cache";
 
 export const getAllTopics = async (req: Request, res: Response) => {
   try {
@@ -10,6 +11,13 @@ export const getAllTopics = async (req: Request, res: Response) => {
     const sortBy = (req.query.sortBy as string) || "name";
     const sortOrder = (req.query.sortOrder as string) || "asc";
     const nameFilter = (req.query.name as string) || undefined;
+
+    const cacheKey = `topics:${page}:${limit}:${sortBy}:${sortOrder}:${nameFilter}`;
+    const cached = await cache.get(cacheKey);
+    if (cached) {
+      console.log("Cache hit for topics:", cacheKey);
+      return res.json(cached);
+    }
 
     const topics = await prisma.topic.findMany({
       where: nameFilter ? { name: { contains: nameFilter, mode: "insensitive" } } : undefined,
@@ -22,6 +30,15 @@ export const getAllTopics = async (req: Request, res: Response) => {
       where: nameFilter ? { name: { contains: nameFilter } } : undefined,
     });
 
+    cache.set(
+      cacheKey,
+      {
+        topics,
+        totalPages: Math.ceil(totalCount / limit),
+        hasNextPage: page * limit < totalCount,
+      },
+      60 * 60
+    ); // Cache for 1 hour
     res.json({
       topics,
       totalPages: Math.ceil(totalCount / limit),
@@ -86,50 +103,3 @@ export const deleteTopic = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Failed to delete topic" });
   }
 };
-
-/*
-export const searchTopics = async (req: Request, res: Response) => {
-  try {
-    const query = req.query.q as string;
-    const limit = parseInt(req.query.limit as string) || 10;
-
-    if (!query) {
-      res.status(400).json({ message: "Search query is required" });
-      return;
-    }
-
-    const topics = await prisma.topic.findMany({
-      where: {
-        name: {
-          contains: query,
-          mode: "insensitive",
-        },
-      },
-      take: limit,
-    });
-
-    res.json(topics);
-  } catch (err) {
-    res.status(500).json({ message: "Failed to search topics" });
-  }
-};
-
-export const getTopicById = async (req: Request, res: Response) => {
-  try {
-    const topicId = parseInt(req.params.id);
-
-    const topic = await prisma.topic.findUnique({
-      where: { id: topicId },
-    });
-
-    if (!topic) {
-      res.status(404).json({ message: "Topic not found" });
-      return;
-    }
-
-    res.json(topic);
-  } catch (err) {
-    res.status(500).json({ message: "Failed to fetch topic" });
-  }
-};
-*/

@@ -154,8 +154,8 @@ export function Comments({ templateId }: CommentsProps) {
   // Check if user can edit/delete comment
   const canModifyComment = (commentUserId: number) => {
     if (!userId) return false;
-    console.log("comment.UserId", commentUserId);
-    console.log("current user's Id", userId);
+    // console.log("comment.UserId", commentUserId);
+    // console.log("current user's Id", userId);
 
     return userId === commentUserId.toString() || isAdmin;
   };

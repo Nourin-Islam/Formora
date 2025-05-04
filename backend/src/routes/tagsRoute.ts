@@ -4,7 +4,7 @@ import { requireAdmin } from "../middleware/auth";
 import { getAllTags, searchTags, createTag, updateTag, deleteTag } from "../controllers/tags.controller";
 
 const router = express.Router();
-
+// @ts-ignore
 router.get("/", getAllTags);
 // @ts-ignore
 router.get("/search", searchTags);
