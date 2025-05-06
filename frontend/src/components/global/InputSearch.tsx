@@ -24,7 +24,7 @@ function InputSearch() {
   return (
     <>
       <Search className="absolute left-2 md:left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground   dark:text-gray-500 " />
-      <Input placeholder={t("common.header.Search templates...")} className="pl-7 md:pl-10 bg-white dark:bg-neutral-900 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-neutral-800 w-[120px] sm:w-auto" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+      <Input placeholder={t("common.header.Search templates...")} className="pl-7 md:pl-10 bg-white dark:bg-neutral-900 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-neutral-800 w-[180px] sm:w-auto" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
     </>
   );
 }
