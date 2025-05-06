@@ -316,7 +316,7 @@ const FormEdit = () => {
                       case "TEXT":
                         return <Textarea id={`question_${question.id}`} {...field} />;
                       case "INTEGER":
-                        return <Input id={`question_${question.id}`} type="number" value={field.value || ""} onChange={(e) => field.onChange(parseInt(e.target.value) || 0)} />;
+                        return <Input min={0} id={`question_${question.id}`} type="number" value={field.value || "0"} onChange={(e) => field.onChange(parseInt(e.target.value) || 0)} />;
                       case "CHECKBOX":
                         if (question.options?.length > 0) {
                           // Multiple choice (checkbox group)

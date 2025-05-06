@@ -172,7 +172,7 @@ export function Comments({ templateId }: CommentsProps) {
     return <div>{t("common.comments.Connecting to live comments...")}</div>;
   }
 
-  console.log("comments", comments);
+  // console.log("comments", comments);
   return (
     <Card className="mt-6" id="comments">
       <CardHeader>

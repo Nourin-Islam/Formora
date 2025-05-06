@@ -45,6 +45,8 @@ function TemplatesPreviousSubmissions({ id }: { id: string }) {
     retry: false,
   });
 
+  console.log("rawSubmissions", rawSubmissions);
+
   // 🎯 Utility function to format answer for CHECKBOX/INTEGER
   function formatAnswer(answer: string, type: string) {
     if (type === "CHECKBOX") {
