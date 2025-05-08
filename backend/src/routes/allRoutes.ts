@@ -10,6 +10,8 @@ import topicsRoute from "./topicsRoute";
 import usersRoutes from "./usersRoutes";
 import homeRoutes from "./homeRoutes";
 
+import salesforceRoutes from "./salesforceRoutes";
+
 const router = express.Router();
 
 router.use("/home", homeRoutes);
@@ -21,5 +23,6 @@ router.use("/tags", tagRoutes);
 router.use("/templates", templateRoutes);
 router.use("/topics", topicsRoute);
 router.use("/users", usersRoutes);
+router.use("/salesforce", salesforceRoutes);
 
 export default router;

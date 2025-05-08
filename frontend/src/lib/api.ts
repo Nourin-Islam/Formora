@@ -20,7 +20,8 @@ export const createAuthenticatedApi = async (getToken: () => Promise<string | nu
     if (error.response?.status === 401) {
       console.error("Unauthorized access - please login again");
     }
-    return Promise.reject(error.response?.data?.error || error.message || "An error occurred");
+    // return Promise.reject(error.response?.data?.error || error.message || "An error occurred");
+    return Promise.reject(error.response || error);
   };
 
   // Apply interceptors

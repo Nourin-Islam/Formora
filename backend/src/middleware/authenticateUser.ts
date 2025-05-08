@@ -1,4 +1,22 @@
 import { Request, Response, NextFunction } from "express";
+
+interface AuthenticatedUser {
+  id: string;
+  clerkId: string;
+  email: string;
+  name: string | null;
+  isAdmin: boolean;
+  status: string;
+  salesforceAccountId: string | null;
+}
+
+declare global {
+  namespace Express {
+    interface Request {
+      user?: AuthenticatedUser;
+    }
+  }
+}
 import { prisma } from "../lib/prisma";
 import { getAuth } from "@clerk/express";
 
@@ -33,6 +51,7 @@ export const authenticateUser = async (req: Request, res: Response, next: NextFu
       name: user.name,
       isAdmin: user.isAdmin,
       status: user.status,
+      salesforceAccountId: user.salesforceAccountId,
     };
     // console.log("User authenticated:", req.user);
     next(); // ✅ go to next middleware
