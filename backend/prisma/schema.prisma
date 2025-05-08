@@ -8,24 +8,24 @@ datasource db {
 }
 
 model User {
-  id                 Int              @id @default(autoincrement())
-  email              String           @unique
-  passwordHash       String
-  name               String
-  clerkId            String?          @unique
-  languagePreference String           @default("en")
-  themePreference    String           @default("light")
-  isAdmin            Boolean          @default(false)
-  isBlocked          Boolean          @default(false)
-  createdAt          DateTime         @default(now())
-  updatedAt          DateTime         @updatedAt
-  status             String           @default("ACTIVE")
+  id                  Int              @id @default(autoincrement())
+  email               String           @unique
+  passwordHash        String
+  name                String
+  clerkId             String?          @unique
+  languagePreference  String           @default("en")
+  themePreference     String           @default("light")
+  isAdmin             Boolean          @default(false)
+  isBlocked           Boolean          @default(false)
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  status              String           @default("ACTIVE")
   salesforceAccountId String?
-  comments           Comment[]
-  forms              Form[]
-  likes              Like[]
-  templates          Template[]
-  accesses           TemplateAccess[]
+  comments            Comment[]
+  forms               Form[]
+  likes               Like[]
+  templates           Template[]
+  accesses            TemplateAccess[]
 }
 
 model Topic {
@@ -150,6 +150,3 @@ enum QuestionType {
   INTEGER
   CHECKBOX
 }
-
-
-

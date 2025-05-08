@@ -17,6 +17,7 @@ import TemplateFilters from "@/components/templateShow/TemplateFilters";
 import { useTranslation } from "react-i18next";
 import UserAllResponses from "@/components/UserAllResponses";
 import useSEO from "@/hooks/useSEO";
+import SalesforceSyncForm from "@/components/SalesforceSyncForm";
 
 export default function TemplatesHome() {
   useSEO({
@@ -123,6 +124,9 @@ export default function TemplatesHome() {
           <TabsTrigger value="submissions">
             <h1 className="text-base sm:text-xl font-bold">{t("common.thome.My Submissions")}</h1>
           </TabsTrigger>
+          <TabsTrigger value="salesforce">
+            <h1 className="text-base sm:text-xl font-bold">Sync to Salesforce</h1>
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="templates" className="space-y-4">
@@ -144,6 +148,9 @@ export default function TemplatesHome() {
         </TabsContent>
         <TabsContent value="submissions" className="space-y-4">
           <UserAllResponses />
+        </TabsContent>
+        <TabsContent value="salesforce" className="space-y-4">
+          <SalesforceSyncForm />
         </TabsContent>
       </Tabs>
     </div>

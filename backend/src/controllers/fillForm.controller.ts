@@ -264,30 +264,29 @@ export const getAllMyResponses = async (req: Request, res: Response) => {
     const userId = req.user?.id;
 
     if (!userId) {
-      res.status(401).json({ message: "Unauthorized" });
-      return;
+      return res.status(401).json({ message: "Unauthorized" });
     }
 
-    const responses = await prisma.formSubmissionView.findMany({
-      where: {
-        user_id: parseInt(userId),
-      },
-      distinct: ["form_id"],
-      orderBy: {
-        submission_date: "desc", // Optional: get most recent ones first
-      },
-      select: {
-        form_id: true,
-        template_title: true,
-        template_creator_name: true,
-        template_question_count: true,
-        template_submission_count: true,
-        submission_date: true,
-      },
-    });
+    const responses = await prisma.$queryRaw`
+      SELECT DISTINCT ON (form_id)
+        form_id,
+        template_title,
+        template_creator_name,
+        template_question_count,
+        template_submission_count,
+        submission_date
+      FROM form_submissions_view
+      WHERE user_id = ${parseInt(userId)}
+      ORDER BY form_id, submission_date DESC
+    `;
 
-    // console.log("User responses:", responses);
-    res.json(responses);
+    res.json(
+      (responses as any[]).map((r: any) => ({
+        ...r,
+        template_question_count: Number(r.template_question_count),
+        template_submission_count: Number(r.template_submission_count),
+      }))
+    );
   } catch (error) {
     console.error("Error fetching user responses:", error);
     res.status(500).json({ message: "Something went wrong" });
