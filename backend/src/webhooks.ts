@@ -1,6 +1,7 @@
 import { Webhook } from "svix";
 import type { Request, Response, NextFunction } from "express";
 import { prisma } from "./lib/prisma.js";
+import { randomUUID } from "crypto";
 
 interface ClerkWebhookEvent {
   type: string;
@@ -65,6 +66,7 @@ export const handleClerkWebhook = async (req: Request, res: Response, next: Next
             name: `${data.first_name || ""} ${data.last_name || ""}`.trim(),
             status: "ACTIVE",
             passwordHash: "",
+            apiToken: randomUUID(),
           },
         });
         break;

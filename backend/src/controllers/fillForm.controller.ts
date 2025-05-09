@@ -236,18 +236,18 @@ export const getAllSubmissionsByTemplate = async (req: Request, res: Response) =
     // Explicitly select fields excluding the 4 specified ones
     const submissions = await prisma.$queryRawUnsafe(`
       SELECT 
-        "form_id",
-        "templateId",
-        "user_id",
-        "user_name",
-        "submission_date",
-        "question_id",
-        "question_title",
-        "question_type",
-        "show_in_table",
-        "answer"
-      FROM "form_submissions_view"
-      WHERE "templateId" = ${templateId}
+        form_id,
+        template_id AS "templateId",
+        user_id,
+        user_name,
+        submission_date,
+        question_id,
+        question_title,
+        question_type,
+        show_in_table,
+        answer
+      FROM form_submissions_view
+      WHERE template_id = ${templateId}
     `);
 
     res.json(submissions);

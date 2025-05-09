@@ -21,6 +21,7 @@ model User {
   updatedAt           DateTime         @updatedAt
   status              String           @default("ACTIVE")
   salesforceAccountId String?
+  apiToken            String?          @unique
   comments            Comment[]
   forms               Form[]
   likes               Like[]

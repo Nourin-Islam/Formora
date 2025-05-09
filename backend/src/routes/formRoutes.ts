@@ -29,6 +29,7 @@ router.delete("/delete/:id", authenticateUser, deleteFilledForm);
 // router.get("/of-template/:id", authenticateUser, getAllFormByTemplate);
 // @ts-ignore
 router.get("/of-template/:id", authenticateUser, getAllSubmissionsByTemplate);
+// @ts-ignore
 router.get("/my-responses", authenticateUser, getAllMyResponses);
 
 export default router;

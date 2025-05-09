@@ -9,6 +9,7 @@ import templateRoutes from "./templatesRoute";
 import topicsRoute from "./topicsRoute";
 import usersRoutes from "./usersRoutes";
 import homeRoutes from "./homeRoutes";
+import oddRoutes from "./oddRoutes";
 
 import salesforceRoutes from "./salesforceRoutes";
 
@@ -24,5 +25,6 @@ router.use("/templates", templateRoutes);
 router.use("/topics", topicsRoute);
 router.use("/users", usersRoutes);
 router.use("/salesforce", salesforceRoutes);
+router.use("/odoo", oddRoutes);
 
 export default router;
