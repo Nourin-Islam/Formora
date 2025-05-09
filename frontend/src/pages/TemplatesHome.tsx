@@ -18,6 +18,7 @@ import { useTranslation } from "react-i18next";
 import UserAllResponses from "@/components/UserAllResponses";
 import useSEO from "@/hooks/useSEO";
 import SalesforceSyncForm from "@/components/SalesforceSyncForm";
+import GetApiToken from "@/components/GetApiToken";
 
 export default function TemplatesHome() {
   useSEO({
@@ -127,6 +128,9 @@ export default function TemplatesHome() {
           <TabsTrigger value="salesforce">
             <h1 className="text-base sm:text-xl font-bold">Sync to Salesforce</h1>
           </TabsTrigger>
+          <TabsTrigger value="api">
+            <h1 className="text-base sm:text-xl font-bold">API Token</h1>
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="templates" className="space-y-4">
@@ -151,6 +155,9 @@ export default function TemplatesHome() {
         </TabsContent>
         <TabsContent value="salesforce" className="space-y-4">
           <SalesforceSyncForm />
+        </TabsContent>
+        <TabsContent value="api" className="space-y-4">
+          <GetApiToken />
         </TabsContent>
       </Tabs>
     </div>

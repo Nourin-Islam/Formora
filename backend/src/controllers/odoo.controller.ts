@@ -88,3 +88,21 @@ export const getAllSubmissionsForOdoo = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const getApiToken = async (req: Request, res: Response) => {
+  try {
+    if (!req.user) {
+      res.status(401).json({ message: "Unauthorized" });
+      return;
+    }
+
+    res.json({ apiToken: req.user.apiToken });
+    return;
+  } catch (err) {
+    console.error("Error fetching API token:", err);
+    res.status(500).json({
+      message: "An unexpected error occurred while fetching the API token",
+    });
+    return;
+  }
+};

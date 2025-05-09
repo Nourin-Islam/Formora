@@ -8,6 +8,7 @@ interface AuthenticatedUser {
   isAdmin: boolean;
   status: string;
   salesforceAccountId: string | null;
+  apiToken: string | null;
 }
 
 declare global {
@@ -52,6 +53,7 @@ export const authenticateUser = async (req: Request, res: Response, next: NextFu
       isAdmin: user.isAdmin,
       status: user.status,
       salesforceAccountId: user.salesforceAccountId,
+      apiToken: user.apiToken,
     };
     // console.log("User authenticated:", req.user);
     next(); // ✅ go to next middleware
