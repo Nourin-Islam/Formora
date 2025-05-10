@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_formora_questions_tree" model="ir.ui.view">
+        <field name="name">formora.question.tree</field>
+        <field name="model">formora.question</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="question_text"/>
+                <field name="question_type"/>
+                <field name="avg_value"/>
+                <field name="min_value"/>
+                <field name="max_value"/>
+                <field name="common_answers"/>
+            </tree>
+        </field>
+    </record>
+</odoo>

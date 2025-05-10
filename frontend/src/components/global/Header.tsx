@@ -56,7 +56,7 @@ function Header() {
                 <>
                   <nav className="flex space-x-4 items-center">
                     <Link to="/templates" className="text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400">
-                      {t("common.header.Templates")}
+                      Dashboard
                     </Link>
 
                     {Boolean(user?.publicMetadata?.isAdmin) && (

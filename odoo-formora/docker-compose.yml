@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: odoo
+    runtime: docker
+    dockerfilePath: Dockerfile
+    env: docker
+    buildCommand: docker build -t odoo-render .
+    startCommand: >
+      odoo --db_host=${DB_HOST}
+           --db_user=${DB_USER}
+           --db_password=${DB_PASSWORD}
+           --database=${DB_NAME}
+    envVars:
+      - key: DB_HOST
+        value: your-postgres-service-name
+      - key: DB_USER
+        value: odoo
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: odoo-db
+          property: connectionString
+      - key: DB_NAME
+        value: odoo
+      - key: HOST
+        value: 0.0.0.0
+      - key: PORT
+        value: 8069

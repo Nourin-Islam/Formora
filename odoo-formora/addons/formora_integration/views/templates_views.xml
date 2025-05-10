@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_formora_templates_tree" model="ir.ui.view">
+        <field name="name">formora.template.tree</field>
+        <field name="model">formora.template</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="title"/>
+                <field name="author"/>
+                <field name="last_sync"/>
+            </tree>
+        </field>
+    </record>
+    
+    <record id="view_formora_template_form" model="ir.ui.view">
+        <field name="name">formora.template.form</field>
+        <field name="model">formora.template</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="import_data" type="object" string="Import Data" class="oe_highlight"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="title"/>
+                        <field name="author"/>
+                        <field name="last_sync"/>
+                    </group>
+                    <notebook>
+                        <page string="Questions">
+                            <field name="question_ids" mode="tree">
+                                <tree>
+                                    <field name="question_text"/>
+                                    <field name="question_type"/>
+                                    <field name="avg_value"/>
+                                    <field name="min_value"/>
+                                    <field name="max_value"/>
+                                    <field name="common_answers"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

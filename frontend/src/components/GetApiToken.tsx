@@ -40,7 +40,7 @@ export function GetApiToken() {
     <Card>
       <CardHeader>
         <CardTitle>API Token</CardTitle>
-        <CardDescription>Manage your Odoo API token for integration purposes</CardDescription>
+        <CardDescription>Manage your API token for integration purposes</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
@@ -66,14 +66,13 @@ export function GetApiToken() {
         </Button>
       </CardContent>
       <CardFooter className="flex flex-col items-start gap-2">
-        <h3 className="font-medium">About API Tokens</h3>
+        <h3 className="font-medium">About API Token</h3>
         <ul className="text-sm text-muted-foreground list-disc pl-5 space-y-1">
           <li>This token allows secure, read-only access to your form templates from external systems like Odoo.</li>
           <li>Only aggregated results (e.g., averages, popular answers) are accessible via this token.</li>
           <li>Each token is unique to your account and grants access only to your own templates.</li>
-          <li>Use this token when configuring external integrations like the Formora Odoo Viewer.</li>
+          <li>{"You can use the token by sending GET request to https://taskseven-lmgn.onrender.com/api/odoo?templateId={template id}&apiToken={your  api token}"}</li>
           <li>Keep this token private. Treat it like a password — do not share it publicly.</li>
-          <li>You can regenerate or revoke your token from your account settings at any time (feature coming soon).</li>
         </ul>
       </CardFooter>
     </Card>

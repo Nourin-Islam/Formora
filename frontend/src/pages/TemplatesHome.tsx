@@ -129,7 +129,7 @@ export default function TemplatesHome() {
             <h1 className="text-base sm:text-xl font-bold">Sync to Salesforce</h1>
           </TabsTrigger>
           <TabsTrigger value="api">
-            <h1 className="text-base sm:text-xl font-bold">API Token</h1>
+            <h1 className="text-base sm:text-xl font-bold">api Token</h1>
           </TabsTrigger>
         </TabsList>
 
