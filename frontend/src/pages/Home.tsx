@@ -4,7 +4,7 @@ import LatestTemplatesSection from "@/components/homePage/LatestTemplates";
 import TrendingTemplatesSection from "@/components/homePage/TrendingTemplates";
 import TagCloudSection from "@/components/homePage/TagCloud";
 import TopicsChart from "@/components/homePage/TopicsChart";
-import FloatingCreateButton from "@/components/homePage/FloatingCreateButton";
+// import FloatingCreateButton from "@/components/homePage/FloatingCreateButton";
 import useSEO from "@/hooks/useSEO";
 
 export default function Home() {
@@ -33,10 +33,10 @@ export default function Home() {
       </div>
 
       <TrendingTemplatesSection />
-      <div className="container mx-auto py-8">
-        {/* Your tabs and content here */}
-        <FloatingCreateButton />
-      </div>
+      {/* <div className="container mx-auto py-8"> */}
+      {/* Your tabs and content here */}
+      {/* <FloatingCreateButton /> */}
+      {/* </div> */}
     </div>
   );
 }

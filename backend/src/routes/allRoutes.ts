@@ -12,6 +12,7 @@ import homeRoutes from "./homeRoutes";
 import oddRoutes from "./oddRoutes";
 
 import salesforceRoutes from "./salesforceRoutes";
+import supportRoutes from "./supportRoutes";
 
 const router = express.Router();
 
@@ -26,5 +27,6 @@ router.use("/topics", topicsRoute);
 router.use("/users", usersRoutes);
 router.use("/salesforce", salesforceRoutes);
 router.use("/odoo", oddRoutes);
+router.use("/support-ticket", supportRoutes);
 
 export default router;
