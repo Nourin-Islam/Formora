@@ -151,3 +151,11 @@ enum QuestionType {
   INTEGER
   CHECKBOX
 }
+
+
+model DropboxToken {
+  id          Int      @id @default(1)
+  accessToken String
+  refreshToken String
+  expiresAt   DateTime
+}

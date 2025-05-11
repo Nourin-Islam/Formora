@@ -12,6 +12,7 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
     "prisma:seed": "node prisma/seed.js",
+    "dropboxseed": "node prisma/dropboxseed.js",
     "lint": "eslint src --ext .ts",
     "test": "vitest run",
     "test:dev": "NODE_OPTIONS='--loader ts-node/esm' vitest dev"

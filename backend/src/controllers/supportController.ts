@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { z } from "zod";
 import { Dropbox } from "dropbox";
 import { PrismaClient } from "@prisma/client";
+import { getValidAccessToken } from "../lib/dropbox-oauth"; // Adjust the import path as necessary
 
 const prisma = new PrismaClient();
 
@@ -58,6 +59,8 @@ const getTemplateTitleFromFormId = async (formId: number): Promise<string | null
 
 export const submitTicket = async (req: Request, res: Response) => {
   const parsed = ticketSchema.safeParse(req.body);
+  const accessToken = await getValidAccessToken();
+  const dbx = new Dropbox({ accessToken });
 
   if (!parsed.success) {
     console.error("Validation error:", parsed.error);
@@ -100,7 +103,6 @@ export const submitTicket = async (req: Request, res: Response) => {
   const fileName = `ticket-${Date.now()}.json`;
   const dropboxPath = `/SupportTickets/${fileName}`;
   const fileContent = JSON.stringify(ticket, null, 2);
-  const dbx = new Dropbox({ accessToken: process.env.DROPBOX_ACCESS_TOKEN! });
 
   try {
     await dbx.filesUpload({
