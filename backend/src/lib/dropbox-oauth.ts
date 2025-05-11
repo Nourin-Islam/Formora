@@ -1,8 +1,4 @@
-// lib/dropbox-oauth.ts
-import { PrismaClient } from "@prisma/client";
-import fetch from "node-fetch";
-
-const prisma = new PrismaClient();
+import { prisma } from "../lib/prisma";
 
 export async function getValidAccessToken(): Promise<string> {
   const tokenRecord = await prisma.dropboxToken.findFirst();

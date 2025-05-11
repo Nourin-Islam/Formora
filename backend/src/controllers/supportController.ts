@@ -1,10 +1,10 @@
 import { Request, Response } from "express";
 import { z } from "zod";
 import { Dropbox } from "dropbox";
-import { PrismaClient } from "@prisma/client";
+
 import { getValidAccessToken } from "../lib/dropbox-oauth"; // Adjust the import path as necessary
 
-const prisma = new PrismaClient();
+import { prisma } from "../lib/prisma";
 
 const ticketSchema = z.object({
   summary: z.string(),
