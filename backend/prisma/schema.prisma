@@ -159,3 +159,10 @@ model DropboxToken {
   refreshToken String
   expiresAt   DateTime
 }
+
+model OneDriveToken {
+  id           Int      @id @default(1)
+  accessToken  String?
+  refreshToken String?
+  expiresAt    DateTime?
+}

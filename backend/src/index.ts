@@ -6,6 +6,8 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import { handleClerkWebhook } from "./webhooks.js";
 import routes from "./routes/allRoutes"; // This will import from routes/index
+
+import { getValidAccessToken } from "./lib/onedrive-token";
 // @ts-ignore
 import keepServerAlive from "keep-alive-package";
 // @ts-ignore
@@ -69,6 +71,15 @@ keepServerAlive("https://taskseven-lmgn.onrender.com", "1m");
 
 // Use all routes
 app.use("/api", routes);
+
+setInterval(async () => {
+  try {
+    const token = await getValidAccessToken();
+    console.log("Refreshed OneDrive token:", token.slice(0, 10) + "...");
+  } catch (err) {
+    console.error("Token refresh failed:", err);
+  }
+}, 3000 * 1000);
 
 // Error handling
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {

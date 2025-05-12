@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import { z } from "zod";
-import { getValidAccessToken } from "../lib/onedrive-token";
+import { Dropbox } from "dropbox";
+
+import { getValidAccessToken } from "../lib/dropbox-oauth"; // Adjust the import path as necessary
 
 import { prisma } from "../lib/prisma";
 
@@ -57,6 +59,8 @@ const getTemplateTitleFromFormId = async (formId: number): Promise<string | null
 
 export const submitTicket = async (req: Request, res: Response) => {
   const parsed = ticketSchema.safeParse(req.body);
+  const accessToken = await getValidAccessToken();
+  const dbx = new Dropbox({ accessToken });
 
   if (!parsed.success) {
     console.error("Validation error:", parsed.error);
@@ -71,12 +75,15 @@ export const submitTicket = async (req: Request, res: Response) => {
   let formId: number | null = null;
   let templateTitle: string | null = null;
 
+  // Check for templateId in various URL patterns
   templateId = extractIdFromPath(parsed.data.link, "check-form") || extractIdFromPath(parsed.data.link, "manage-template");
 
+  // If no templateId found, check for formId
   if (!templateId) {
     formId = extractIdFromPath(parsed.data.link, "forms");
   }
 
+  // Get template title if we have an ID
   if (templateId) {
     templateTitle = await getTemplateTitle(templateId);
   } else if (formId) {
@@ -86,49 +93,40 @@ export const submitTicket = async (req: Request, res: Response) => {
   const ticket = {
     reportedBy: parsed.data.reportedBy,
     template: templateTitle || "Unknown",
+    templateId,
+    formId,
     link: parsed.data.link,
     priority: parsed.data.priority,
     summary: parsed.data.summary,
   };
 
   const fileName = `ticket-${Date.now()}.json`;
+  const dropboxPath = `/SupportTickets/${fileName}`;
   const fileContent = JSON.stringify(ticket, null, 2);
 
   try {
-    const accessToken = await getValidAccessToken(); // 🔁 Use fresh token
-    const uploadUrl = `https://graph.microsoft.com/v1.0/me/drive/root:/${fileName}:/content`;
-
-    const response = await fetch(uploadUrl, {
-      method: "PUT",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-      },
-      body: fileContent,
+    await dbx.filesUpload({
+      path: dropboxPath,
+      contents: fileContent,
+      mode: { ".tag": "add" },
     });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`OneDrive upload failed: ${response.status} ${errorText}`);
-    }
-
-    const fileData = await response.json();
 
     res.status(201).json({
-      message: "Ticket uploaded successfully to OneDrive.",
-      // fileName: fileData.name,
-      // webUrl: fileData.webUrl,
-      // ticketInfo: {
-      //   templateTitle,
-      //   templateId,
-      //   formId,
-      // },
+      message: "Ticket uploaded to Dropbox",
+      file: fileName,
+      ticketInfo: {
+        templateTitle,
+        templateId,
+        formId,
+      },
     });
+    return;
   } catch (error) {
-    console.error("OneDrive upload error:", error);
+    console.error("Dropbox upload error:", error);
     res.status(500).json({
-      error: "Failed to upload ticket to OneDrive.",
+      error: "Failed to upload ticket to Dropbox",
       details: error instanceof Error ? error.message : String(error),
     });
+    return;
   }
 };
