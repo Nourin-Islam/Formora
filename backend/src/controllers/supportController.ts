@@ -90,7 +90,7 @@ export const submitTicket = async (req: Request, res: Response) => {
     priority: parsed.data.priority,
     summary: parsed.data.summary,
   };
-  console.log("Ticket data:", ticket);
+
   const fileName = `ticket-${Date.now()}.json`;
   const fileContent = JSON.stringify(ticket, null, 2);
 
