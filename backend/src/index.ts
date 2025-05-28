@@ -67,7 +67,7 @@ app.get("/", (req, res) => {
     status: "running",
   });
 });
-keepServerAlive("https://taskseven-lmgn.onrender.com", "1m");
+keepServerAlive("https://formora.onrender.com", "1m");
 
 // Use all routes
 app.use("/api", routes);
